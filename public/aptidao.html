@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Checklist de Aptidão Diária</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      text-align: center;
+    }
+
+    /* botão voltar ao formulário */
+    #btn-voltar {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      background: #fff;
+      color: #000;
+      font-weight: bold;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      cursor: pointer;
+      z-index: 100;
+      display: none;
+    }
+    /* botão painel inicial */
+    #btn-dashboard {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      background: #2E7D32;
+      color: #fff;
+      font-weight: bold;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      cursor: pointer;
+      z-index: 100;
+      text-decoration: none;
+    }
+    #btn-dashboard:hover { background: #1b5e20; }
+
+    /* Container Formulário */
+    .form-container {
+      background: #fff;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 480px;
+    }
+    .form-container h2 {
+      margin-bottom: 24px;
+      font-size: 1.5rem;
+      color: #2E7D32;
+    }
+    label {
+      display: block;
+      text-align: left;
+      margin-bottom: 12px;
+      font-size: 1rem;
+      color: #333;
+    }
+    select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    button[type=submit] {
+      width: 100%;
+      padding: 12px;
+      font-size: 1rem;
+      background: #2E7D32;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 16px;
+    }
+    button[type=submit]:hover { background: #1b5e20; }
+
+    /* Card Resultado */
+    .card {
+      background: #fff;
+      color: #333;
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 90%; max-width: 360px;
+      padding: 20px;
+      border-left: 6px solid;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      z-index: 50;
+    }
+    .card.apto   { border-color: #28a745; }
+    .card.inapto { border-color: #dc3545; }
+    .card p     { font-size: 1.2rem; margin-bottom: 12px; }
+    .card small { font-size: 0.9rem; color: #666; display: block; margin-bottom: 16px; }
+
+    /* Responsivo */
+    @media (max-width: 480px) {
+      .form-container { padding: 16px; }
+      .form-container h2 { font-size: 1.3rem; margin-bottom: 20px; }
+      label { font-size: 0.95rem; margin-bottom: 10px; }
+      select { font-size: 0.95rem; padding: 8px; }
+      button[type=submit] { padding: 10px; font-size: 0.95rem; }
+      .card { padding: 16px; }
+      .card p { font-size: 1.1rem; }
+      .card small { font-size: 0.85rem; }
+      #btn-voltar, #btn-dashboard { padding: 6px 10px; font-size: 0.85rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- botões fixos -->
+  <button id="btn-voltar" onclick="voltarFormulario()">⬅ Voltar</button>
+  <button id="btn-dashboard" onclick="location.href='/dashboard.html'">↩ Painel Inicial</button>
+
+  <div class="form-container">
+    <h2>Checklist de Aptidão Diária</h2>
+    <form id="formulario">
+      <label for="nome">Nome do Colaborador:
+        <select id="nome" required>
+          <option value="">Selecione</option>
+          <option>ADVALDO DE MELO FERREIRA</option>
+          <option>CLEBES MOREIRA SOUZA</option>
+          <option>EDIVAN RIBEIRO DE LIMA</option>
+          <option>ELSON GRANJEIRO DOS SANTOS</option>
+          <option>GISLEY SOARES LISBOA</option>
+          <option>HEGRI FERREIRA FERNANDES</option>
+          <option>HENRIQUE MORAIS DA SILVA</option>
+          <option>HILDERSON KENEDDY DE NAZARE BATISTA DA SILVA</option>
+          <option>IRSONLEY CUTRIM SILVA</option>
+          <option>ISAIAS DA CRUZ SOARES</option>
+          <option>JOSE NILTON COSTA SILVA</option>
+          <option>JOSE ODAIR DE SOUSA</option>
+          <option>LUIZ EDUARDO MAIA SOUZA</option>
+          <option>MARCELO DIAS OLIVEIRA</option>
+          <option>MARCIO SOUSA ARAUJO</option>
+          <option>NELSON DOS SANTOS ALMEIDA</option>
+          <option>RAIMUNDO NONATO DE SOUSA SENA</option>
+          <option>RANDERSON FRANKLES ALVES MELO</option>
+          <option>RONALDO SOUSA DE ALMEIDA</option>
+          <option>TIAGO RODRIGUES NASCIMENTO</option>
+        </select>
+      </label>
+      <label for="bem">Você está se sentindo bem?
+        <select id="bem" required>
+          <option value="">Selecione</option>
+          <option value="sim">Sim</option>
+          <option value="nao">Não</option>
+        </select>
+      </label>
+      <label for="alcool">Você ingeriu bebida alcoólica na noite anterior?
+        <select id="alcool" required>
+          <option value="">Selecione</option>
+          <option value="nao">Não</option>
+          <option value="sim">Sim</option>
+        </select>
+      </label>
+      <label for="sono">Você está com sinais de sonolência?
+        <select id="sono" required>
+          <option value="">Selecione</option>
+          <option value="nao">Não</option>
+          <option value="sim">Sim</option>
+        </select>
+      </label>
+      <label for="trabalhar">Você se sente bem para trabalhar hoje?
+        <select id="trabalhar" required>
+          <option value="">Selecione</option>
+          <option value="sim">Sim</option>
+          <option value="nao">Não</option>
+        </select>
+      </label>
+      <button type="submit">Verificar</button>
+    </form>
+  </div>
+
+  <div id="resultado"></div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form         = document.getElementById("formulario");
+      const resultadoDiv = document.getElementById("resultado");
+      const formCard     = document.querySelector(".form-container");
+      const btnVoltar    = document.getElementById("btn-voltar");
+
+      form.addEventListener("submit", e => {
+        e.preventDefault();
+        const nome     = form.nome.value;
+        const bem      = form.bem.value;
+        const alcool   = form.alcool.value;
+        const sono     = form.sono.value;
+        const trabalhar= form.trabalhar.value;
+        const dataHora = new Date().toLocaleString("pt-BR");
+        const apto     = (bem==="sim" && alcool==="nao" && sono==="nao" && trabalhar==="sim");
+
+        formCard.style.display = "none";
+        btnVoltar.style.display = "block";
+
+        resultadoDiv.innerHTML = `
+          <div class="card ${apto?"apto":"inapto"}">
+            <p>${nome} está ${apto?"APTO":"INAPTO"} para trabalhar hoje.</p>
+            <small>Preenchido em: ${dataHora}</small>
+          </div>
+        `;
+      });
+    });
+
+    function voltarFormulario() {
+      document.querySelector(".form-container").style.display = "block";
+      document.getElementById("resultado").innerHTML = "";
+      document.getElementById("formulario").reset();
+      document.getElementById("btn-voltar").style.display = "none";
+    }
+  </script>
+</body>
+</html>

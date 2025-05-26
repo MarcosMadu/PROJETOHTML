@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Verificação de Status</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      padding: 0;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #2E7D32;
+      margin-bottom: 16px;
+    }
+    .filtros {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .filtros label {
+      flex: 1 1 200px;
+      display: flex;
+      flex-direction: column;
+      font-weight: bold;
+    }
+    .filtros input {
+      padding: 6px;
+      margin-top: 4px;
+      font-size: 14px;
+    }
+    #btn-buscar {
+      align-self: flex-end;
+      padding: 8px 16px;
+      background: #2E7D32;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    #btn-buscar:hover {
+      background: #27662a;
+    }
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 800px; /* força scroll em telas pequenas */
+      margin-top: 8px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px 6px;
+      text-align: left;
+      font-size: 14px;
+    }
+    th {
+      background: #f0f0f0;
+      font-weight: bold;
+    }
+    tbody tr:nth-child(even) { background: #fafafa; }
+
+    /* ===== Responsividade ===== */
+    @media (max-width: 600px) {
+      h1 { font-size: 18px; }
+      .filtros label { flex: 1 1 100%; }
+      #btn-buscar { width: 100%; }
+      table {
+        font-size: 12px;
+        min-width: 600px;
+      }
+      th, td { padding: 6px 4px; }
+    }
+  </style>
+</head>
+
+<style>
+  .back-container {
+    text-align: left;
+    margin: 16px;
+  }
+  .btn-back {
+    display: inline-block;
+    padding: 8px 12px;
+    background: #2E7D32;
+    color: #fff;
+    border-radius: 4px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.2s;
+    font-family: Arial, sans-serif;
+  }
+  .btn-back i {
+    margin-right: 6px;
+  }
+  .btn-back:hover {
+    background: #1b5e20;
+  }
+</style>
+
+<div class="back-container">
+  <a href="/dashboard.html" class="btn-back">
+    <i class="fas fa-arrow-left"></i> Voltar ao Painel Inicial
+  </a>
+</div>
+
+
+<body>
+  <h1>Verificação de Status de Notificações</h1>
+
+  <div class="filtros">
+    <label>
+      ID da Notificação
+      <input type="text" id="filter-id" placeholder="Digite o ID">
+    </label>
+    <label>
+      Encarregado
+      <input type="text" id="filter-encarregado" placeholder="Nome do encarregado">
+    </label>
+    <label>
+      Técnico Emitente
+      <input type="text" id="filter-tecnico" placeholder="Nome do técnico">
+    </label>
+    <label>
+      Área
+      <input type="text" id="filter-area" placeholder="Área/Local">
+    </label>
+    <button id="btn-buscar">Buscar</button>
+  </div>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Técnico</th>
+          <th>Encarregado</th>
+          <th>Área</th>
+          <th>Prazo</th>
+          <th>Status</th>
+          <th>Justificativa</th>
+          <th>Data</th>
+        </tr>
+      </thead>
+      <tbody id="result-body">
+        <tr><td colspan="8" style="text-align:center;">Nenhum resultado</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    document.getElementById('btn-buscar').addEventListener('click', async () => {
+      const id          = document.getElementById('filter-id').value.trim();
+      const encarregado = document.getElementById('filter-encarregado').value.trim();
+      const tecnico     = document.getElementById('filter-tecnico').value.trim();
+      const area        = document.getElementById('filter-area').value.trim();
+
+      const params = new URLSearchParams();
+      if (id)          params.append('id', id);
+      if (encarregado) params.append('encarregado', encarregado);
+      if (tecnico)     params.append('tecnico', tecnico);
+      if (area)        params.append('area', area);
+
+      try {
+        const res  = await fetch('/api/notificacoes?' + params);
+        const data = await res.json();
+        const tbody = document.getElementById('result-body');
+        tbody.innerHTML = '';
+
+        if (!Array.isArray(data) || data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Nenhum resultado</td></tr>';
+          return;
+        }
+
+        data.forEach(n => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${n._id}</td>
+            <td>${n.tecnico||'—'}</td>
+            <td>${n.encarregado||'—'}</td>
+            <td>${n.area||'—'}</td>
+            <td>${n.prazo ? new Date(n.prazo).toLocaleDateString() : '—'}</td>
+            <td>${n.status}</td>
+            <td>${n.comentarioAprovacao||'—'}</td>
+            <td>${new Date(n.dataRegistro).toLocaleString()}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        console.error('Erro ao buscar:', err);
+      }
+    });
+  </script>
+</body>
+</html>

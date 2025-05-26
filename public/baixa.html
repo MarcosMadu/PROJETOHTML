@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+
+<style>
+  .back-container {
+    text-align: left;
+    margin: 16px;
+  }
+  .btn-back {
+    display: inline-block;
+    padding: 8px 12px;
+    background: #2E7D32;
+    color: #fff;
+    border-radius: 4px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.2s;
+    font-family: Arial, sans-serif;
+  }
+  .btn-back i {
+    margin-right: 6px;
+  }
+  .btn-back:hover {
+    background: #1b5e20;
+  }
+</style>
+
+<div class="back-container">
+  <a href="/dashboard.html" class="btn-back">
+    <i class="fas fa-arrow-left"></i> Voltar ao Painel Inicial
+  </a>
+</div>
+
+
+  <meta charset="UTF-8">
+  <title>Dar Baixa em Notificação</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f1f3f5;
+      padding: 30px;
+    }
+    .container {
+      max-width: 800px;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Dar Baixa em Notificação</h2>
+    <form action="/baixa" method="POST" enctype="multipart/form-data">
+      <div class="mb-3">
+        <label for="id" class="form-label">Selecione a Notificação (Abertas)</label>
+        <select class="form-select" id="id" name="id" required>
+          <option value="">Carregando notificações...</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="resolvidoPor" class="form-label">Responsável pela Baixa</label>
+        <input type="text" class="form-control" id="resolvidoPor" name="resolvidoPor" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="resolucaoComentario" class="form-label">Comentário da Resolução</label>
+        <textarea class="form-control" id="resolucaoComentario" name="resolucaoComentario" rows="4" required></textarea>
+      </div>
+
+      <div class="mb-3">
+        <label for="resolucaoFotos" class="form-label">Fotos da Resolução</label>
+        <input type="file" class="form-control" id="resolucaoFotos" name="resolucaoFotos" multiple accept="image/*">
+      </div>
+
+      <button type="submit" class="btn btn-primary">Enviar Baixa</button>
+    </form>
+  </div>
+
+  <script>
+    async function carregarNotificacoesAbertas() {
+      const select = document.getElementById('id');
+      try {
+        const resposta = await fetch('/api/notificacoes-abertas');
+        const lista = await resposta.json();
+
+        select.innerHTML = '<option value="">Selecione uma notificação</option>';
+        lista.forEach(n => {
+          const opt = document.createElement('option');
+          opt.value = n._id;
+          opt.textContent = n._id;
+          select.appendChild(opt);
+        });
+      } catch (erro) {
+        console.error('Erro ao carregar notificações:', erro);
+        select.innerHTML = '<option value="">Erro ao carregar notificações</option>';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', carregarNotificacoesAbertas);
+  </script>
+</body>
+</html>
