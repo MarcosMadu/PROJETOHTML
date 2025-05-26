@@ -14,7 +14,7 @@ const Notificacao = require('./models/Notificacao');
 
 dotenv.config();
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 
 app.get('/inspecao.html', (req, res) =>
