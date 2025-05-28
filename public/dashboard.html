@@ -2,154 +2,158 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Painel Inicial</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel Inicial Plangecon SESMT</title>
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" />
   <style>
     :root {
-      --primary: #2E7D32;
-      --light: #fff;
-      --bg: #f4f7fa;
-      --card: #fff;
-      --shadow: rgba(0,0,0,0.1);
-      --text: #333;
-      --radius: 8px;
-      --trans: 0.3s;
+      --primary: #00695c;
+      --secondary: #004d40;
+      --accent: #ffca28;
+      --light: #ffffff;
+      --bg: #e0e0e0;
+      --texture: url('https://www.transparenttextures.com/patterns/asfalt-light.png');
+      --card-bg: #ffffff;
+      --shadow: rgba(0, 0, 0, 0.1);
+      --header-shadow: rgba(0, 0, 0, 0.2);
+      --radius: 12px;
+      --transition: 0.3s;
     }
-    *, *::before, *::after { box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      margin: 0;
       font-family: 'Roboto', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.4;
+      background: var(--bg) var(--texture) repeat;
+      color: #333333;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
     }
     header {
-      background: linear-gradient(135deg, var(--primary), #1b5e20);
+      background: var(--primary);
       color: var(--light);
-      padding: 20px 10px;
+      padding: 1.5rem 1rem;
       text-align: center;
-      box-shadow: 0 4px 6px var(--shadow);
+      position: sticky;
+      top: 0;
+      box-shadow: 0 4px 12px var(--header-shadow);
+      z-index: 10;
     }
     header h1 {
-      margin: 0;
-      font-size: 1.8rem;
+      font-size: 1.75rem;
       font-weight: 700;
     }
     .container {
-      max-width: 1000px;
-      margin: 20px auto;
-      padding: 0 10px;
+      flex: 1;
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
     }
     .cards {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
     }
     .card {
-      background: var(--card);
+      background: var(--card-bg);
       border-radius: var(--radius);
-      box-shadow: 0 2px 4px var(--shadow);
-      padding: 24px 12px;
-      text-align: center;
-      position: relative;
+      box-shadow: 0 4px 12px var(--shadow);
       overflow: hidden;
-      transition: transform var(--trans), box-shadow var(--trans);
-    }
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
-      background: var(--primary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 2rem 1rem;
+      transition: transform var(--transition), box-shadow var(--transition);
     }
     .card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 6px 12px var(--shadow);
+      transform: translateY(-8px);
+      box-shadow: 0 8px 20px var(--shadow);
     }
-    .card i {
-      font-size: 2rem;
+    .card-icon {
+      font-size: 2.5rem;
       color: var(--primary);
-      margin-bottom: 12px;
+      margin-bottom: 1rem;
+      transition: color var(--transition);
     }
-    .card h2 {
-      font-size: 1.1rem;
-      margin-bottom: 8px;
+    .card:hover .card-icon {
+      color: var(--accent);
+    }
+    .card-title {
+      font-size: 1.2rem;
       font-weight: 500;
+      margin-bottom: 0.75rem;
+      color: #222222;
     }
-    .card a {
-      display: inline-block;
-      margin-top: 10px;
-      padding: 6px 12px;
+    .card-link {
+      margin-top: auto;
+      padding: 0.6rem 1.2rem;
       background: var(--primary);
       color: var(--light);
       border-radius: var(--radius);
       text-decoration: none;
-      font-size: 0.9rem;
-      transition: background var(--trans);
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: background var(--transition), transform var(--transition);
     }
-    .card a:hover {
-      background: #1b5e20;
-    }
-    @media (max-width: 768px) {
-      header h1 { font-size: 1.5rem; }
-      .cards { gap: 12px; }
-      .card { padding: 20px 10px; }
-      .card i { font-size: 1.8rem; }
-      .card h2 { font-size: 1rem; }
-      .card a { padding: 6px 10px; font-size: 0.85rem; }
+    .card-link:hover {
+      background: var(--secondary);
+      transform: translateY(-2px);
     }
     @media (max-width: 480px) {
-      header { padding: 16px 8px; }
-      header h1 { font-size: 1.25rem; }
-      .cards { grid-template-columns: 1fr; }
-      .card { padding: 16px 8px; }
-      .card i { font-size: 1.5rem; }
-      .card h2 { font-size: 0.95rem; }
-      .card a { padding: 5px 8px; font-size: 0.8rem; }
+      .card {
+        padding: 1.5rem 0.75rem;
+      }
+      .card-icon {
+        font-size: 2rem;
+      }
+      .card-title {
+        font-size: 1rem;
+      }
+      .card-link {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+      }
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>Painel Inicial</h1>
+    <h1>Painel Inicial Plangecon SESMT</h1>
   </header>
   <div class="container">
     <div class="cards">
       <div class="card">
-        <i class="fas fa-plus-circle"></i>
-        <h2>Registrar Notificação</h2>
-        <a href="#" id="link-notificacao">Acessar Formulário</a>
+        <i class="fas fa-plus-circle card-icon"></i>
+        <div class="card-title">Registrar Notificação</div>
+        <a href="#" id="link-notificacao" class="card-link">Acessar Formulário</a>
       </div>
       <div class="card">
-        <i class="fas fa-user-shield"></i>
-        <h2>Painel Gestor</h2>
-        <a href="#" id="link-gestor">Abrir Painel Gestor</a>
+        <i class="fas fa-user-shield card-icon"></i>
+        <div class="card-title">Painel Gestor</div>
+        <a href="#" id="link-gestor" class="card-link">Abrir Painel Gestor</a>
       </div>
       <div class="card">
-        <i class="fas fa-check-circle"></i>
-        <h2>Registrar Baixa</h2>
-        <a href="/baixa.html">Abrir Formulário de Baixa</a>
+        <i class="fas fa-check-circle card-icon"></i>
+        <div class="card-title">Registrar Baixa</div>
+        <a href="/baixa.html" class="card-link">Abrir Formulário de Baixa</a>
       </div>
       <div class="card">
-        <i class="fas fa-info-circle"></i>
-        <h2>Status de Notificações</h2>
-        <a href="/status.html">Verificar Status</a>
+        <i class="fas fa-info-circle card-icon"></i>
+        <div class="card-title">Status de Notificações</div>
+        <a href="/status.html" class="card-link">Verificar Status</a>
       </div>
       <div class="card">
-        <i class="fas fa-tools"></i>
-        <h2>Registrar Inspeção em Ativos</h2>
-        <a href="/inspecao.html">Em Desenvolvimento</a>
+        <i class="fas fa-tools card-icon"></i>
+        <div class="card-title">Registrar Inspeção em Ativos</div>
+        <a href="/inspecao.html" class="card-link">Em Desenvolvimento</a>
       </div>
       <div class="card">
-        <i class="fas fa-file-alt"></i>
-        <h2>Formulário de Aptidão</h2>
-        <a href="/aptidao.html">Em Desenvolvimento</a>
+        <i class="fas fa-file-alt card-icon"></i>
+        <div class="card-title">Formulário de Aptidão</div>
+        <a href="/aptidao.html" class="card-link">Em Desenvolvimento</a>
       </div>
     </div>
   </div>
