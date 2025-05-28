@@ -1,104 +1,193 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-
-<style>
-  .back-container {
-    text-align: left;
-    margin: 16px;
-  }
-  .btn-back {
-    display: inline-block;
-    padding: 8px 12px;
-    background: #2E7D32;
-    color: #fff;
-    border-radius: 4px;
-    font-weight: 500;
-    text-decoration: none;
-    transition: background 0.2s;
-    font-family: Arial, sans-serif;
-  }
-  .btn-back i {
-    margin-right: 6px;
-  }
-  .btn-back:hover {
-    background: #1b5e20;
-  }
-</style>
-
-<div class="back-container">
-  <a href="/dashboard.html" class="btn-back">
-    <i class="fas fa-arrow-left"></i> Voltar ao Painel Inicial
-  </a>
-</div>
-
-
   <meta charset="UTF-8">
   <title>Dar Baixa em Notificação</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" />
   <style>
+    /* Textura de fundo via TransparentTextures */
     body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
       background-color: #f1f3f5;
-      padding: 30px;
+      background-image: url('https://www.transparenttextures.com/patterns/gray-wash-wall.png');
+      background-attachment: fixed;
+      color: #333;
     }
+    .back-container {
+      margin: 16px;
+    }
+    .btn-back {
+      display: inline-block;
+      padding: 8px 12px;
+      background: #2E7D32;
+      color: #fff;
+      border-radius: 4px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .btn-back i { margin-right: 6px; }
+    .btn-back:hover { background: #1b5e20; }
+
     .container {
       max-width: 800px;
-      background: white;
+      margin: 40px auto;
+      background: #fff;
       padding: 30px;
       border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    /* FORMULÁRIO */
+    .form-section { display: block; }
+    .form-section .mb-3 label { font-weight: 500; margin-bottom: 6px; display: block; }
+    .form-section .mb-3 select,
+    .form-section .mb-3 input,
+    .form-section .mb-3 textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+    .form-section .mb-3 select:focus,
+    .form-section .mb-3 input:focus,
+    .form-section .mb-3 textarea:focus {
+      border-color: #2E7D32;
+      outline: none;
+    }
+    .form-section button {
+      display: inline-block;
+      padding: 10px 16px;
+      background: #2E7D32;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .form-section button:hover { background: #1b5e20; }
+
+    /* CONFIRMAÇÃO */
+    .confirm-section {
+      display: none;
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .confirm-section i {
+      font-size: 3rem;
+      color: #2E7D32;
+      margin-bottom: 16px;
+    }
+    .confirm-section h2 {
+      font-size: 1.5rem;
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+    .confirm-section p {
+      font-size: 1rem;
+      margin-bottom: 24px;
+    }
+    .confirm-section .btn-back {
+      margin-top: 0;
+    }
+
+    @media (max-width: 600px) {
+      .container { margin: 20px 10px; padding: 20px; }
     }
   </style>
 </head>
 <body>
+
+  <div class="back-container">
+    <a href="/dashboard.html" class="btn-back">
+      <i class="fas fa-arrow-left"></i> Voltar ao Painel Inicial
+    </a>
+  </div>
+
   <div class="container">
-    <h2>Dar Baixa em Notificação</h2>
-    <form action="/baixa" method="POST" enctype="multipart/form-data">
-      <div class="mb-3">
-        <label for="id" class="form-label">Selecione a Notificação (Abertas)</label>
-        <select class="form-select" id="id" name="id" required>
-          <option value="">Carregando notificações...</option>
-        </select>
-      </div>
 
-      <div class="mb-3">
-        <label for="resolvidoPor" class="form-label">Responsável pela Baixa</label>
-        <input type="text" class="form-control" id="resolvidoPor" name="resolvidoPor" required>
-      </div>
+    <!-- SEÇÃO DE FORMULÁRIO -->
+    <div class="form-section" id="form-section">
+      <h2>Dar Baixa em Notificação</h2>
+      <form id="baixa-form">
+        <div class="mb-3">
+          <label for="id">Selecione a Notificação (Abertas)</label>
+          <select id="id" name="id" required>
+            <option value="">Carregando notificações...</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="resolvidoPor">Responsável pela Baixa</label>
+          <input type="text" id="resolvidoPor" name="resolvidoPor" required>
+        </div>
+        <div class="mb-3">
+          <label for="resolucaoComentario">Comentário da Resolução</label>
+          <textarea id="resolucaoComentario" name="resolucaoComentario" rows="4" required></textarea>
+        </div>
+        <div class="mb-3">
+          <label for="resolucaoFotos">Fotos da Resolução</label>
+          <input type="file" id="resolucaoFotos" name="resolucaoFotos" multiple accept="image/*">
+        </div>
+        <button type="submit">Enviar Baixa</button>
+      </form>
+    </div>
 
-      <div class="mb-3">
-        <label for="resolucaoComentario" class="form-label">Comentário da Resolução</label>
-        <textarea class="form-control" id="resolucaoComentario" name="resolucaoComentario" rows="4" required></textarea>
-      </div>
+    <!-- SEÇÃO DE CONFIRMAÇÃO -->
+    <div class="confirm-section" id="confirm-section">
+      <i class="fas fa-check-circle"></i>
+      <h2>Baixa registrada com sucesso!</h2>
+      <p>Aguarde aprovação do gestor.</p>
+      <a href="/dashboard.html" class="btn-back">
+        <i class="fas fa-arrow-left"></i> Voltar ao Painel Inicial
+      </a>
+    </div>
 
-      <div class="mb-3">
-        <label for="resolucaoFotos" class="form-label">Fotos da Resolução</label>
-        <input type="file" class="form-control" id="resolucaoFotos" name="resolucaoFotos" multiple accept="image/*">
-      </div>
-
-      <button type="submit" class="btn btn-primary">Enviar Baixa</button>
-    </form>
   </div>
 
   <script>
+    // carrega notificações abertas no select
     async function carregarNotificacoesAbertas() {
       const select = document.getElementById('id');
       try {
-        const resposta = await fetch('/api/notificacoes-abertas');
-        const lista = await resposta.json();
-
+        const resp = await fetch('/api/notificacoes-abertas');
+        const lista = await resp.json();
         select.innerHTML = '<option value="">Selecione uma notificação</option>';
         lista.forEach(n => {
           const opt = document.createElement('option');
           opt.value = n._id;
-          opt.textContent = n._id;
+          opt.textContent = n._id + ' – ' + (n.titulo || '');
           select.appendChild(opt);
         });
-      } catch (erro) {
-        console.error('Erro ao carregar notificações:', erro);
+      } catch (err) {
+        console.error(err);
         select.innerHTML = '<option value="">Erro ao carregar notificações</option>';
       }
     }
+
+    // tratamento do envio
+    document.getElementById('baixa-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const form = e.target;
+      const data = new FormData(form);
+      try {
+        const resp = await fetch('/baixa', { method: 'POST', body: data });
+        if (!resp.ok) throw new Error('Status ' + resp.status);
+        // exibe tela de confirmação
+        document.getElementById('form-section').style.display = 'none';
+        document.getElementById('confirm-section').style.display = 'block';
+      } catch (err) {
+        console.error(err);
+        alert('Erro ao registrar baixa. Tente novamente.');
+      }
+    });
 
     window.addEventListener('DOMContentLoaded', carregarNotificacoesAbertas);
   </script>
