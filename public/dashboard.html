@@ -128,7 +128,8 @@
       <div class="card">
         <i class="fas fa-plus-circle card-icon"></i>
         <div class="card-title">Registrar Notificação</div>
-        <a href="#" id="link-notificacao" class="card-link">Acessar Formulário</a>
+        <a href="/index.html" class="card-link">Acessar formulário</a>
+       
       </div>
       <div class="card">
         <i class="fas fa-user-shield card-icon"></i>
@@ -159,11 +160,7 @@
   </div>
   <script>
     const senha = 'SESMT2025';
-    document.getElementById('link-notificacao').addEventListener('click', () => {
-      const tentativa = prompt('Informe a senha para acessar Registrar Notificação:');
-      if (tentativa === senha) location.href = '/';
-      else alert('Senha incorreta');
-    });
+ 
     document.getElementById('link-gestor').addEventListener('click', () => {
       const tentativa = prompt('Informe a senha para acessar Painel Gestor:');
       if (tentativa === senha) location.href = '/gestor.html';
