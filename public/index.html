@@ -189,7 +189,8 @@
   <option value="Wesley Oliveira da Silva">Wesley Oliveira da Silva</option>
 </select>
         <!-- ... -->
-      </select>
+      
+      
       <label for="data">Data da Notificação:</label>
       <input type="date" id="data" name="data" required>
       <label for="classificacao">Classificação:</label>
@@ -198,8 +199,20 @@
         <option value="Notificação">Notificação</option>
         <option value="Interdição">Interdição</option>
       </select>
-      <label for="area">Área / Local:</label>
-      <input type="text" id="area" name="area" required>
+      <label for="Squad">Squad:</label>
+        <select id="Squad" name="Squad" required>
+        <option value="">Selecione...</option>
+        <option value="Squad">USINA I E II</option>
+        <option value="Squad">SALOBO III</option>
+        <option value="Squad">BRITAGEM</option>
+        <option value="Squad">OFICINA CENTRALIZADA</option>
+        <option value="Squad">IGB</option>
+        <option value="Squad">MINA</option>
+        <option value="Squad">BARRAGEM</option>
+        <option value="Squad">PAULO FONTELES</option>
+         </select>
+      <label for="Atividade">Descreva a Atividade:</label>
+      <textarea id="Atividade" name="Atividade" rows="2" required></textarea>
       <label for="descricao">Descrição da Condição de Risco:</label>
       <textarea id="descricao" name="descricao" rows="4" required></textarea>
      <label for="nr">NR Relacionada:</label>
