@@ -269,7 +269,7 @@ app.get('/notificacoes/:id/pdf', async (req, res) => {
     y += 25 + 40 + 20;
 
     headerCell('ENCARREGADO', left);
-    headerCell('ÁREA', left+colW);
+    headerCell('Squad', left+colW);
     dataCell(n.encarregado || '—', left);
     dataCell(n.area || '—', left+colW);
     y += 25 + 40 + 20;
@@ -382,3 +382,4 @@ app.post('/inspecao',
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });
+
