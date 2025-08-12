@@ -1,172 +1,360 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Painel Inicial Plangecon SESMT</title>
+
   <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer"/>
+
   <style>
-    :root {
-      --primary: #00695c;
-      --secondary: #004d40;
-      --accent: #ffca28;
-      --light: #ffffff;
-      --bg: #e0e0e0;
-      --texture: url('https://www.transparenttextures.com/patterns/asfalt-light.png');
-      --card-bg: #ffffff;
-      --shadow: rgba(0, 0, 0, 0.1);
-      --header-shadow: rgba(0, 0, 0, 0.2);
-      --radius: 12px;
-      --transition: 0.3s;
+    :root{
+      --bg1:#0e1a1a;
+      --bg2:#0b2a24;
+      --bg3:#0a1e2d;
+      --primary:#00bfa6;
+      --primary-600:#00a892;
+      --primary-700:#008a78;
+      --secondary:#0b3b35;
+      --accent:#ffd166;
+      --card:#0f172aee;
+      --text:#e5f7f4;
+      --muted:#b9d9d4;
+      --ring: 0 10px 30px rgba(0,191,166,.25);
+      --radius:18px;
+      --glass: rgba(255,255,255,.06);
+      --border: 1px solid rgba(255,255,255,.12);
+      --shadow: 0 8px 30px rgba(0,0,0,.35);
+      --transition: .35s cubic-bezier(.2,.8,.2,1);
     }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Roboto', sans-serif;
-      background: var(--bg) var(--texture) repeat;
-      color: #333333;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
+
+    /* Reset */
+    *,*:before,*:after{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: radial-gradient(1200px 800px at 10% -10%, #0f3d3a55, transparent 60%),
+                  radial-gradient(1000px 800px at 110% 10%, #0a2f4850, transparent 60%),
+                  linear-gradient(120deg, var(--bg1), var(--bg2) 55%, var(--bg3));
+      overflow-x:hidden;
     }
-    header {
-      background: var(--primary);
-      color: var(--light);
-      padding: 1.5rem 1rem;
-      text-align: center;
+
+    /* Animated ambient glow */
+    .ambient{
+      position: fixed;
+      inset: -20vmax;
+      pointer-events:none;
+      background:
+        radial-gradient(35vmax 35vmax at 20% 20%, rgba(0,191,166,.12), transparent 60%),
+        radial-gradient(40vmax 40vmax at 80% 10%, rgba(64,188,255,.10), transparent 65%),
+        radial-gradient(30vmax 30vmax at 50% 90%, rgba(255,209,102,.10), transparent 70%);
+      filter: blur(30px) saturate(120%);
+      animation: float 18s ease-in-out infinite alternate;
+      z-index:0;
+    }
+    @keyframes float{
+      0%{ transform: translate3d(0,0,0) scale(1); }
+      100%{ transform: translate3d(2%, -1%, 0) scale(1.03); }
+    }
+
+    header{
       position: sticky;
-      top: 0;
-      box-shadow: 0 4px 12px var(--header-shadow);
-      z-index: 10;
+      top:0;
+      z-index:5;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(180deg, rgba(8,15,23,.7), rgba(8,15,23,.35) 60%, transparent);
+      border-bottom: var(--border);
     }
-    header h1 {
-      font-size: 1.75rem;
-      font-weight: 700;
-    }
-    .container {
-      flex: 1;
+    .header-wrap{
       max-width: 1200px;
-      margin: 2rem auto;
-      padding: 0 1rem;
+      margin: 0 auto;
+      padding: 1rem clamp(1rem, 3vw, 1.5rem);
+      display:flex; align-items:center; justify-content:space-between; gap:1rem;
     }
-    .cards {
-      display: grid;
+    .brand{
+      display:flex; align-items:center; gap:.8rem;
+      text-decoration:none; color:var(--text);
+    }
+    .logo{
+      width:42px; height:42px; flex:0 0 42px;
+      border-radius:14px;
+      background:
+        conic-gradient(from 200deg at 50% 50%, #00bfa6, #40bcff, #ffd166, #00bfa6);
+      box-shadow: inset 0 0 0 3px rgba(0,0,0,.35), 0 10px 25px rgba(0,0,0,.3);
+      display:grid; place-items:center;
+      position:relative; overflow:hidden;
+    }
+    .logo::after{
+      content:"";
+      position:absolute; inset:2px;
+      border-radius:12px;
+      background:linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.55));
+    }
+    .logo i{ position:relative; z-index:1; color:#eafffb; }
+
+    .title{
+      font-weight:800; letter-spacing:.2px; line-height:1.1;
+    }
+    .subtitle{
+      font-size:.9rem; color:var(--muted);
+    }
+
+    .container{
+      position:relative; z-index:1;
+      max-width:1200px;
+      margin: clamp(1rem, 3vw, 2rem) auto;
+      padding: 0 clamp(1rem, 3vw, 1.5rem) 2rem;
+    }
+
+    /* Hero */
+    .hero{
+      display:grid; gap:1rem;
+      padding: clamp(1rem, 3vw, 1.5rem);
+      background: linear-gradient(135deg, rgba(0,191,166,.08), rgba(64,188,255,.06));
+      border: var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .hero h1{
+      margin:0; font-size: clamp(1.3rem, 1.6rem + 1vw, 2rem);
+      font-weight:800;
+    }
+    .hero p{ margin:0; color:var(--muted) }
+
+    /* Grid cards */
+    .cards{
+      display:grid;
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 1.5rem;
+      gap: clamp(1rem, 2.5vw, 1.5rem);
+      margin-top: clamp(1rem, 3vw, 1.5rem);
     }
-    .card {
-      background: var(--card-bg);
+
+    .card{
+      position:relative;
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border: var(--border);
       border-radius: var(--radius);
-      box-shadow: 0 4px 12px var(--shadow);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      padding: 2rem 1rem;
-      transition: transform var(--transition), box-shadow var(--transition);
+      padding: 1.4rem 1.2rem 1.2rem;
+      display:flex; flex-direction:column; align-items:flex-start;
+      gap:.75rem;
+      box-shadow: var(--shadow);
+      isolation:isolate;
+      overflow:hidden;
+      transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
     }
-    .card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 8px 20px var(--shadow);
+    /* subtle lights */
+    .card::before{
+      content:"";
+      position:absolute; inset:-1px;
+      border-radius: calc(var(--radius) + 1px);
+      background: radial-gradient(300px 120px at 20% 0%, rgba(64,188,255,.20), transparent 60%),
+                  radial-gradient(250px 100px at 80% 10%, rgba(0,191,166,.20), transparent 60%);
+      opacity:.85; pointer-events:none;
+      transition: opacity var(--transition), transform var(--transition);
     }
-    .card-icon {
-      font-size: 2.5rem;
-      color: var(--primary);
-      margin-bottom: 1rem;
-      transition: color var(--transition);
+    .card:hover{
+      transform: translateY(-6px) scale(1.01);
+      box-shadow: 0 14px 45px rgba(0,0,0,.45), var(--ring);
+      border-color: rgba(0,191,166,.35);
     }
-    .card:hover .card-icon {
-      color: var(--accent);
+    .card:hover::before{ transform: translateY(-6px); opacity:1; }
+
+    .card-icon{
+      font-size: 1.75rem;
+      width: 3rem; height: 3rem;
+      display:grid; place-items:center;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(0,191,166,.2), rgba(64,188,255,.15));
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow: inset 0 0 30px rgba(0,0,0,.25);
     }
-    .card-title {
-      font-size: 1.2rem;
-      font-weight: 500;
-      margin-bottom: 0.75rem;
-      color: #222222;
+
+    .card-title{
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing:.2px;
     }
-    .card-link {
-      margin-top: auto;
-      padding: 0.6rem 1.2rem;
-      background: var(--primary);
-      color: var(--light);
-      border-radius: var(--radius);
-      text-decoration: none;
-      font-size: 0.95rem;
-      font-weight: 500;
-      transition: background var(--transition), transform var(--transition);
+    .card-desc{
+      font-size:.9rem; color:var(--muted); line-height:1.4;
     }
-    .card-link:hover {
-      background: var(--secondary);
+
+    .card-actions{
+      margin-top:auto;
+      display:flex; gap:.6rem; flex-wrap:wrap;
+    }
+    .btn{
+      appearance:none; border:none; cursor:pointer;
+      text-decoration:none; color:#041311; font-weight:700;
+      background: linear-gradient(135deg, var(--primary), #40bcff);
+      padding:.7rem 1rem; border-radius:12px;
+      box-shadow: inset 0 -2px 0 rgba(0,0,0,.2), 0 8px 16px rgba(0,191,166,.25);
+      transition: transform var(--transition), box-shadow var(--transition), filter var(--transition);
+      display:inline-flex; align-items:center; gap:.5rem;
+    }
+    .btn:hover{
       transform: translateY(-2px);
+      box-shadow: inset 0 -2px 0 rgba(0,0,0,.2), 0 14px 28px rgba(0,191,166,.35);
+      filter: saturate(110%);
     }
-    @media (max-width: 480px) {
-      .card {
-        padding: 1.5rem 0.75rem;
-      }
-      .card-icon {
-        font-size: 2rem;
-      }
-      .card-title {
-        font-size: 1rem;
-      }
-      .card-link {
-        font-size: 0.9rem;
-        padding: 0.5rem 1rem;
-      }
+    .btn:active{ transform: translateY(0); }
+
+    .chip{
+      font-size:.75rem; font-weight:700; letter-spacing:.3px;
+      color:#ffecc0; background: linear-gradient(135deg, #8a6b1a, #bd8e1e);
+      border: 1px solid rgba(255, 209, 102, .35);
+      padding:.3rem .55rem; border-radius:999px;
+      display:inline-flex; align-items:center; gap:.4rem;
+      box-shadow: inset 0 -1px 0 rgba(0,0,0,.25);
+    }
+    .chip i{ font-size:.8rem; }
+
+    /* Footer */
+    footer{
+      color: var(--muted);
+      font-size:.9rem;
+      border-top: var(--border);
+      background: rgba(3, 10, 16, .55);
+      backdrop-filter: blur(10px);
+    }
+    .footer-wrap{
+      max-width:1200px; margin:0 auto;
+      padding: 1rem clamp(1rem, 3vw, 1.5rem);
+      display:flex; align-items:center; justify-content:space-between; gap:1rem;
+      flex-wrap:wrap;
+    }
+
+    /* Focus & A11y */
+    :focus-visible{
+      outline: 2px solid #40bcff;
+      outline-offset: 2px;
+      border-radius: 12px;
+    }
+
+    /* Motion safe */
+    @media (prefers-reduced-motion: reduce){
+      .ambient{ animation:none }
+      .card, .btn{ transition: none }
     }
   </style>
 </head>
 <body>
+  <div class="ambient" aria-hidden="true"></div>
+
   <header>
-    <h1>Painel Inicial Plangecon SESMT</h1>
-  </header>
-  <div class="container">
-    <div class="cards">
-      <div class="card">
-        <i class="fas fa-plus-circle card-icon"></i>
-        <div class="card-title">Registrar Notificação</div>
-        <a href="/index.html" class="card-link">Acessar formulário</a>
-       
-      </div>
-      <div class="card">
-        <i class="fas fa-user-shield card-icon"></i>
-        <div class="card-title">Painel Gestor</div>
-        <a href="#" id="link-gestor" class="card-link">Abrir Painel Gestor</a>
-      </div>
-      <div class="card">
-        <i class="fas fa-check-circle card-icon"></i>
-        <div class="card-title">Registrar Baixa</div>
-        <a href="/baixa.html" class="card-link">Abrir Formulário de Baixa</a>
-      </div>
-      <div class="card">
-        <i class="fas fa-info-circle card-icon"></i>
-        <div class="card-title">Status de Notificações</div>
-        <a href="/status.html" class="card-link">Verificar Status</a>
-      </div>
-      <div class="card">
-        <i class="fas fa-tools card-icon"></i>
-        <div class="card-title">Registrar Inspeção em Ativos</div>
-        <a href="/inspecao.html" class="card-link">Em Desenvolvimento</a>
-      </div>
-      <div class="card">
-        <i class="fas fa-file-alt card-icon"></i>
-        <div class="card-title">Formulário de Aptidão</div>
-        <a href="/aptidao.html" class="card-link">Em Desenvolvimento</a>
-      </div>
+    <div class="header-wrap">
+      <a class="brand" href="#" aria-label="Plangecon SESMT - Início">
+        <div class="logo"><i class="fa-solid fa-shield-heart"></i></div>
+        <div>
+          <div class="title">Plangecon • SESMT</div>
+          <div class="subtitle">Painel Inicial</div>
+        </div>
+      </a>
+      
     </div>
-  </div>
+  </header>
+
+  <main class="container">
+    <!-- Hero -->
+    <section class="hero" aria-label="Resumo">
+      <h1>Bem-vindo ao DASBHOARD de Segurança</h1>
+      <p>Trabalhar com segurança é uma responsabilidade compartilhada por todos na empresa.</p>
+    </section>
+
+    <!-- Cards -->
+    <section class="cards" aria-label="Ações rápidas">
+      <!-- Registrar Notificação -->
+      <article class="card">
+        <div class="card-icon"><i class="fa-solid fa-circle-plus"></i></div>
+        <h2 class="card-title">Registrar Notificação</h2>
+        <p class="card-desc">Abra uma nova notificação de risco e anexe evidências.</p>
+        <div class="card-actions">
+          <a class="btn" href="/index.html"><i class="fa-solid fa-pen-to-square"></i> Acessar formulário</a>
+        </div>
+      </article>
+
+      <!-- Painel Gestor -->
+      <article class="card">
+        <div class="card-icon"><i class="fa-solid fa-user-shield"></i></div>
+        <h2 class="card-title">Painel Gestor</h2>
+        <p class="card-desc">Acompanhe, aprove ou rejeite notificações com justificativa.</p>
+        <div class="card-actions">
+          <button class="btn" id="link-gestor" type="button"><i class="fa-solid fa-lock"></i> Abrir Painel Gestor</button>
+        </div>
+      </article>
+
+      <!-- Registrar Baixa -->
+      <article class="card">
+        <div class="card-icon"><i class="fa-solid fa-circle-check"></i></div>
+        <h2 class="card-title">Registrar Baixa</h2>
+        <p class="card-desc">Finalize uma notificação anexando fotos e comentário da solução.</p>
+        <div class="card-actions">
+          <a class="btn" href="/baixa.html"><i class="fa-solid fa-arrow-right-to-bracket"></i> Abrir Formulário</a>
+        </div>
+      </article>
+
+      <!-- Status de Notificações -->
+      <article class="card">
+        <div class="card-icon"><i class="fa-solid fa-circle-info"></i></div>
+        <h2 class="card-title">Status de Notificações</h2>
+        <p class="card-desc">Consulte rapidamente o andamento por ID ou status.</p>
+        <div class="card-actions">
+          <a class="btn" href="/status.html"><i class="fa-solid fa-magnifying-glass-chart"></i> Verificar Status</a>
+        </div>
+      </article>
+
+      <!-- Inspeção em Ativos -->
+      <article class="card">
+        <div class="card-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+        <h2 class="card-title">Registrar Inspeção em Ativos</h2>
+        <p class="card-desc">Checklist estruturado com fotos e classificação.</p>
+        <div class="card-actions">
+          <span class="chip" title="Em breve"><i class="fa-solid fa-spinner fa-spin"></i> Em desenvolvimento</span>
+          <a class="btn" href="/inspecao.html" aria-disabled="true"><i class="fa-solid fa-eye"></i> Visualizar</a>
+        </div>
+      </article>
+
+      <!-- Formulário de Aptidão -->
+      <article class="card">
+        <div class="card-icon"><i class="fa-solid fa-file-lines"></i></div>
+        <h2 class="card-title">Formulário de Aptidão</h2>
+        <p class="card-desc">Geração de parecer (Apto/Inapto) com histórico.</p>
+        <div class="card-actions">
+          <span class="chip"><i class="fa-solid fa-flask"></i> Em desenvolvimento</span>
+          <a class="btn" href="/aptidao.html"><i class="fa-solid fa-eye"></i> Visualizar</a>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-wrap">
+      <span>© <span id="year"></span> Plangecon • SESMT</span>
+      <span>Versão 1.1</span>
+    </div>
+  </footer>
+
   <script>
+    // Atualiza ano do rodapé
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Proteção simples do Painel Gestor
     const senha = 'AMOARISTIDES';
- 
-    document.getElementById('link-gestor').addEventListener('click', () => {
-      const tentativa = prompt('Informe a senha para acessar Painel Gestor:');
-      if (tentativa === senha) location.href = '/gestor.html';
-      else alert('Senha incorreta');
+    const gestorBtn = document.getElementById('link-gestor');
+
+    gestorBtn.addEventListener('click', () => {
+      const tentativa = prompt('Informe a senha para acessar o Painel Gestor:');
+      if (tentativa === null) return; // cancelado
+      if (tentativa === senha) {
+        location.href = '/gestor.html';
+      } else {
+        alert('Senha incorreta.');
+      }
     });
   </script>
 </body>
 </html>
-
