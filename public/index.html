@@ -31,37 +31,6 @@
       --input-ph: #9fc9c3;
       --danger: #ff6b6b;
       --success: #1dd1a1;
-      .loading {
-  position: fixed;
-  inset: 0;
-  display: none;         /* .show => vira grid */
-  place-items: center;
-  background: rgba(0,0,0,.45);
-  backdrop-filter: blur(4px);
-  z-index: 99;
-}
-.loading.show { display: grid; }
-
-.loading-card{
-  display: inline-flex;
-  align-items: center;
-  gap: .8rem;
-  padding: .9rem 1.1rem;
-  border-radius: 14px;
-  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-  border: 1px solid rgba(255,255,255,.18);
-  box-shadow: 0 8px 30px rgba(0,0,0,.35);
-  color: #eafffb;
-  font-weight: 800;
-}
-.loading-card i { font-size: 1.2rem; }
-
-/* Botão ocupado */
-.btn[aria-busy="true"]{
-  pointer-events: none;
-  opacity: .85;
-  transform: translateY(0) !important;
-}
     }
 
     /* Reset */
@@ -487,22 +456,13 @@
         </div>
 
         <div class="actions">
-          <button id="btnSubmit" class="btn" type="submit">
-  <i class="fas fa-paper-plane"></i> Enviar Notificação
-</button>
+          <button class="btn" type="submit">
+            <i class="fas fa-paper-plane"></i> Enviar Notificação
+          </button>
         </div>
       </form>
     </section>
   </main>
-
-
-<!-- Overlay de Loading -->
-<div id="loading" class="loading" role="status" aria-live="polite" aria-label="Processando">
-  <div class="loading-card">
-    <i class="fa-solid fa-circle-notch fa-spin"></i>
-    <span>Enviando e gerando PDF…</span>
-  </div>
-</div>
 
   <!-- Toast de sucesso -->
   <div id="mensagemSucesso" class="alert" role="status" aria-live="polite">
@@ -517,49 +477,57 @@
     const alertBox = document.getElementById('mensagemSucesso');
     const btnPdf = document.getElementById('btnPdf');
 
-  <script>
-  const form = document.getElementById('formNotificacao');
-  const alertBox = document.getElementById('mensagemSucesso');
-  const btnPdf = document.getElementById('btnPdf');
-  const loading = document.getElementById('loading');
-  const btnSubmit = document.getElementById('btnSubmit');
-
-  const fetchWithTimeout = (url, options = {}, ms = 45000) => {
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), ms);
-    const merged = { ...options, signal: controller.signal };
-    return fetch(url, merged).finally(() => clearTimeout(id));
-  };
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    // UI: busy on
-    btnSubmit.setAttribute('aria-busy','true');
-    const originalBtnHTML = btnSubmit.innerHTML;
-    btnSubmit.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Enviando…';
-    loading.classList.add('show');
-
-    try {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
       const fd = new FormData(form);
-      const res = await fetchWithTimeout('/enviar', { method: 'POST', body: fd }, 90000);
-      if (!res.ok) throw new Error('Falha na resposta do servidor');
 
-      const { _id } = await res.json();
-      btnPdf.href = `/notificacoes/${_id}/pdf`;
+      try{
+        const res = await fetch('/enviar', { method:'POST', body: fd });
+        if(!res.ok) throw new Error('Erro ao enviar notificação.');
+        const { _id } = await res.json();
+        btnPdf.href = `/notificacoes/${_id}/pdf`;
+        alertBox.classList.add('show');
+        // auto-hide após 10s
+        setTimeout(() => alertBox.classList.remove('show'), 10000);
+      }catch(err){
+        alert('Erro ao enviar notificação.');
+      }
+    });
 
-      // mostra toast
-      alertBox.classList.add('show');
-      setTimeout(() => alertBox.classList.remove('show'), 12000);
-    } catch (err) {
-      console.error(err);
-      alert('Erro ao enviar ou tempo excedido. Tente novamente.');
-    } finally {
-      // UI: busy off
-      loading.classList.remove('show');
-      btnSubmit.removeAttribute('aria-busy');
-      btnSubmit.innerHTML = originalBtnHTML;
+    // --------- Dropzone ----------
+    const dropArea = document.getElementById('dropArea');
+    const fileInput = document.getElementById('fotos');
+    const fileInfo = document.getElementById('fileInfo');
+
+    const updateFileInfo = (files) => {
+      if(!files || files.length === 0){ fileInfo.textContent = 'Nenhum arquivo selecionado'; return; }
+      if(files.length === 1){ fileInfo.textContent = files[0].name; return; }
+      fileInfo.textContent = `${files.length} arquivos selecionados`;
+    };
+
+    ['dragenter','dragover'].forEach(evt =>
+      dropArea.addEventListener(evt, (e)=>{ e.preventDefault(); e.stopPropagation(); dropArea.classList.add('dragover'); })
+    );
+    ;['dragleave','drop'].forEach(evt =>
+      dropArea.addEventListener(evt, (e)=>{ e.preventDefault(); e.stopPropagation(); dropArea.classList.remove('dragover'); })
+    );
+    dropArea.addEventListener('drop', (e)=>{
+      const files = e.dataTransfer.files;
+      fileInput.files = files;
+      updateFileInfo(files);
+    });
+    fileInput.addEventListener('change', (e)=> updateFileInfo(e.target.files));
+
+    // --------- UX extra ----------
+    // Pré-preencher data de hoje se vazio
+    const dataInput = document.getElementById('data');
+    if(!dataInput.value){
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth()+1).padStart(2,'0');
+      const dd = String(today.getDate()).padStart(2,'0');
+      dataInput.value = `${yyyy}-${mm}-${dd}`;
     }
-  });
-</script>
-
+  </script>
+</body>
+</html>
