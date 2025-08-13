@@ -144,10 +144,7 @@
       box-shadow: var(--ring);
       transform: translateY(-1px);
     }
-    .input select option {
-  color: #000;
-  background-color: #fff;
-}
+    .input select option { color: #000; background-color: #fff; }
 
     .input input[type="text"],
     .input input[type="date"],
@@ -253,7 +250,7 @@
 
     <section class="form-card" aria-label="Formulário de Notificação">
       <h1>Formulário de Notificação/Interdição</h1>
-      <p class="form-sub">Preencha os campos abaixo e, se necessário, anexe as evidências fotográficas.</p>
+      <p class="form-sub">Preencha os campos abaixo e <strong>anexe as evidências fotográficas (obrigatório)</strong>.</p>
       <div class="divider"></div>
 
       <form id="formNotificacao" enctype="multipart/form-data" class="grid">
@@ -445,12 +442,12 @@
             </div>
           </div>
           <div class="field">
-            <label for="fotos">Evidência Fotográfica (opcional)</label>
+            <label for="fotos">Evidência Fotográfica <span aria-hidden="true">(obrigatório)</span></label>
             <div class="dropzone" id="dropArea">
-              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
               <span class="file-label">Selecione ou solte as imagens aqui</span>
               <span class="file-info" id="fileInfo">Nenhum arquivo selecionado</span>
-              <input type="file" id="fotos" name="notificacaoFotos" multiple accept="image/*" />
+              <input type="file" id="fotos" name="notificacaoFotos" multiple accept="image/*" required />
             </div>
           </div>
         </div>
@@ -477,8 +474,21 @@
     const alertBox = document.getElementById('mensagemSucesso');
     const btnPdf = document.getElementById('btnPdf');
 
+    // Inputs de arquivo
+    const dropArea = document.getElementById('dropArea');
+    const fileInput = document.getElementById('fotos');
+    const fileInfo = document.getElementById('fileInfo');
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      // Validação: exigir pelo menos 1 foto
+      if (!fileInput.files || fileInput.files.length === 0) {
+        alert('Anexe ao menos 1 foto como evidência.');
+        fileInput.focus();
+        return;
+      }
+
       const fd = new FormData(form);
 
       try{
@@ -495,10 +505,6 @@
     });
 
     // --------- Dropzone ----------
-    const dropArea = document.getElementById('dropArea');
-    const fileInput = document.getElementById('fotos');
-    const fileInfo = document.getElementById('fileInfo');
-
     const updateFileInfo = (files) => {
       if(!files || files.length === 0){ fileInfo.textContent = 'Nenhum arquivo selecionado'; return; }
       if(files.length === 1){ fileInfo.textContent = files[0].name; return; }
