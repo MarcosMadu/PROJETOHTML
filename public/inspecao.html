@@ -1,250 +1,525 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Checklist de Inspeção em Ativos</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mapa de Profissionais por Local</title>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+    :root {
+      --bg: #0f172a;         /* slate-900 */
+      --panel: #111827;      /* gray-900 */
+      --surface: #1f2937;    /* gray-800 */
+      --muted: #374151;      /* gray-700 */
+      --text: #e5e7eb;       /* gray-200 */
+      --text-dim: #9ca3af;   /* gray-400 */
+      --primary: #06b6d4;    /* cyan-500 */
+      --success: #22c55e;    /* green-500 */
+      --warning: #f59e0b;    /* amber-500 */
+      --danger: #ef4444;     /* red-500 */
+      --radius: 16px;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    * { box-sizing: border-box; }
     body {
-      font-family: Arial, sans-serif;
-      background: #f9f9f9;
-      padding: 16px;
-      display: flex;
-      justify-content: center;
+      margin: 0; background: linear-gradient(180deg, #0b1222, var(--bg));
+      color: var(--text); font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
-    .back-container {
-      position: fixed;
-      top: 16px;
-      left: 16px;
-      z-index: 100;
+    header {
+      position: sticky; top: 0; z-index: 9; backdrop-filter: blur(10px);
+      background: rgba(15,23,42,.7); border-bottom: 1px solid rgba(255,255,255,.06);
     }
-    .btn-back {
-      display: inline-block;
-      padding: 8px 12px;
-      background: #2E7D32;
-      color: #fff;
-      border-radius: 4px;
-      font-weight: 500;
-      text-decoration: none;
-      transition: background 0.2s;
-      font-size: 0.9rem;
-    }
-    .btn-back:hover { background: #1b5e20; }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 16px; }
+    h1 { margin: 8px 0 0; font-size: 22px; letter-spacing: .2px; font-weight: 700; }
+    .sub { color: var(--text-dim); font-size: 13px; margin-top: 4px; }
 
-    .form-card {
-      background: #fff;
-      padding: 24px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 800px;
+    .toolbar { display: grid; gap: 8px; grid-template-columns: 1fr; margin-top: 14px; }
+    @media (min-width: 840px){
+      .toolbar { grid-template-columns: 1fr auto auto auto; align-items: center; }
     }
-    h1 {
-      text-align: center;
-      margin-bottom: 24px;
-      color: #2E7D32;
+
+    .filters { display: flex; flex-wrap: wrap; gap: 8px; }
+    .filters > * { min-width: 160px; }
+
+    .field, select, input[type="text"], input[type="search"], input[type="tel"], textarea {
+      background: var(--surface); border: 1px solid rgba(255,255,255,.08);
+      color: var(--text); border-radius: 10px; padding: 10px 12px; width: 100%;
+      outline: none; transition: .2s border-color, .2s box-shadow;
     }
-    .field-group {
-      margin-bottom: 16px;
-    }
-    .field-group label {
-      display: block;
-      font-weight: 500;
-      margin-bottom: 6px;
-      color: #333;
-    }
-    .field-group select,
-    .field-group input[type=date],
-    .field-group textarea {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 1rem;
-    }
-    .question {
-      display: flex; flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-      border-bottom: 1px solid #eee;
-      padding-bottom: 12px;
-    }
-    .question label {
-      flex: 1 1 70%; font-weight: 500; color: #333; margin-right: 16px;
-    }
-    .options {
-      display: flex; gap: 8px; flex: 1 1 25%; justify-content: flex-end;
-    }
-    .options button {
-      background: none; border: none; font-size: 1.5rem;
-      cursor: pointer; transition: transform .1s;
-    }
-    .options button.selected { transform: scale(1.3); }
-    .photo-input {
-      display: none; margin: 8px 0 16px 0; padding-left: 16px;
-    }
-    .photo-input label { font-weight: 500; }
-    .photo-input input { margin-top: 6px; }
-    button[type=submit] {
-      width: 100%; padding: 14px; background: #2E7D32; color: #fff;
-      border: none; border-radius: 6px; font-size: 1rem;
-      cursor: pointer; transition: background .2s; margin-top: 24px;
-    }
-    button[type=submit]:hover { background: #1b5e20; }
-    @media (max-width: 768px) {
-      .question { flex-direction: column; align-items: flex-start; }
-      .options { justify-content: flex-start; margin-top: 8px; }
-    }
+    select:hover, input:hover, textarea:hover { border-color: rgba(255,255,255,.18); }
+    select:focus, input:focus, textarea:focus { box-shadow: 0 0 0 3px rgba(6,182,212,.25); border-color: var(--primary); }
+
+    .btn { background: var(--muted); border: 1px solid rgba(255,255,255,.08); color: var(--text); padding: 10px 14px; border-radius: 10px; cursor: pointer; transition: .2s transform, .2s background, .2s border-color; font-weight: 600; }
+    .btn:hover { transform: translateY(-1px); border-color: rgba(255,255,255,.2); }
+    .btn.primary { background: linear-gradient(180deg, #08c4e4, var(--primary)); color: #04242b; border: none; }
+    .btn.ghost { background: transparent; border-color: rgba(255,255,255,.14); }
+
+    .grid { display: grid; gap: 16px; grid-template-columns: repeat(1, minmax(0,1fr)); margin: 16px 0 26px; }
+    @media (min-width: 720px){ .grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (min-width: 1080px){ .grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+
+    .col { background: rgba(17,24,39,.8); border: 1px solid rgba(255,255,255,.06); border-radius: var(--radius); padding: 12px; box-shadow: var(--shadow); display: flex; flex-direction: column; min-height: 260px; }
+    .col-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 2px 2px 10px; border-bottom: 1px dashed rgba(255,255,255,.08); margin-bottom: 10px; }
+    .col-title { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+    .count { background: rgba(6,182,212,.18); color: #aaf3ff; border: 1px solid rgba(6,182,212,.35); border-radius: 999px; font-size: 12px; padding: 4px 8px; }
+    .col-actions { display: flex; gap: 6px; }
+
+    .list { display: grid; gap: 10px; padding: 8px 2px; min-height: 160px; }
+    .empty { color: var(--text-dim); text-align: center; padding: 24px 8px; border: 1px dashed rgba(255,255,255,.08); border-radius: 12px; }
+
+    .card { background: linear-gradient(180deg, rgba(31,41,55,.9), rgba(17,24,39,.9)); border: 1px solid rgba(255,255,255,.08); border-radius: 14px; padding: 10px; display: grid; gap: 6px; transition: .2s transform, .2s box-shadow, .2s border-color; box-shadow: 0 4px 12px rgba(0,0,0,.25); }
+    .card:hover { transform: translateY(-1px); border-color: rgba(255,255,255,.18); box-shadow: 0 10px 20px rgba(0,0,0,.3); }
+    .card.dragging { opacity: .5; }
+
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .name { font-weight: 700; }
+    .tag { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid rgba(255,255,255,.12); color: var(--text-dim); }
+    .tag.success { background: rgba(34,197,94,.15); border-color: rgba(34,197,94,.35); color: #b9ffd0; }
+    .tag.warn { background: rgba(245,158,11,.15); border-color: rgba(245,158,11,.35); color: #ffe6b0; }
+    .tag.danger { background: rgba(239,68,68,.15); border-color: rgba(239,68,68,.35); color: #ffc0c0; }
+
+    .meta { color: var(--text-dim); font-size: 12px; display: flex; flex-wrap: wrap; gap: 8px; }
+    .actions { display: flex; gap: 6px; }
+
+    .footer { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,.06); padding-top: 12px; margin-top: 8px; }
+
+    .pill { font-size: 12px; padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); }
+
+    /* Modal */
+    dialog { border: none; border-radius: 16px; padding: 0; width: min(720px, 92vw); color: #0b1222; }
+    dialog::backdrop { background: rgba(0,0,0,.6); }
+    .modal { background: #f7fafc; color: #0b1222; border-radius: 16px; overflow: hidden; }
+    .modal header { position: static; background: #0ea5b7; color: #04242b; border: none; }
+    .modal .wrap { padding: 16px 20px; }
+    .modal h2 { margin: 0; font-size: 18px; }
+    .form-grid { display: grid; gap: 10px; grid-template-columns: repeat(1, minmax(0,1fr)); }
+    @media (min-width: 720px){ .form-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    .form-grid .full { grid-column: 1 / -1; }
+    .form-actions { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 0 6px; }
+
+    .chip { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 6px 10px; font-size: 12px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.06); }
   </style>
 </head>
 <body>
+  <header>
+    <div class="wrap">
+      <h1>Mapa de Profissionais por Local</h1>
+      <div class="sub">Organize, filtre e mova profissionais entre locais. Exporte/importe dados e mantenha o controle em tempo real.</div>
 
-  <div class="back-container">
-    <a href="/dashboard.html" class="btn-back">← Voltar ao Painel Inicial</a>
-  </div>
-
-  <div class="form-card">
-    <h1>Checklist de Inspeção em Ativos</h1>
-    <form id="formInspecao">
-      <!-- Campos iniciais -->
-      <div class="field-group">
-        <label for="funcionario">Funcionário:</label>
-        <select id="funcionario" name="funcionario" required>
-          <option value="">Selecione...</option>
-          <option>Alvaro Moreira da Costa</option>
-<option>Debora Nascimento de Freitas</option>
-<option>Diego Silva da Silva</option>
-<option>Douglas Leandro Silva Raposo</option>
-<option>Elizete Francisca Pardim Messias</option>
-<option>Fabricio Lopes das Neves</option>
-<option>Jailton Pinto Pacheco Larroque</option>
-<option>Jozivaldo Brito de Araujo</option>
-<option>Marcos Augusto Mendonça Goncalves</option>
-<option>Joelson De Sousa Amorim</option>
-<option>Lorena Sampaio Sobral</option>
-<option>Luis Fernando Barros Brandão</option>
-<option>Luiz Carlos Ferreira Diniz</option>
-<option>Thayllison da Silva Cunha</option>
-<option>Rafael Silva Sousa</option>
-<option>Edison Alexandrino da Silva</option>
-<option>Thalia Maia Fernandes</option>
-<option>Valmiran Eduardo Cardoso da Silva</option>
-<option>Raimundo Nonato De Souza Vieira</option>
-
-          <!-- demais opções... -->
-        </select>
+      <div class="toolbar">
+        <div class="filters">
+          <select id="filterLocal"></select>
+          <select id="filterStatus">
+            <option value="">Status (todos)</option>
+            <option>Disponível</option>
+            <option>Em atividade</option>
+            <option>De folga</option>
+          </select>
+          <select id="filterFuncao">
+            <option value="">Função (todas)</option>
+          </select>
+          <input id="search" type="search" placeholder="Buscar por nome, matrícula, função..." />
+        </div>
+        <div style="display:flex; gap:8px; justify-content:flex-end;">
+          <button class="btn" id="btnAddLocal">+ Local</button>
+          <button class="btn primary" id="btnAddProf">+ Profissional</button>
+          <button class="btn ghost" id="btnExport">Exportar JSON</button>
+          <button class="btn ghost" id="btnExportCsv">CSV</button>
+          <label class="btn" for="fileImport" title="Importar JSON">Importar<input id="fileImport" type="file" accept="application/json" hidden /></label>
+          <button class="btn" id="btnPrint">Imprimir</button>
+        </div>
       </div>
-      <div class="field-group">
-        <label for="dataInspecao">Data da Inspeção:</label>
-        <input type="date" id="dataInspecao" name="dataInspecao" required>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="grid" id="board"></div>
+  </main>
+
+  <!-- Modal Profissional -->
+  <dialog id="dlgProf">
+    <div class="modal">
+      <header><div class="wrap"><h2 id="dlgProfTitle">Adicionar Profissional</h2></div></header>
+      <div class="wrap">
+        <form id="formProf" class="form-grid">
+          <input type="hidden" id="profId" />
+          <div>
+            <label>Nome</label>
+            <input id="profNome" required />
+          </div>
+          <div>
+            <label>Função</label>
+            <input id="profFuncao" required />
+          </div>
+          <div>
+            <label>Matrícula/ID</label>
+            <input id="profMatricula" />
+          </div>
+          <div>
+            <label>Turno</label>
+            <select id="profTurno">
+              <option value="">—</option>
+              <option>Manhã</option>
+              <option>Tarde</option>
+              <option>Noite</option>
+              <option>ADM</option>
+            </select>
+          </div>
+          <div>
+            <label>Status</label>
+            <select id="profStatus" required>
+              <option>Disponível</option>
+              <option>Em atividade</option>
+              <option>De folga</option>
+            </select>
+          </div>
+          <div>
+            <label>Contato</label>
+            <input id="profContato" type="tel" placeholder="(xx) xxxxx-xxxx" />
+          </div>
+          <div class="full">
+            <label>Alocado em</label>
+            <select id="profLocal" required></select>
+          </div>
+          <div class="full">
+            <label>Observações</label>
+            <textarea id="profObs" rows="3" placeholder="Observações relevantes (habilitações, restrições, etc.)"></textarea>
+          </div>
+        </form>
+        <div class="form-actions">
+          <button class="btn ghost" id="btnCancelarProf">Cancelar</button>
+          <button class="btn primary" id="btnSalvarProf">Salvar</button>
+        </div>
       </div>
-      <div class="field-group">
-        <label for="equipamento">Selecione o Equipamento/Veículo:</label>
-        <select id="equipamento" name="equipamento" required>
-          <option value="">Selecione...</option>
-          <option>Retroescavadeira X</option>
-          <option>Caminhão Y</option>
-          <!-- demais equipamentos... -->
-        </select>
+    </div>
+  </dialog>
+
+  <!-- Modal Local -->
+  <dialog id="dlgLocal">
+    <div class="modal">
+      <header><div class="wrap"><h2 id="dlgLocalTitle">Adicionar Local</h2></div></header>
+      <div class="wrap">
+        <form id="formLocal" class="form-grid">
+          <input type="hidden" id="localId" />
+          <div class="full">
+            <label>Nome do Local</label>
+            <input id="localNome" required placeholder="Ex.: Oficina Mecânica, Pátio 3, Almoxarifado" />
+          </div>
+        </form>
+        <div class="form-actions">
+          <button class="btn ghost" id="btnCancelarLocal">Cancelar</button>
+          <button class="btn primary" id="btnSalvarLocal">Salvar</button>
+        </div>
       </div>
+    </div>
+  </dialog>
 
-      <!-- Checklist de perguntas via script -->
-      <script>
-        const perguntas = [
-          "Há leiras de proteção construídas com altura mínima correspondente à metade do diâmetro do maior pneu?",
-          "Em áreas de lavra subterrânea, são adotados outros tipos de barreiras físicas?",
-          "Todas as redes elétricas e tubulações em áreas de mineração estão devidamente sinalizadas?",
-          "Condições de segurança (traves, limitadores) existem em equipamentos móveis?",
-          "Barreiras físicas ou dispositivos de proteção segregam pessoas e equipamentos?",
-          "É disponibilizado rádio bidirecional para sinalizadores?",
-          "Os caminhões possuem caixa de câmbio sincronizada?",
-          "Equipamentos com pontos de articulação possuem sinalização clara?",
-          "Equipamentos com dispositivos de estabilização possuem acionamento hidráulico?",
-          "Rampas de acesso possuem sistema eletro-hidráulico?",
-          "Equipamentos possuem sinalização de capacidade máxima?",
-          "É respeitada a proibição de uso sem cabine?",
-          "Pontos de articulação têm sinalização de perigo?",
-          "Dispositivos de estabilização possuem acionamento hidráulico?",
-          "Rampas de acesso têm sistema eletro-hidráulico?",
-          "Capacidade máxima de carga e tara está sinalizada?",
-          "Existe sinalização externa de identificação à distância?",
-          "Para-brisas são laminados ou homologados?",
-          "Dispositivos para sinalização (triângulos, cones) existem?"
-        ];
+  <script>
+  // --- Estado & Persistência ---
+  const KEY = 'mapa_profissionais_v1';
+  const state = loadState() || seed();
 
-        const form = document.getElementById('formInspecao');
-        perguntas.forEach((txt, i) => {
-          const idx = i + 1;
-          const divQ = document.createElement('div');
-          divQ.className = 'question';
-          divQ.dataset.question = idx;
-          divQ.innerHTML = `
-            <label>${idx}. ${txt}</label>
-            <div class="options">
-              <button type="button" class="opt" data-value="nao">❌</button>
-              <button type="button" class="opt" data-value="sim">✅</button>
-              <button type="button" class="opt" data-value="na">N/A</button>
-            </div>
-          `;
-          form.appendChild(divQ);
-          const divPhoto = document.createElement('div');
-          divPhoto.className = 'photo-input';
-          divPhoto.id = `photo-${idx}`;
-          divPhoto.innerHTML = `
-            <label>Anexe foto do desvio:</label>
-            <input type="file" name="foto${idx}" accept="image/*">
-          `;
-          form.appendChild(divPhoto);
-        });
+  function seed(){
+    const locais = [
+      { id: uid(), nome: 'Oficina Mecânica' },
+      { id: uid(), nome: 'Pátio de Minério' },
+      { id: uid(), nome: 'Almoxarifado' },
+    ];
+    const profissionais = [
+      mkProf('Marcos Augusto', 'Téc. Segurança', '001', 'ADM', 'Disponível', '94 9 9999-0001', 'Habilitação NR-10', locais[0].id),
+      mkProf('Jailton Pacheco', 'Eletricista', '002', 'Manhã', 'Em atividade', '94 9 9999-0002', 'SEP e NR-35', locais[0].id),
+      mkProf('Diego Silva', 'Mecânico', '003', 'Noite', 'De folga', '94 9 9999-0003', 'Treinamento NR-12', locais[1].id),
+      mkProf('Ana Souza', 'Eng. Produção', '004', 'ADM', 'Disponível', '94 9 9999-0004', 'Coordena equipe A', locais[2].id),
+      mkProf('Paulo Lima', 'Operador Pá', '005', 'Tarde', 'Em atividade', '94 9 9999-0005', 'Experiente em PSM', locais[1].id),
+    ];
+    return { locais, profissionais };
+  }
+  function mkProf(nome, funcao, matricula, turno, status, contato, obs, localId){
+    return { id: uid(), nome, funcao, matricula, turno, status, contato, obs, localId };
+  }
+  function uid(){ return Math.random().toString(36).slice(2, 9); }
+  function saveState(){ localStorage.setItem(KEY, JSON.stringify(state)); }
+  function loadState(){ try { return JSON.parse(localStorage.getItem(KEY)); } catch { return null; } }
 
-        // campo extra
-        const extra = document.createElement('div');
-        extra.className = 'field-group';
-        extra.innerHTML = `
-          <label for="desvioExtra">Descreva qualquer desvio não listado (opcional):</label>
-          <textarea id="desvioExtra" name="desvioExtra" rows="3"></textarea>
-        `;
-        form.appendChild(extra);
+  // --- Util ---
+  function el(tag, opts={}){
+    const e = document.createElement(tag);
+    if(opts.class) e.className = opts.class;
+    if(opts.text) e.textContent = opts.text;
+    if(opts.html) e.innerHTML = opts.html;
+    if(opts.attrs){ for(const [k,v] of Object.entries(opts.attrs)) e.setAttribute(k,v); }
+    return e;
+  }
 
-        // botão enviar
-        const btn = document.createElement('button');
-        btn.type = 'submit';
-        btn.textContent = 'Enviar Inspeção';
-        form.appendChild(btn);
+  // --- Filtros ---
+  const filter = { local:'', status:'', funcao:'', q:'' };
 
-        // interação seleção
-        form.addEventListener('click', e => {
-          if (e.target.classList.contains('opt')) {
-            const btns = e.target.closest('.options').querySelectorAll('.opt');
-            btns.forEach(b => b.classList.remove('selected'));
-            e.target.classList.add('selected');
-            const qid = e.target.closest('.question').dataset.question;
-            document.getElementById(`photo-${qid}`).style.display =
-              e.target.textContent === '❌' ? 'block' : 'none';
-          }
-        });
+  // --- Render ---
+  const board = document.getElementById('board');
+  const filterLocal = document.getElementById('filterLocal');
+  const filterStatus = document.getElementById('filterStatus');
+  const filterFuncao = document.getElementById('filterFuncao');
+  const search = document.getElementById('search');
 
-        // envio ajax
-        form.addEventListener('submit', async e => {
-          e.preventDefault();
-          const fd = new FormData(form);
-          document.querySelectorAll('.question').forEach(q => {
-            const val = q.querySelector('.opt.selected')?.dataset.value || '';
-            fd.append(`resposta${q.dataset.question}`, val);
-          });
-          const res = await fetch('/inspecao', { method: 'POST', body: fd });
-          if (res.ok) {
-            alert('Inspeção enviada com sucesso!');
-            form.reset();
-            document.querySelectorAll('.photo-input').forEach(d => d.style.display = 'none');
-          } else {
-            alert('Erro ao enviar inspeção.');
-          }
-        });
-      </script>
-    </form>
-  </div>
+  function renderFilters(){
+    // Locais
+    filterLocal.innerHTML = '';
+    const optAll = el('option', { text: 'Locais (todos)', attrs:{ value:'' } });
+    filterLocal.appendChild(optAll);
+    state.locais.forEach(l => {
+      const o = el('option', { text: l.nome, attrs:{ value: l.id } });
+      filterLocal.appendChild(o);
+    });
+
+    // Funções (dinâmico via profissionais)
+    const funcoes = Array.from(new Set(state.profissionais.map(p => p.funcao).filter(Boolean))).sort();
+    filterFuncao.innerHTML = '';
+    filterFuncao.appendChild(el('option', { text:'Função (todas)', attrs:{ value:'' }}));
+    funcoes.forEach(f => filterFuncao.appendChild(el('option', { text:f })));
+  }
+
+  function renderBoard(){
+    board.innerHTML = '';
+    const locais = state.locais;
+    locais.forEach(local => {
+      const col = el('section', { class:'col', attrs:{ 'data-local': local.id } });
+      // header
+      const head = el('div', { class:'col-header' });
+      const title = el('div', { class:'col-title' });
+      title.appendChild(el('span', { text: local.nome }));
+      title.appendChild(el('span', { class:'count', text: countLocal(local.id) + ' profs' }));
+      head.appendChild(title);
+      const hact = el('div', { class:'col-actions' });
+      const bEdit = el('button', { class:'btn', text:'Editar' });
+      bEdit.onclick = () => openLocal(local);
+      const bDel = el('button', { class:'btn ghost', text:'Excluir' });
+      bDel.onclick = () => deleteLocal(local.id);
+      hact.append(bEdit, bDel);
+      head.appendChild(hact);
+      col.appendChild(head);
+
+      // list (drop target)
+      const list = el('div', { class:'list', attrs:{ 'data-droptarget': local.id } });
+      list.addEventListener('dragover', e => { e.preventDefault(); });
+      list.addEventListener('drop', e => {
+        e.preventDefault();
+        const profId = e.dataTransfer.getData('text/plain');
+        const prof = state.profissionais.find(p => p.id === profId);
+        if(prof){ prof.localId = local.id; saveState(); renderAll(); }
+      });
+
+      // cards
+      const items = getFiltered().filter(p => p.localId === local.id);
+      if(items.length === 0){ list.appendChild(el('div', { class:'empty', text:'Nenhum profissional alocado.' })); }
+      else {
+        items.forEach(p => list.appendChild(renderCard(p)));
+      }
+
+      col.appendChild(list);
+      board.appendChild(col);
+    });
+  }
+
+  function renderCard(p){
+    const card = el('article', { class:'card', attrs:{ draggable:true, 'data-id': p.id } });
+    card.addEventListener('dragstart', e => {
+      card.classList.add('dragging');
+      e.dataTransfer.setData('text/plain', p.id);
+    });
+    card.addEventListener('dragend', () => card.classList.remove('dragging'));
+
+    const top = el('div', { class:'row' });
+    top.appendChild(el('div', { class:'name', text: p.nome }));
+
+    const status = el('span', { class:'tag', text: p.status });
+    if(p.status === 'Disponível') status.classList.add('success');
+    if(p.status === 'Em atividade') status.classList.add('warn');
+    if(p.status === 'De folga') status.classList.add('danger');
+    top.appendChild(status);
+
+    const meta = el('div', { class:'meta' });
+    if(p.funcao) meta.appendChild(el('span', { class:'pill', text:'Função: ' + p.funcao }));
+    if(p.matricula) meta.appendChild(el('span', { class:'pill', text:'ID: ' + p.matricula }));
+    if(p.turno) meta.appendChild(el('span', { class:'pill', text:'Turno: ' + p.turno }));
+
+    const foot = el('div', { class:'footer' });
+    const left = el('div');
+    if(p.contato) left.appendChild(el('span', { class:'tag', text:p.contato }));
+    if(p.obs) left.appendChild(el('span', { class:'tag', text:p.obs }));
+
+    const acts = el('div', { class:'actions' });
+    const bMove = el('select', { class:'field' });
+    state.locais.forEach(l => {
+      const o = el('option', { text: l.nome, attrs:{ value:l.id } });
+      if(l.id === p.localId) o.selected = true;
+      bMove.appendChild(o);
+    });
+    bMove.onchange = () => { p.localId = bMove.value; saveState(); renderAll(); };
+
+    const bEdit = el('button', { class:'btn', text:'Editar' });
+    bEdit.onclick = () => openProf(p);
+    const bDel = el('button', { class:'btn ghost', text:'Excluir' });
+    bDel.onclick = () => deleteProf(p.id);
+
+    acts.append(bMove, bEdit, bDel);
+    foot.append(left, acts);
+
+    card.append(top, meta, foot);
+    return card;
+  }
+
+  function countLocal(localId){
+    return getFiltered().filter(p => p.localId === localId).length;
+  }
+
+  function getFiltered(){
+    const q = filter.q.trim().toLowerCase();
+    return state.profissionais.filter(p => {
+      if(filter.local && p.localId !== filter.local) return false;
+      if(filter.status && p.status !== filter.status) return false;
+      if(filter.funcao && p.funcao !== filter.funcao) return false;
+      if(!q) return true;
+      const hay = [p.nome, p.funcao, p.matricula, p.contato, p.obs].filter(Boolean).join(' ').toLowerCase();
+      return hay.includes(q);
+    });
+  }
+
+  function renderAll(){
+    renderFilters();
+    renderBoard();
+  }
+
+  // --- CRUD Profissional ---
+  const dlgProf = document.getElementById('dlgProf');
+  const formProf = document.getElementById('formProf');
+  const dlgProfTitle = document.getElementById('dlgProfTitle');
+
+  function openProf(p=null){
+    dlgProfTitle.textContent = p ? 'Editar Profissional' : 'Adicionar Profissional';
+    document.getElementById('profId').value = p ? p.id : '';
+    document.getElementById('profNome').value = p ? p.nome : '';
+    document.getElementById('profFuncao').value = p ? p.funcao : '';
+    document.getElementById('profMatricula').value = p ? p.matricula : '';
+    document.getElementById('profTurno').value = p ? p.turno : '';
+    document.getElementById('profStatus').value = p ? p.status : 'Disponível';
+    document.getElementById('profContato').value = p ? p.contato : '';
+    document.getElementById('profObs').value = p ? p.obs : '';
+
+    const sel = document.getElementById('profLocal');
+    sel.innerHTML = '';
+    state.locais.forEach(l => sel.appendChild(el('option', { text:l.nome, attrs:{ value:l.id }})));
+    sel.value = p ? p.localId : (state.locais[0]?.id || '');
+
+    dlgProf.showModal();
+  }
+
+  function saveProf(){
+    const id = document.getElementById('profId').value || uid();
+    const data = {
+      id,
+      nome: document.getElementById('profNome').value.trim(),
+      funcao: document.getElementById('profFuncao').value.trim(),
+      matricula: document.getElementById('profMatricula').value.trim(),
+      turno: document.getElementById('profTurno').value,
+      status: document.getElementById('profStatus').value,
+      contato: document.getElementById('profContato').value.trim(),
+      obs: document.getElementById('profObs').value.trim(),
+      localId: document.getElementById('profLocal').value,
+    };
+    if(!data.nome || !data.funcao || !data.localId) return;
+    const idx = state.profissionais.findIndex(p => p.id === id);
+    if(idx >= 0) state.profissionais[idx] = data; else state.profissionais.push(data);
+    saveState(); dlgProf.close(); renderAll();
+  }
+
+  function deleteProf(id){
+    if(!confirm('Excluir profissional?')) return;
+    state.profissionais = state.profissionais.filter(p => p.id !== id);
+    saveState(); renderAll();
+  }
+
+  // --- CRUD Local ---
+  const dlgLocal = document.getElementById('dlgLocal');
+  const dlgLocalTitle = document.getElementById('dlgLocalTitle');
+
+  function openLocal(l=null){
+    dlgLocalTitle.textContent = l ? 'Editar Local' : 'Adicionar Local';
+    document.getElementById('localId').value = l ? l.id : '';
+    document.getElementById('localNome').value = l ? l.nome : '';
+    dlgLocal.showModal();
+  }
+
+  function saveLocal(){
+    const id = document.getElementById('localId').value || uid();
+    const nome = document.getElementById('localNome').value.trim();
+    if(!nome) return;
+    const idx = state.locais.findIndex(x => x.id === id);
+    if(idx >= 0) state.locais[idx].nome = nome; else state.locais.push({ id, nome });
+    saveState(); dlgLocal.close(); renderAll();
+  }
+
+  function deleteLocal(id){
+    if(!confirm('Excluir local e desalocar seus profissionais?')) return;
+    state.profissionais.forEach(p => { if(p.localId === id) p.localId = ''; });
+    state.locais = state.locais.filter(l => l.id !== id);
+    saveState(); renderAll();
+  }
+
+  // --- Export / Import / CSV / Print ---
+  function exportJson(){
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type:'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'mapa-profissionais.json';
+    a.click();
+  }
+
+  function exportCsv(){
+    const rows = [['Nome','Função','Matrícula','Turno','Status','Contato','Observações','Local']];
+    state.profissionais.forEach(p => {
+      const local = state.locais.find(l => l.id === p.localId)?.nome || '';
+      rows.push([p.nome,p.funcao,p.matricula,p.turno,p.status,p.contato,p.obs,local]);
+    });
+    const csv = rows.map(r => r.map(v => '"' + String(v||'').replaceAll('"','""') + '"').join(',')).join('\n');
+    const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'mapa-profissionais.csv';
+    a.click();
+  }
+
+  function importJson(file){
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const data = JSON.parse(reader.result);
+        if(!data || !Array.isArray(data.locais) || !Array.isArray(data.profissionais)) throw Error('Formato inválido');
+        state.locais = data.locais; state.profissionais = data.profissionais; saveState(); renderAll();
+      }catch(e){ alert('Arquivo inválido: ' + e.message); }
+    };
+    reader.readAsText(file);
+  }
+
+  // --- Eventos UI ---
+  document.getElementById('btnAddProf').onclick = () => openProf();
+  document.getElementById('btnSalvarProf').onclick = saveProf;
+  document.getElementById('btnCancelarProf').onclick = () => dlgProf.close();
+
+  document.getElementById('btnAddLocal').onclick = () => openLocal();
+  document.getElementById('btnSalvarLocal').onclick = saveLocal;
+  document.getElementById('btnCancelarLocal').onclick = () => dlgLocal.close();
+
+  document.getElementById('btnExport').onclick = exportJson;
+  document.getElementById('btnExportCsv').onclick = exportCsv;
+  document.getElementById('btnPrint').onclick = () => window.print();
+  document.getElementById('fileImport').addEventListener('change', e => { const f = e.target.files[0]; if(f) importJson(f); e.target.value = ''; });
+
+  filterLocal.onchange = () => { filter.local = filterLocal.value; renderBoard(); };
+  filterStatus.onchange = () => { filter.status = filterStatus.value; renderBoard(); };
+  filterFuncao.onchange = () => { filter.funcao = filterFuncao.value; renderBoard(); };
+  search.oninput = () => { filter.q = search.value; renderBoard(); };
+
+  // --- Init ---
+  renderAll();
+  </script>
 </body>
 </html>
