@@ -318,25 +318,39 @@
         </div>
       </article>
 
-      <!-- Formulário de Aptidão -->
-      
-    // Atualiza ano do rodapé
-    document.getElementById('year').textContent = new Date().getFullYear();
+         <!-- Formulário de Aptidão -->
+    </section> <!-- fecha .cards -->
+  </main>
+
+  <footer>
+    <div class="footer-wrap">
+      <span>SSMA Plangecon — <span id="year"></span></span>
+      <span>Construindo segurança todos os dias</span>
+    </div>
+  </footer>
+
+  <script>
+    // Atualiza ano do rodapé (só se o elemento existir)
+    const yearEl = document.getElementById('year');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
 
     // Proteção simples do Painel Gestor
-    const senha = 'AMOARISTIDES';
     const gestorBtn = document.getElementById('link-gestor');
-
-    gestorBtn.addEventListener('click', () => {
-      const tentativa = prompt('Informe a senha para acessar o Painel Gestor:');
-      if (tentativa === null) return; // cancelado
-      if (tentativa === senha) {
-        location.href = '/gestor.html';
-      } else {
-        alert('Senha incorreta.');
-      }
-    });
+    if (gestorBtn) {
+      const senha = 'AMOARISTIDES';
+      gestorBtn.addEventListener('click', () => {
+        const tentativa = prompt('Informe a senha para acessar o Painel Gestor:');
+        if (tentativa === null) return; // cancelado
+        if (tentativa === senha) {
+          // Se o site não estiver na raiz do domínio, prefira "gestor.html" sem a barra
+          location.href = 'gestor.html';
+        } else {
+          alert('Senha incorreta.');
+        }
+      });
+    }
   </script>
 </body>
 </html>
+
 
