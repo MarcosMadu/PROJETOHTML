@@ -12,11 +12,52 @@ const ejs = require('ejs');
 const puppeteer = require('puppeteer');
 const Notificacao = require('./models/Notificacao');
 
+// 🔹 NOVO: Cloudinary
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const https = require('https');
+const http = require('http');
+
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// 🔹 Configuração do Cloudinary (dados vêm do .env)
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
+// 🔹 Storage do Multer usando Cloudinary (tudo que for upload vai pra nuvem)
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'notificacoes_risco',          // pasta no Cloudinary
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp']
+  }
+});
+
+const upload = multer({ storage });
+const uploadNotificacaoFotos = upload.array('notificacaoFotos');
+const uploadResolucaoFotos  = upload.array('resolucaoFotos');
+
+// 🔹 Função auxiliar para buscar imagem a partir de URL (para o PDF)
+function fetchImageBuffer(url) {
+  return new Promise((resolve, reject) => {
+    const client = url.startsWith('https') ? https : http;
+    client.get(url, res => {
+      if (res.statusCode !== 200) {
+        return reject(new Error(`Status code ${res.statusCode} ao buscar imagem`));
+      }
+      const data = [];
+      res.on('data', chunk => data.push(chunk));
+      res.on('end', () => resolve(Buffer.concat(data)));
+    }).on('error', reject);
+  });
+}
+
+// Rotas de arquivos HTML principais
 app.get('/inspecao.html', (req, res) =>
   res.sendFile(path.join(__dirname, 'public', 'inspecao.html'))
 );
@@ -41,6 +82,7 @@ app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+// 🔹 Mantido para compatibilidade com imagens antigas salvas em /uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Conexão com MongoDB
@@ -51,23 +93,6 @@ mongoose.connect(process.env.MONGO_URI, {
 .then(() => console.log('✅ Conectado ao MongoDB'))
 .catch(err => console.error('❌ Erro ao conectar no MongoDB:', err));
 
-// Configuração do Multer para uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = 'uploads';
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir);
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    const timestamp = Date.now();
-    const safeName = file.originalname.replace(/\s+/g, '_');
-    cb(null, `${timestamp}_${safeName}`);
-  }
-});
-const upload = multer({ storage });
-const uploadNotificacaoFotos = upload.array('notificacaoFotos');
-const uploadResolucaoFotos  = upload.array('resolucaoFotos');
-
 // Rota inicial
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
@@ -77,9 +102,14 @@ app.get('/', (req, res) => {
 app.post('/enviar', uploadNotificacaoFotos, async (req, res) => {
   try {
     const dados = req.body;
+
+    // 🔹 Agora salvando URL das fotos (Cloudinary) em vez de filename local
     if (req.files && req.files.length) {
-      dados.notificacaoFotos = req.files.map(f => f.filename);
+      dados.notificacaoFotos = req.files.map(f => f.path || f.filename);
+      // f.path -> URL no Cloudinary
+      // f.filename -> public_id (fica aqui só por segurança)
     }
+
     dados.status = 'Aberta';
     dados.dataRegistro = new Date();
 
@@ -88,21 +118,6 @@ app.post('/enviar', uploadNotificacaoFotos, async (req, res) => {
 
     // ==========================
     // 🔴 ENVIO DE E-MAIL REMOVIDO
-    // const transporter = nodemailer.createTransport({
-    //   host: 'smtp.office365.com',
-    //   port: 587,
-    //   secure: false,
-    //   auth: {
-    //     user: process.env.EMAIL_USER,
-    //     pass: process.env.EMAIL_PASS
-    //   }
-    // });
-    // await transporter.sendMail({
-    //   from: process.env.EMAIL_USER,
-    //   to:   process.env.EMAIL_TO,
-    //   subject: 'Nova Notificação de Risco',
-    //   text: JSON.stringify(dados, null, 2)
-    // });
     // ==========================
 
     res.status(200).json({ _id: nova._id });
@@ -123,9 +138,12 @@ app.post('/baixa', uploadResolucaoFotos, async (req, res) => {
     n.resolvidoPor = resolvidoPor;
     n.resolucaoComentario = resolucaoComentario;
     n.dataBaixa = new Date();
+
+    // 🔹 Salvar URLs das fotos de resolução (Cloudinary)
     if (req.files && req.files.length) {
-      n.resolucaoFotos = req.files.map(f => f.filename);
+      n.resolucaoFotos = req.files.map(f => f.path || f.filename);
     }
+
     await n.save();
     res.send('Baixa registrada com sucesso! Aguarde aprovação do gestor.');
   } catch (err) {
@@ -146,12 +164,13 @@ app.get('/api/notificacoes', async (req, res) => {
     if (area)        filtro.area        = new RegExp(area, 'i');
 
     const arr = await Notificacao.find(filtro).sort({ dataRegistro: -1 });
-    res.json(arr.map(n => ({ ...n.toObject(), data: n.dataRegistro })));
+    res.json(arr.map(n => ({ ...n.toObject(), data: n.dataRegistro }));
   } catch (err) {
     console.error('Erro ao buscar notificações:', err);
     res.status(500).json({ erro: 'Erro ao buscar notificações' });
   }
 });
+
 app.get('/api/notificacoes/:id', async (req, res) => {
   try {
     const n = await Notificacao.findById(req.params.id);
@@ -162,6 +181,7 @@ app.get('/api/notificacoes/:id', async (req, res) => {
     res.status(500).json({ erro: 'Erro ao buscar notificação' });
   }
 });
+
 app.get('/api/notificacoes-abertas', async (req, res) => {
   try {
     const abertas = await Notificacao.find({ status: 'Aberta' }).select('_id');
@@ -186,6 +206,7 @@ app.post('/aprovar', express.urlencoded({ extended: true }), async (req, res) =>
     res.status(500).send('Erro ao aprovar notificação.');
   }
 });
+
 app.post('/rejeitar', express.urlencoded({ extended: true }), async (req, res) => {
   try {
     const { id, justificativa } = req.body;
@@ -202,6 +223,7 @@ app.post('/rejeitar', express.urlencoded({ extended: true }), async (req, res) =
     res.status(500).send('Erro ao rejeitar notificação.');
   }
 });
+
 app.delete('/excluir/:id', async (req, res) => {
   try {
     await Notificacao.findByIdAndDelete(req.params.id);
@@ -296,22 +318,39 @@ app.get('/notificacoes/:id/pdf', async (req, res) => {
     const ch    = (pageH2 - 30 - gap) / 2;
     const startY2 = top2 + 30 + gap;
 
-    for (let row = 0; row < 2; row++) {
-      for (let col = 0; col < 2; col++) {
-        const x2 = left + col*(cw+gap);
-        const y2 = startY2 + row*(ch+gap);
+    // 🔹 Suporte para fotos antigas (arquivos em /uploads) e novas (URLs Cloudinary)
+    if (n.notificacaoFotos && n.notificacaoFotos.length) {
+      for (let row = 0; row < 2; row++) {
+        for (let col = 0; col < 2; col++) {
+          const x2 = left + col*(cw+gap);
+          const y2 = startY2 + row*(ch+gap);
 
-        doc.save().rect(x2, y2, cw, ch).stroke('#2E7D32',1).restore();
+          doc.save().rect(x2, y2, cw, ch).stroke('#2E7D32',1).restore();
 
-        const idx = row*2 + col;
-        if (n.notificacaoFotos && n.notificacaoFotos[idx]) {
-          const fn      = n.notificacaoFotos[idx];
-          const imgPath = path.join(__dirname, 'uploads', fn);
-          console.log('Tentando carregar imagem em:', imgPath);
-          if (fs.existsSync(imgPath)) {
-            doc.image(imgPath, x2+2, y2+2, { fit: [cw-4, ch-4] });
-          } else {
-            console.error('❌ Arquivo não encontrado:', imgPath);
+          const idx = row*2 + col;
+          const fn  = n.notificacaoFotos[idx];
+          if (!fn) continue;
+
+          try {
+            if (typeof fn === 'string' && fn.startsWith('http')) {
+              // Nova forma: URL (Cloudinary)
+              console.log('Carregando imagem via URL:', fn);
+              // Buscar a imagem via HTTP e inserir no PDF
+              // eslint-disable-next-line no-await-in-loop
+              const buffer = await fetchImageBuffer(fn);
+              doc.image(buffer, x2+2, y2+2, { fit: [cw-4, ch-4] });
+            } else {
+              // Forma antiga: nome de arquivo local em /uploads
+              const imgPath = path.join(__dirname, 'uploads', fn);
+              console.log('Tentando carregar imagem local em:', imgPath);
+              if (fs.existsSync(imgPath)) {
+                doc.image(imgPath, x2+2, y2+2, { fit: [cw-4, ch-4] });
+              } else {
+                console.error('❌ Arquivo não encontrado:', imgPath);
+              }
+            }
+          } catch (errImg) {
+            console.error('Erro ao carregar imagem no PDF:', errImg);
           }
         }
       }
@@ -357,7 +396,9 @@ app.post('/inspecao',
       const fotos = {};
       (req.files || []).forEach(f => {
         if (!fotos[f.fieldname]) fotos[f.fieldname] = [];
-        fotos[f.fieldname].push(f.filename);
+        // 🔹 Salvar URL da foto (Cloudinary) quando disponível
+        const valor = f.path || f.filename;
+        fotos[f.fieldname].push(valor);
       });
 
       const novaInspecao = await Inspecao.create({
@@ -382,6 +423,3 @@ app.post('/inspecao',
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });
-
-
-
