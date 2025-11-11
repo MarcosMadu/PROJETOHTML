@@ -13,13 +13,16 @@ const notificacaoSchema = new mongoose.Schema({
   dataRegistro:        { type: Date,   default: Date.now },
   caminhoPDF:          String,
 
-  // Campos de resolução (baixa) com valores default
+  // 🔹 Fotos da notificação (antes da baixa) — agora aceitando URLs (Cloudinary ou caminho local)
+  notificacaoFotos:    { type: [String], default: [] },
+
+  // Campos de resolução (baixa)
   resolvidoPor:        { type: String, default: 'Ainda não enviado' },
   resolucaoComentario: { type: String, default: 'Ainda não enviado' },
-  resolucaoFotos:      { type: [String], default: ['Ainda não enviado'] },
-  dataBaixa:           { type: Date,     default: null }
+  resolucaoFotos:      { type: [String], default: [] },
+  dataBaixa:           { type: Date,     default: null },
 
-justificativaRejeicao: String
+  justificativaRejeicao: String
 
 }, {
   collection: 'notificacoes_v2'   // <-- nome da nova coleção
