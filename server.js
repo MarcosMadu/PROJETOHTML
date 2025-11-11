@@ -164,7 +164,7 @@ app.get('/api/notificacoes', async (req, res) => {
     if (area)        filtro.area        = new RegExp(area, 'i');
 
     const arr = await Notificacao.find(filtro).sort({ dataRegistro: -1 });
-    res.json(arr.map(n => ({ ...n.toObject(), data: n.dataRegistro }));
+    res.json(arr.map(n => ({ ...n.toObject(), data: n.dataRegistro })));
   } catch (err) {
     console.error('Erro ao buscar notificações:', err);
     res.status(500).json({ erro: 'Erro ao buscar notificações' });
@@ -423,3 +423,4 @@ app.post('/inspecao',
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });
+
