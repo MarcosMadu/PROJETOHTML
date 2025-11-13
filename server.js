@@ -103,23 +103,37 @@ app.post('/enviar', uploadNotificacaoFotos, async (req, res) => {
   try {
     const dados = req.body;
 
-    dados.supervisorObra     = req.body.supervisorObra || '-';
-    dados.descricaoAtividade = req.body.descricaoAtividade || '-';
+    // 🔧 NORMALIZAÇÃO: Supervisor e Descrição da Atividade (aceita variações)
+    dados.supervisorObra =
+      req.body.supervisorObra ??
+      req.body.supervisor ??
+      req.body.supervisor_da_obra ??
+      req.body.supervisorDaObra ??
+      req.body.supervisor_obra ??
+      req.body.nomeSupervisor ??
+      '-';
+
+    dados.descricaoAtividade =
+      req.body.descricaoAtividade ??
+      req.body.descricao_atividade ??
+      req.body.descricaoDaAtividade ??
+      req.body.atividadeDescricao ??
+      req.body.descAtividade ??
+      '-';
 
     // Normaliza o campo "área" (pode vir como 'squad' no formulário)
-dados.area = (
-  req.body.area ||
-  req.body.squad ||
-  req.body.Area ||
-  req.body.local ||
-  req.body.setor ||
-  req.body.areaNotificada ||
-  req.body.squadArea ||
-  req.body.Squad ||
-  ''
-).toString().trim() || '-';
+    dados.area = (
+      req.body.area ||
+      req.body.squad ||
+      req.body.Area ||
+      req.body.local ||
+      req.body.setor ||
+      req.body.areaNotificada ||
+      req.body.squadArea ||
+      req.body.Squad ||
+      ''
+    ).toString().trim() || '-';
 
-    
     // 🔹 Agora salvando URL das fotos (Cloudinary) em vez de filename local
     if (req.files && req.files.length) {
       dados.notificacaoFotos = req.files.map(f => f.path || f.filename);
@@ -440,6 +454,3 @@ app.post('/inspecao',
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });
-
-
-
