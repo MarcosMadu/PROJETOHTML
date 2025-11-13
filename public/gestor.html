@@ -79,6 +79,17 @@
         </select>
       </div>
 
+      <!-- NOVO: filtro Classificação -->
+      <div class="col-md-2">
+        <label for="filtroClassificacao" class="form-label">Classificação</label>
+        <select id="filtroClassificacao" class="form-select">
+          <option value="">Todas</option>
+          <option value="Notificação">Notificação</option>
+          <option value="Interdição">Interdição</option>
+        </select>
+      </div>
+      <!-- /NOVO -->
+
       <div class="col-md-3">
         <label for="idBusca" class="form-label">Buscar por ID</label>
         <input type="text" id="idBusca" class="form-control" placeholder="Digite o ID" />
@@ -136,12 +147,11 @@
             <div class="mb-3"><strong>Técnico:</strong> <span id="detalheTecnico"></span></div>
             <div class="mb-3"><strong>Encarregado:</strong> <span id="detalheEncarregado"></span></div>
 
-            <!-- NOVOS CAMPOS -->
+            <!-- Campos extras -->
             <div class="mb-3"><strong>Supervisor da Obra:</strong> <span id="detalheSupervisor"></span></div>
             <div class="mb-3"><strong>Descrição da Atividade:</strong> <span id="detalheDescricaoAtividade"></span></div>
             <div class="mb-3"><strong>NR Relacionada:</strong> <span id="detalheNR"></span></div>
             <div class="mb-3"><strong>Ações Recomendadas:</strong> <span id="detalheAcoesRecomendadas"></span></div>
-            <!-- /NOVOS CAMPOS -->
 
             <div class="mb-3"><strong>Área:</strong> <span id="detalheArea"></span></div>
             <div class="mb-3"><strong>Classificação:</strong> <span id="detalheClassificacao"></span></div>
@@ -239,7 +249,7 @@
     // Estado em memória
     let ULTIMA_LISTA = [];
 
-    // ---------- Carregar notificações ----------
+    // ---------- Carregar notificações (Status/ID server-side) ----------
     async function carregarNotificacoes(){
       const url = new URL('/api/notificacoes', window.location.origin);
 
@@ -259,12 +269,13 @@
       renderTabela(aplicarFiltrosCliente(lista));
     }
 
-    // ---------- Aplicar filtros cliente (mês, prazo, área, técnico) ----------
+    // ---------- Aplicar filtros cliente (mês, prazo, área, técnico, classificação) ----------
     function aplicarFiltrosCliente(baseLista){
       const mesSel   = document.getElementById('filtroMes').value;
       const prazoSel = document.getElementById('filtroPrazo').value;
       const areaSel  = document.getElementById('filtroArea').value;
       const tecSel   = document.getElementById('filtroTecnico').value;
+      const classSel = document.getElementById('filtroClassificacao').value;
 
       return baseLista.filter(n=>{
         if(mesSel !== ''){
@@ -279,6 +290,7 @@
         }
         if(areaSel && (n.area || '') !== areaSel) return false;
         if(tecSel && (n.tecnico || '') !== tecSel) return false;
+        if(classSel && (n.classificacao || '') !== classSel) return false;
         return true;
       });
     }
@@ -461,14 +473,12 @@
       document.getElementById('detalheTecnico').textContent       = d.tecnico || '-';
       document.getElementById('detalheEncarregado').textContent   = d.encarregado || '-';
 
-      // NOVOS CAMPOS (com múltiplos aliases para compatibilidade)
       const supervisor = d.supervisor ?? d.supervisorObra ?? d.supervisorDaObra ?? '-';
       const descAtiv   = d.descricaoAtividade ?? d.atividade ?? d.descricao_atividade ?? '-';
       document.getElementById('detalheSupervisor').textContent = supervisor || '-';
       document.getElementById('detalheDescricaoAtividade').textContent = descAtiv || '-';
       document.getElementById('detalheNR').textContent = d.nr || '-';
       document.getElementById('detalheAcoesRecomendadas').textContent = d.acao || '-';
-      // /NOVOS CAMPOS
 
       document.getElementById('detalheArea').textContent          = d.area || '-';
       document.getElementById('detalheClassificacao').textContent = d.classificacao || '-';
