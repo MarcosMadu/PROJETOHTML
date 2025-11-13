@@ -37,6 +37,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Painel do Gestor - Notificações e Interdições</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+<!-- GLightbox (para ampliar fotos) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
+  
 </head>
 <body class="bg-light">
   <div class="container py-4">
@@ -280,22 +284,42 @@
       document.getElementById('detalheStatus').textContent = d.status || '-';
 
       // Fotos da Notificação
-      const notifFotosDiv = document.getElementById('detalheFotosNotificacao');
-      notifFotosDiv.innerHTML = '';
-      if (d.notificacaoFotos?.length) {
-        d.notificacaoFotos.forEach(f => {
-          const src = resolveImgSrc(f);
-          if (!src) return;
-          const img = document.createElement('img');
-          img.src = src;
-          img.width = 120;
-          img.className = 'border rounded me-2 mb-2';
-          img.loading = 'lazy';
-          notifFotosDiv.appendChild(img);
-        });
-      } else {
-        notifFotosDiv.textContent = 'Sem fotos da notificação.';
-      }
+if (d.notificacaoFotos?.length) {
+  d.notificacaoFotos.forEach(f => {
+    const link = document.createElement('a');
+    link.href = f;
+    link.className = 'glightbox';
+    link.setAttribute = ('data-gallery', 'notificacao');
+    const img = document.createElement('img');
+    img.src = f;
+    img.width = 120;
+    img.className = 'border rounded me-2 mb-2';
+    link.appendChild(img);
+    notifFotosDiv.appendChild(link);
+  });
+  GLightbox({ selector: '.glightbox' });
+} else {
+  notifFotosDiv.textContent = 'Sem fotos da notificação.';
+}
+
+// Fotos da Baixa (resolução)
+if (d.resolucaoFotos?.length) {
+  d.resolucaoFotos.forEach(f => {
+    const link = document.createElement('a');
+    link.href = f;
+    link.className = 'glightbox';
+    link.setAttribute('data-gallery', 'baixa');
+    const img = document.createElement('img');
+    img.src = f;
+    img.width = 120;
+    img.className = 'border rounded me-2 mb-2';
+    link.appendChild(img);
+    fotosDiv.appendChild(link);
+  });
+  GLightbox({ selector: '.glightbox' });
+} else {
+  fotosDiv.textContent = 'Sem fotos da baixa.';
+}
 
       // Baixa (Resolução)
       document.getElementById('detalheResolvidoPor').textContent = d.resolvidoPor || '—';
@@ -348,3 +372,4 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
