@@ -159,6 +159,14 @@
   </div>
 
   <script>
+    // 🔧 NOVO: resolve o caminho da imagem (Cloudinary URL ou arquivo antigo em /uploads)
+    function resolveImgSrc(f) {
+      if (!f) return null;
+      if (typeof f === 'object' && f.url) return f.url; // caso venha como { url: '...' }
+      if (typeof f === 'string' && f.startsWith('http')) return f; // URL Cloudinary
+      return '/uploads/' + f; // compatibilidade com imagens antigas
+    }
+
     // Carregar notificações
     async function carregarNotificacoes() {
       const status = document.getElementById('status').value;
@@ -276,10 +284,13 @@
       notifFotosDiv.innerHTML = '';
       if (d.notificacaoFotos?.length) {
         d.notificacaoFotos.forEach(f => {
+          const src = resolveImgSrc(f);
+          if (!src) return;
           const img = document.createElement('img');
-          img.src = `/uploads/${f}`;
+          img.src = src;
           img.width = 120;
           img.className = 'border rounded me-2 mb-2';
+          img.loading = 'lazy';
           notifFotosDiv.appendChild(img);
         });
       } else {
@@ -294,10 +305,13 @@
       fotosDiv.innerHTML = '';
       if (d.resolucaoFotos?.length) {
         d.resolucaoFotos.forEach(f => {
+          const src = resolveImgSrc(f);
+          if (!src) return;
           const img = document.createElement('img');
-          img.src = `/uploads/${f}`;
+          img.src = src;
           img.width = 120;
           img.className = 'border rounded me-2 mb-2';
+          img.loading = 'lazy';
           fotosDiv.appendChild(img);
         });
       } else {
