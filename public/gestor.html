@@ -17,6 +17,7 @@
       font-weight:500; text-decoration:none; transition:background .2s; font-family:Arial,sans-serif;
     }
     .btn-back:hover{ background:#1b5e20; }
+    .badge-gap > .badge{ margin-right:.35rem; margin-bottom:.25rem; }
   </style>
 </head>
 
@@ -79,7 +80,7 @@
         </select>
       </div>
 
-      <!-- NOVO: filtro Classificação -->
+      <!-- Filtro Classificação -->
       <div class="col-md-2">
         <label for="filtroClassificacao" class="form-label">Classificação</label>
         <select id="filtroClassificacao" class="form-select">
@@ -88,7 +89,7 @@
           <option value="Interdição">Interdição</option>
         </select>
       </div>
-      <!-- /NOVO -->
+      <!-- /Filtro Classificação -->
 
       <div class="col-md-3">
         <label for="idBusca" class="form-label">Buscar por ID</label>
@@ -105,6 +106,16 @@
         </button>
       </div>
     </form>
+
+    <!-- NOVO: Resumo Dinâmico -->
+    <div id="resumoContagem" class="alert alert-info py-2" role="status" aria-live="polite">
+      Exibindo 0 registros.
+      <div class="small mt-1 badge-gap">
+        <span id="resumoStatus"></span>
+        <span id="resumoClassificacao" class="ms-2"></span>
+      </div>
+    </div>
+    <!-- /NOVO -->
 
     <!-- Tabela de Notificações -->
     <div class="table-responsive">
@@ -266,7 +277,8 @@
       ULTIMA_LISTA = lista;
 
       popularFiltrosDinamicos(lista);
-      renderTabela(aplicarFiltrosCliente(lista));
+      const filtrada = aplicarFiltrosCliente(lista);
+      renderTabela(filtrada);
     }
 
     // ---------- Aplicar filtros cliente (mês, prazo, área, técnico, classificação) ----------
@@ -310,6 +322,31 @@
 
       if(areas.includes(areaVal)) areaSel.value = areaVal;
       if(tecs.includes(tecVal))   tecSel.value  = tecVal;
+    }
+
+    // ---------- Resumo Dinâmico (NOVO) ----------
+    function atualizarResumo(lista){
+      const total = lista.length;
+      document.getElementById('resumoContagem').firstChild.textContent =
+        `Exibindo ${total} registro${total===1?'':'s'}. `;
+
+      // contagem por status
+      const porStatus = lista.reduce((acc, n)=>{
+        acc[n.status || '—'] = (acc[n.status || '—'] || 0) + 1;
+        return acc;
+      }, {});
+      const statusEl = document.getElementById('resumoStatus');
+      statusEl.innerHTML = Object.entries(porStatus)
+        .map(([k,v])=>`<span class="badge bg-secondary">${k}: ${v}</span>`).join(' ');
+
+      // contagem por classificação
+      const porClass = lista.reduce((acc, n)=>{
+        acc[n.classificacao || '—'] = (acc[n.classificacao || '—'] || 0) + 1;
+        return acc;
+      }, {});
+      const classEl = document.getElementById('resumoClassificacao');
+      classEl.innerHTML = Object.entries(porClass)
+        .map(([k,v])=>`<span class="badge bg-info text-dark">${k}: ${v}</span>`).join(' ');
     }
 
     // ---------- Render Tabela ----------
@@ -377,6 +414,7 @@
       });
 
       syncSelectionUI();
+      atualizarResumo(lista); // <<< atualiza o painel de contagem
     }
 
     // ---------- Seleção múltipla ----------
