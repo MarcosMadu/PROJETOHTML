@@ -1,931 +1,206 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Painel do Gestor - Layout Demo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel do Gestor</title>
 
-  <!-- Bootstrap -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
 
-  <!-- Icons -->
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
-  />
+<style>
+  body {
+    margin: 0;
+    background: #f4f4f7;
+    font-family: "Arial", sans-serif;
+  }
 
-  <!-- GLightbox (para ampliar fotos se quiser reaproveitar depois) -->
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css"
-  />
-  <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
+  /* SIDEBAR ------------------------------------------------------ */
+  .sidebar {
+    width: 250px;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    background: linear-gradient(180deg, #0d1117, #0a0d12, #050608);
+    color: white;
+    padding: 25px 15px;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.4);
+  }
 
-  <style>
-    :root {
-      --primary: #2e7d32;
-      --primary-dark: #1b5e20;
-      --bg-soft: #f4f7fb;
-      --sidebar-bg: #111827;
-      --sidebar-active: #1f2937;
-      --card-radius: 18px;
-    }
+  .sidebar .logo {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 30px;
+  }
 
-    body {
-      background: var(--bg-soft);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
+  .sidebar-menu-title {
+    font-size: 13px;
+    opacity: 0.6;
+    margin: 20px 0 10px;
+  }
 
-    /* Layout principal */
-    .app-shell {
-      display: grid;
-      grid-template-columns: 260px 1fr;
-      min-height: 100vh;
-    }
+  .sidebar a {
+    display: block;
+    padding: 10px 12px;
+    color: #d9d9d9;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    text-decoration: none;
+    transition: 0.2s;
+  }
 
-    @media (max-width: 991.98px) {
-      .app-shell {
-        grid-template-columns: 1fr;
-      }
-      #sidebar {
-        position: fixed;
-        inset: 0 auto 0 0;
-        width: 260px;
-        transform: translateX(-100%);
-        transition: transform .25s ease;
-        z-index: 1040;
-      }
-      #sidebar.show {
-        transform: translateX(0);
-      }
-      .sidebar-backdrop {
-        position: fixed;
-        inset: 0;
-        background: rgba(15,23,42,.55);
-        backdrop-filter: blur(4px);
-        z-index: 1035;
-        display: none;
-      }
-      .sidebar-backdrop.show {
-        display: block;
-      }
-    }
+  .sidebar a:hover,
+  .sidebar a.active {
+    background: #00cc66;
+    color: #000;
+    font-weight: 600;
+    box-shadow: 0 0 15px #00ff8855;
+  }
 
-    /* Sidebar */
-    #sidebar {
-      background: radial-gradient(circle at top, #111827 0, #020617 55%, #000 100%);
-      color: #e5e7eb;
-      padding: 1.5rem 1.25rem;
-    }
+  /* CONTENT ------------------------------------------------------ */
+  .content {
+    margin-left: 260px;
+    padding: 25px;
+  }
 
-    .sidebar-brand {
-      display: flex;
-      align-items: center;
-      gap: .75rem;
-      margin-bottom: 1.5rem;
-    }
+  .page-title {
+    font-size: 28px;
+    font-weight: bold;
+  }
 
-    .sidebar-brand-icon {
-      width: 38px;
-      height: 38px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ecfdf5;
-      font-size: 1.2rem;
-      box-shadow: 0 0 0 1px #064e3b, 0 10px 25px rgba(16,185,129,.35);
-    }
+  .card-kpi {
+    padding: 18px;
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    height: 110px;
+    transition: 0.2s;
+  }
 
-    .sidebar-nav {
-      list-style: none;
-      padding-left: 0;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      gap: .25rem;
-    }
+  .card-kpi:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 12px rgba(0,0,0,0.15);
+  }
 
-    .sidebar-link {
-      display: flex;
-      align-items: center;
-      gap: .6rem;
-      padding: .55rem .75rem;
-      border-radius: 999px;
-      color: #9ca3af;
-      font-size: .9rem;
-      text-decoration: none;
-      transition: all .18s ease;
-    }
+  .chip {
+    padding: 7px 16px;
+    border-radius: 25px;
+    background: #e9ecef;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-right: 8px;
+  }
 
-    .sidebar-link i {
-      font-size: 1.1rem;
-    }
+  .chip.active {
+    background: #00cc66;
+    color: #fff;
+    box-shadow: 0 0 10px #00ff8850;
+  }
 
-    .sidebar-link:hover {
-      background: rgba(31,41,55,.9);
-      color: #e5e7eb;
-    }
-
-    .sidebar-link.active {
-      background: linear-gradient(90deg, #22c55e, #16a34a);
-      color: #052e16;
-      font-weight: 600;
-      box-shadow: 0 0 0 1px rgba(22,163,74,.3), 0 8px 20px rgba(22,163,74,.45);
-    }
-
-    .sidebar-section-title {
-      font-size: .75rem;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      color: #6b7280;
-      margin: 1.25rem 0 .4rem;
-    }
-
-    /* Topbar */
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      padding: 1rem 1.75rem 0 1.75rem;
-    }
-
-    .topbar-title {
-      display: flex;
-      flex-direction: column;
-      gap: .15rem;
-    }
-
-    .topbar-title h1 {
-      font-size: 1.3rem;
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: .4rem;
-    }
-
-    .topbar-title small {
-      color: #6b7280;
-      font-size: .8rem;
-    }
-
-    .search-box {
-      display: flex;
-      align-items: center;
-      gap: .4rem;
-      background: #ffffff;
-      border-radius: 999px;
-      padding: .35rem .8rem;
-      box-shadow: 0 5px 16px rgba(15,23,42,.06);
-      flex: 1;
-      max-width: 380px;
-    }
-
-    .search-box i {
-      color: #9ca3af;
-    }
-
-    .search-box input {
-      border: none;
-      outline: none;
-      font-size: .9rem;
-      width: 100%;
-    }
-
-    .btn-primary-pill {
-      border-radius: 999px;
-      padding-inline: 1.1rem;
-      display: inline-flex;
-      align-items: center;
-      gap: .4rem;
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-      border: none;
-      box-shadow: 0 10px 22px rgba(22,163,74,.4);
-    }
-
-    .btn-primary-pill:hover {
-      background: linear-gradient(135deg, #16a34a, #15803d);
-    }
-
-    /* Cards resumo */
-    .cards-row {
-      padding: 1rem 1.75rem;
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0,1fr));
-      gap: 1rem;
-    }
-
-    @media (max-width: 1199.98px) {
-      .cards-row { grid-template-columns: repeat(2, minmax(0,1fr)); }
-    }
-
-    @media (max-width: 767.98px) {
-      .cards-row { grid-template-columns: 1fr; }
-    }
-
-    .card-kpi {
-      border-radius: var(--card-radius);
-      border: none;
-      box-shadow: 0 18px 35px rgba(15,23,42,.08);
-      overflow: hidden;
-    }
-
-    .card-kpi-header {
-      padding: .65rem 1rem .4rem;
-      font-size: .8rem;
-      text-transform: uppercase;
-      letter-spacing: .09em;
-      color: #6b7280;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .card-kpi-body {
-      padding: .6rem 1rem 1rem;
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: .5rem;
-    }
-
-    .card-kpi-value {
-      font-size: 1.7rem;
-      font-weight: 700;
-    }
-
-    .pill-mini {
-      padding: .1rem .5rem;
-      border-radius: 999px;
-      font-size: .7rem;
-      font-weight: 600;
-    }
-
-    /* Filtros em chips */
-    .filters-row {
-      padding: .2rem 1.75rem 0;
-    }
-
-    .filter-chip-label {
-      font-size: .8rem;
-      color: #6b7280;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      margin-bottom: .25rem;
-    }
-
-    .filter-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: .5rem;
-    }
-
-    .filter-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: .4rem;
-      padding: .25rem .7rem;
-      border-radius: 999px;
-      background: #e5e7eb;
-      border: 1px solid transparent;
-      font-size: .8rem;
-      color: #374151;
-    }
-
-    .filter-chip select,
-    .filter-chip input {
-      border: none;
-      background: transparent;
-      font-size: .8rem;
-      padding: 0;
-      outline: none;
-      min-width: 80px;
-    }
-
-    .filter-chip strong {
-      font-size: .75rem;
-      color: #6b7280;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-    }
-
-    .filter-chip-clear {
-      border-radius: 999px;
-      border: none;
-      background: transparent;
-      font-size: .8rem;
-      color: #6b7280;
-      display: inline-flex;
-      align-items: center;
-      gap: .2rem;
-    }
-
-    /* Container principal de conteúdo */
-    .content-wrapper {
-      padding: .75rem 1.75rem 2rem;
-    }
-
-    .content-card {
-      border-radius: 20px;
-      border: none;
-      box-shadow: 0 20px 40px rgba(15,23,42,.08);
-      overflow: hidden;
-    }
-
-    .table thead {
-      background: #f3f4f6;
-      font-size: .8rem;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      color: #6b7280;
-    }
-
-    .status-pill {
-      padding: .2rem .7rem;
-      border-radius: 999px;
-      font-size: .75rem;
-      font-weight: 600;
-    }
-
-    .status-Aberta {
-      background: #fee2e2;
-      color: #b91c1c;
-    }
-    .status-Pendente\ de\ aprovação {
-      background: #fef3c7;
-      color: #92400e;
-    }
-    .status-Aprovada {
-      background: #dcfce7;
-      color: #166534;
-    }
-    .status-Rejeitada {
-      background: #e5e7eb;
-      color: #111827;
-    }
-
-    .class-pill {
-      padding: .15rem .6rem;
-      border-radius: 999px;
-      font-size: .7rem;
-      font-weight: 600;
-    }
-    .class-Notificação {
-      background: #e0f2fe;
-      color: #075985;
-    }
-    .class-Interdição {
-      background: #fef9c3;
-      color: #854d0e;
-    }
-
-    .prazo-text {
-      font-size: .8rem;
-    }
-
-    .toolbar-table {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: .75rem;
-      padding: .75rem 1rem .25rem;
-      font-size: .85rem;
-      color: #6b7280;
-    }
-
-    .badge-soft {
-      background: #e5e7eb;
-      color: #374151;
-      font-weight: 500;
-      border-radius: 999px;
-    }
-  </style>
+  /* TABELA -------------------------------------------------------- */
+  table thead {
+    background: #dfe3ea;
+  }
+</style>
 </head>
 
 <body>
-<div class="app-shell">
 
-  <!-- SIDEBAR -->
-  <aside id="sidebar">
-    <div class="sidebar-brand">
-      <div class="sidebar-brand-icon">
-        <i class="bi bi-shield-check"></i>
-      </div>
-      <div>
-        <div class="fw-semibold">Painel SESMT</div>
-        <small class="text-secondary-emphasis">Notificações & Interdições</small>
-      </div>
-    </div>
+<!-- SIDEBAR ----------------------------------------------------------- -->
+<div class="sidebar">
+  <div class="logo">🛡️ Painel SESMT</div>
 
-    <nav>
-      <div class="sidebar-section-title">Visão Geral</div>
-      <ul class="sidebar-nav">
-        <li><a href="#" class="sidebar-link active"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
-        <li><a href="/dashboard.html" class="sidebar-link"><i class="bi bi-grid-1x2"></i> Painel Inicial</a></li>
-      </ul>
+  <div class="sidebar-menu-title">VISÃO GERAL</div>
+  <a href="/dashboard.html">Dashboard</a>
+  <a href="/dashboard.html">Painel Inicial</a>
 
-      <div class="sidebar-section-title">Notificações</div>
-      <ul class="sidebar-nav">
-        <li><a href="#" class="sidebar-link" data-status=""><i class="bi bi-list-task"></i> Todas</a></li>
-        <li><a href="#" class="sidebar-link" data-status="Aberta"><i class="bi bi-exclamation-triangle"></i> Abertas</a></li>
-        <li><a href="#" class="sidebar-link" data-status="Pendente de aprovação"><i class="bi bi-hourglass-split"></i> Pendentes</a></li>
-        <li><a href="#" class="sidebar-link" data-status="Aprovada"><i class="bi bi-check-circle"></i> Aprovadas</a></li>
-        <li><a href="#" class="sidebar-link" data-status="Rejeitada"><i class="bi bi-x-circle"></i> Rejeitadas</a></li>
-      </ul>
-    </nav>
-  </aside>
-
-  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
-
-  <!-- MAIN -->
-  <main>
-
-    <!-- Topbar -->
-    <div class="topbar">
-      <div class="topbar-title">
-        <h1>
-          <button class="btn btn-sm btn-outline-secondary d-lg-none me-1" id="btnToggleSidebar">
-            <i class="bi bi-list"></i>
-          </button>
-          Painel do Gestor
-        </h1>
-        <small>Gerencie notificações, interdições, prazos e status em um só lugar</small>
-      </div>
-
-      <div class="search-box d-none d-md-flex">
-        <i class="bi bi-search"></i>
-        <input id="buscaTexto" type="text" placeholder="Buscar por técnico, área, descrição..." />
-      </div>
-
-      <div class="d-flex align-items-center gap-2">
-        <a href="/index.html" class="btn btn-light btn-sm border me-1 d-none d-md-inline-flex">
-          <i class="bi bi-plus-circle"></i> Nova Notificação
-        </a>
-      </div>
-    </div>
-
-    <!-- Cards resumo -->
-    <div class="cards-row">
-      <div class="card card-kpi">
-        <div class="card-kpi-header">
-          <span>Total exibido</span>
-          <span class="badge bg-success-subtle text-success-emphasis">Filtrado</span>
-        </div>
-        <div class="card-kpi-body">
-          <div class="card-kpi-value" id="kpiTotal">0</div>
-          <div class="text-end">
-            <div class="text-muted small">Registros na tabela</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card card-kpi">
-        <div class="card-kpi-header">
-          <span>Abertas</span>
-          <span class="pill-mini bg-danger-subtle text-danger-emphasis">Risco</span>
-        </div>
-        <div class="card-kpi-body">
-          <div class="card-kpi-value" id="kpiAbertas">0</div>
-          <div class="text-end small text-muted">
-            Inclui notificações e interdições
-          </div>
-        </div>
-      </div>
-
-      <div class="card card-kpi">
-        <div class="card-kpi-header">
-          <span>Pendentes de aprovação</span>
-          <span class="pill-mini bg-warning-subtle text-warning-emphasis">Análise</span>
-        </div>
-        <div class="card-kpi-body">
-          <div class="card-kpi-value" id="kpiPendentes">0</div>
-          <div class="text-end small text-muted">
-            Aguardando decisão do gestor
-          </div>
-        </div>
-      </div>
-
-      <div class="card card-kpi">
-        <div class="card-kpi-header">
-          <span>Interdições</span>
-          <span class="pill-mini bg-dark text-light">RAC</span>
-        </div>
-        <div class="card-kpi-body">
-          <div class="card-kpi-value" id="kpiInterdicoes">0</div>
-          <div class="text-end small text-muted">
-            Classificação = Interdição
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Filtros em chips -->
-    <div class="filters-row">
-      <div class="filter-chip-label">Filtros</div>
-      <div class="filter-chips">
-        <div class="filter-chip">
-          <strong>Status</strong>
-          <select id="fStatus">
-            <option value="">Todos</option>
-            <option value="Aberta">Aberta</option>
-            <option value="Pendente de aprovação">Pendente</option>
-            <option value="Aprovada">Aprovada</option>
-            <option value="Rejeitada">Rejeitada</option>
-          </select>
-        </div>
-
-        <div class="filter-chip">
-          <strong>Mês</strong>
-          <select id="fMes">
-            <option value="">Todos</option>
-            <option value="0">Jan</option><option value="1">Fev</option>
-            <option value="2">Mar</option><option value="3">Abr</option>
-            <option value="4">Mai</option><option value="5">Jun</option>
-            <option value="6">Jul</option><option value="7">Ago</option>
-            <option value="8">Set</option><option value="9">Out</option>
-            <option value="10">Nov</option><option value="11">Dez</option>
-          </select>
-        </div>
-
-        <div class="filter-chip">
-          <strong>Prazo</strong>
-          <select id="fPrazo">
-            <option value="">Todos</option>
-            <option value="noprazo">No prazo</option>
-            <option value="vencidas">Vencidas</option>
-          </select>
-        </div>
-
-        <div class="filter-chip">
-          <strong>Área</strong>
-          <select id="fArea">
-            <option value="">Todas</option>
-          </select>
-        </div>
-
-        <div class="filter-chip">
-          <strong>Técnico</strong>
-          <select id="fTecnico">
-            <option value="">Todos</option>
-          </select>
-        </div>
-
-        <div class="filter-chip">
-          <strong>Classificação</strong>
-          <select id="fClassificacao">
-            <option value="">Todas</option>
-            <option value="Notificação">Notificação</option>
-            <option value="Interdição">Interdição</option>
-          </select>
-        </div>
-
-        <button id="btnLimparFiltros" class="filter-chip-clear">
-          <i class="bi bi-x-circle"></i> Limpar filtros
-        </button>
-      </div>
-    </div>
-
-    <!-- Conteúdo principal -->
-    <div class="content-wrapper">
-      <div class="card content-card">
-        <div class="toolbar-table">
-          <div>
-            <span class="badge badge-soft me-2">
-              <i class="bi bi-table"></i>
-              <span id="lblTotalTabela">0 registros</span>
-            </span>
-            <span class="text-muted small d-none d-md-inline">
-              Clique em “Detalhes” para visualizar fotos, baixa e histórico completo.
-            </span>
-          </div>
-          <div class="d-flex align-items-center gap-2">
-            <button id="btnExcluirSelecionadas" class="btn btn-outline-danger btn-sm" disabled>
-              <i class="bi bi-trash"></i> Excluir selecionadas
-            </button>
-          </div>
-        </div>
-
-        <div class="table-responsive">
-          <table class="table align-middle mb-0" id="tabelaNotificacoes">
-            <thead>
-              <tr>
-                <th style="width:38px;"><input type="checkbox" id="selectAll" /></th>
-                <th>ID</th>
-                <th>Técnico</th>
-                <th>Área</th>
-                <th>Classif.</th>
-                <th>Status</th>
-                <th>Data</th>
-                <th>Prazo</th>
-                <th style="width:90px;">Ações</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-
-        <div class="p-2 text-end small text-muted">
-          Dica: use os filtros acima para cruzar informações (ex.: Interdições vencidas do técnico X em uma área específica).
-        </div>
-      </div>
-    </div>
-
-  </main>
+  <div class="sidebar-menu-title">NOTIFICAÇÕES</div>
+  <a class="active" href="#">Todas</a>
+  <a href="#">Abertas</a>
+  <a href="#">Pendentes</a>
+  <a href="#">Aprovadas</a>
+  <a href="#">Rejeitadas</a>
 </div>
 
-<!-- Modal de Detalhes (bem simples só para demo, dá pra reaproveitar seu modal completo depois) -->
-<div class="modal fade" id="modalDetalhes" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Detalhes da Notificação</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<!-- CONTEÚDO ----------------------------------------------------------- -->
+<div class="content">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <div class="page-title">Painel do Gestor</div>
+      <small class="text-muted">Gerencie notificações, interdições e prazos</small>
+    </div>
+
+    <button class="btn btn-success px-3">+ Nova Notificação</button>
+  </div>
+
+  <!-- CARDS KPI ---------------------------------------------------- -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card-kpi">
+        <h5>Total Exibido</h5>
+        <h3 id="kpiTotal">0</h3>
       </div>
-      <div class="modal-body">
-        <pre id="detalhesJson" class="bg-light p-3 rounded small"></pre>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card-kpi">
+        <h5>Abertas</h5>
+        <h3 id="kpiAbertas">0</h3>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card-kpi">
+        <h5>Pendentes</h5>
+        <h3 id="kpiPendentes">0</h3>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card-kpi">
+        <h5>Interdições</h5>
+        <h3 id="kpiInterdicoes">0</h3>
       </div>
     </div>
   </div>
+
+  <!-- CHIPS DE FILTRO --------------------------------------------- -->
+  <div class="mb-4">
+    <span class="chip active">Todas</span>
+    <span class="chip">Abertas</span>
+    <span class="chip">Pendentes</span>
+    <span class="chip">Aprovadas</span>
+    <span class="chip">Rejeitadas</span>
+  </div>
+
+  <!-- TABELA ------------------------------------------------------- -->
+  <div class="table-responsive">
+    <table class="table table-hover table-bordered" id="tabelaRegistros">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Técnico</th>
+          <th>Área</th>
+          <th>Classificação</th>
+          <th>Status</th>
+          <th>Data</th>
+          <th>Prazo</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyRegistros">
+        <tr><td colspan="8" class="text-center py-5">Carregando...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  const DAY = 24 * 60 * 60 * 1000;
-  let ULTIMA_LISTA = [];
 
-  function prazoDiffDays(prazoISO) {
-    if (!prazoISO) return null;
-    const hoje = new Date(); hoje.setHours(0,0,0,0);
-    const prazo = new Date(prazoISO); prazo.setHours(0,0,0,0);
-    return Math.round((prazo - hoje) / DAY);
-  }
-
-  function prazoTexto(prazoISO) {
-    if (!prazoISO) return "-";
-    const d = new Date(prazoISO);
-    const diff = prazoDiffDays(prazoISO);
-    const base = d.toLocaleDateString();
-    if (diff > 0) return base + ` (em ${diff} dia${diff>1?'s':''})`;
-    if (diff === 0) return base + " (vence hoje)";
-    const atras = Math.abs(diff);
-    return base + ` (vencido há ${atras} dia${atras>1?'s':''})`;
-  }
-
-  function prazoClasse(diff) {
-    if (diff === null) return "";
-    if (diff < 0) return "text-danger fw-semibold";
-    if (diff === 0) return "text-warning fw-semibold";
-    if (diff <= 3) return "text-warning";
-    return "text-success";
-  }
-
-  async function carregarNotificacoes() {
-    const res = await fetch("/api/notificacoes");
-    const lista = await res.json();
-    ULTIMA_LISTA = lista;
-    preencherFiltrosDinamicos(lista);
-    atualizarTela();
-  }
-
-  function preencherFiltrosDinamicos(lista) {
-    const selArea = document.getElementById("fArea");
-    const selTec  = document.getElementById("fTecnico");
-
-    const areas = [...new Set(lista.map(n => n.area).filter(Boolean))].sort();
-    const tecs  = [...new Set(lista.map(n => n.tecnico).filter(Boolean))].sort();
-
-    selArea.innerHTML = '<option value="">Todas</option>' + areas.map(a => `<option>${a}</option>`).join("");
-    selTec.innerHTML  = '<option value="">Todos</option>' + tecs.map(t => `<option>${t}</option>`).join("");
-  }
-
-  function aplicarFiltros(lista) {
-    const status = document.getElementById("fStatus").value;
-    const mes    = document.getElementById("fMes").value;
-    const prazoF = document.getElementById("fPrazo").value;
-    const area   = document.getElementById("fArea").value;
-    const tecn   = document.getElementById("fTecnico").value;
-    const cls    = document.getElementById("fClassificacao").value;
-    const termo  = document.getElementById("buscaTexto").value.toLowerCase().trim();
-
-    return lista.filter(n => {
-      if (status && n.status !== status) return false;
-      if (mes !== "") {
-        if (!n.dataRegistro) return false;
-        const m = new Date(n.dataRegistro).getMonth();
-        if (String(m) !== mes) return false;
-      }
-      if (prazoF) {
-        const diff = prazoDiffDays(n.prazo);
-        if (prazoF === "noprazo" && !(diff >= 0)) return false;
-        if (prazoF === "vencidas" && !(diff < 0)) return false;
-      }
-      if (area && (n.area || "") !== area) return false;
-      if (tecn && (n.tecnico || "") !== tecn) return false;
-      if (cls && (n.classificacao || "") !== cls) return false;
-
-      if (termo) {
-        const blob = [
-          n._id, n.tecnico, n.area, n.classificacao,
-          n.descricao, n.nr, n.acao, n.encarregado
-        ].join(" ").toLowerCase();
-        if (!blob.includes(termo)) return false;
-      }
-      return true;
-    });
-  }
-
-  function atualizarKpis(listaFiltrada) {
-    document.getElementById("kpiTotal").textContent = listaFiltrada.length;
-    document.getElementById("lblTotalTabela").textContent =
-      listaFiltrada.length + (listaFiltrada.length === 1 ? " registro" : " registros");
-
-    const abertas   = listaFiltrada.filter(n => n.status === "Aberta").length;
-    const pendentes = listaFiltrada.filter(n => n.status === "Pendente de aprovação").length;
-    const interd    = listaFiltrada.filter(n => n.classificacao === "Interdição").length;
-
-    document.getElementById("kpiAbertas").textContent = abertas;
-    document.getElementById("kpiPendentes").textContent = pendentes;
-    document.getElementById("kpiInterdicoes").textContent = interd;
-  }
-
-  function renderTabela(listaFiltrada) {
-    const tbody = document.querySelector("#tabelaNotificacoes tbody");
-    tbody.innerHTML = "";
-
-    const btnBulk = document.getElementById("btnExcluirSelecionadas");
-    btnBulk.disabled = true;
-    document.getElementById("selectAll").checked = false;
-
-    listaFiltrada.forEach(n => {
-      const tr = document.createElement("tr");
-
-      const tdChk = document.createElement("td");
-      tdChk.innerHTML = `<input type="checkbox" class="row-check" value="${n._id}">`;
-      tr.appendChild(tdChk);
-
-      const tdId = document.createElement("td");
-      tdId.textContent = n._id;
-      tdId.className = "small text-muted";
-      tr.appendChild(tdId);
-
-      const tdTec = document.createElement("td");
-      tdTec.textContent = n.tecnico || "-";
-      tr.appendChild(tdTec);
-
-      const tdArea = document.createElement("td");
-      tdArea.textContent = n.area || "-";
-      tr.appendChild(tdArea);
-
-      const tdClass = document.createElement("td");
-      const c = n.classificacao || "-";
-      const cls = c === "Interdição" ? "class-Interdição" : (c === "Notificação" ? "class-Notificação" : "");
-      tdClass.innerHTML = `<span class="class-pill ${cls}">${c}</span>`;
-      tr.appendChild(tdClass);
-
-      const tdStatus = document.createElement("td");
-      const st = n.status || "-";
-      tdStatus.innerHTML = `<span class="status-pill status-${st.replace(/\s/g," ")}">${st}</span>`;
-      tr.appendChild(tdStatus);
-
-      const tdData = document.createElement("td");
-      tdData.textContent = n.dataRegistro ? new Date(n.dataRegistro).toLocaleString() : "-";
-      tr.appendChild(tdData);
-
-      const tdPrazo = document.createElement("td");
-      if (n.prazo) {
-        if (n.status === "Aprovada") {
-          tdPrazo.textContent = new Date(n.prazo).toLocaleDateString();
-        } else {
-          const diff = prazoDiffDays(n.prazo);
-          tdPrazo.innerHTML = `<span class="prazo-text ${prazoClasse(diff)}">${prazoTexto(n.prazo)}</span>`;
-        }
-      } else {
-        tdPrazo.textContent = "-";
-      }
-      tr.appendChild(tdPrazo);
-
-      const tdAc = document.createElement("td");
-      tdAc.innerHTML = `
-        <button class="btn btn-sm btn-outline-secondary" data-id="${n._id}">
-          Detalhes
-        </button>`;
-      tr.appendChild(tdAc);
-
-      tbody.appendChild(tr);
-    });
-
-    configurarSelecao();
-    configurarBotoesDetalhes();
-  }
-
-  function configurarSelecao() {
-    const selectAll = document.getElementById("selectAll");
-    const checks    = document.querySelectorAll(".row-check");
-    const btnBulk   = document.getElementById("btnExcluirSelecionadas");
-
-    function atualizarBotao() {
-      const selecionados = [...checks].filter(c => c.checked).length;
-      btnBulk.disabled = selecionados === 0;
-    }
-
-    selectAll.onchange = () => {
-      checks.forEach(c => { c.checked = selectAll.checked; });
-      atualizarBotao();
-    };
-
-    checks.forEach(c => {
-      c.onchange = () => {
-        const total = checks.length;
-        const marcados = [...checks].filter(c => c.checked).length;
-        selectAll.checked = marcados === total;
-        selectAll.indeterminate = marcados > 0 && marcados < total;
-        atualizarBotao();
-      };
-    });
-
-    btnBulk.onclick = async () => {
-      const ids = [...checks].filter(c => c.checked).map(c => c.value);
-      if (!ids.length) return;
-      if (!confirm(`Excluir ${ids.length} notificação(ões)?`)) return;
-
-      for (const id of ids) {
-        try {
-          await fetch(`/excluir/${id}`, { method: "DELETE" });
-        } catch (e) {
-          console.error("Erro ao excluir", id, e);
-        }
-      }
-      await carregarNotificacoes();
-      alert("Exclusão concluída.");
-    };
-  }
-
-  function configurarBotoesDetalhes() {
-    document.querySelectorAll("#tabelaNotificacoes button[data-id]").forEach(btn => {
-      btn.onclick = async () => {
-        const id = btn.getAttribute("data-id");
-        const res = await fetch(`/api/notificacoes/${id}`);
-        const data = await res.json();
-        document.getElementById("detalhesJson").textContent = JSON.stringify(data, null, 2);
-        const modal = new bootstrap.Modal(document.getElementById("modalDetalhes"));
-        modal.show();
-      };
-    });
-  }
-
-  function atualizarTela() {
-    const filtrada = aplicarFiltros(ULTIMA_LISTA);
-    atualizarKpis(filtrada);
-    renderTabela(filtrada);
-  }
-
-  // Eventos de filtro
-  ["fStatus","fMes","fPrazo","fArea","fTecnico","fClassificacao","buscaTexto"].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener("change", atualizarTela);
-    if (el && el.tagName === "INPUT") el.addEventListener("keyup", atualizarTela);
-  });
-
-  document.getElementById("btnLimparFiltros").onclick = () => {
-    ["fStatus","fMes","fPrazo","fArea","fTecnico","fClassificacao","buscaTexto"].forEach(id => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      if (el.tagName === "SELECT" || el.tagName === "INPUT") el.value = "";
-    });
-    atualizarTela();
-  };
-
-  // Sidebar mobile
-  const sidebar = document.getElementById("sidebar");
-  const backdrop = document.getElementById("sidebarBackdrop");
-  document.getElementById("btnToggleSidebar").onclick = () => {
-    sidebar.classList.toggle("show");
-    backdrop.classList.toggle("show");
-  };
-  backdrop.onclick = () => {
-    sidebar.classList.remove("show");
-    backdrop.classList.remove("show");
-  };
-
-  // Links da sidebar que filtram por status
-  document.querySelectorAll('.sidebar-link[data-status]').forEach(link => {
-    link.addEventListener("click", e => {
-      e.preventDefault();
-      const status = link.getAttribute("data-status") || "";
-      document.getElementById("fStatus").value = status;
-      atualizarTela();
-      document.querySelectorAll(".sidebar-link").forEach(l => l.classList.remove("active"));
-      link.classList.add("active");
-    });
-  });
-
-  // Inicialização
-  carregarNotificacoes();
-</script>
 </body>
 </html>
