@@ -134,6 +134,14 @@
             <div class="mb-3"><strong>ID:</strong> <span id="detalheId"></span></div>
             <div class="mb-3"><strong>Técnico:</strong> <span id="detalheTecnico"></span></div>
             <div class="mb-3"><strong>Encarregado:</strong> <span id="detalheEncarregado"></span></div>
+
+            <!-- NOVOS CAMPOS -->
+            <div class="mb-3"><strong>Supervisor da Obra:</strong> <span id="detalheSupervisor"></span></div>
+            <div class="mb-3"><strong>Descrição da Atividade:</strong> <span id="detalheDescricaoAtividade"></span></div>
+            <div class="mb-3"><strong>NR Relacionada:</strong> <span id="detalheNR"></span></div>
+            <div class="mb-3"><strong>Ações Recomendadas:</strong> <span id="detalheAcoesRecomendadas"></span></div>
+            <!-- /NOVOS CAMPOS -->
+
             <div class="mb-3"><strong>Área:</strong> <span id="detalheArea"></span></div>
             <div class="mb-3"><strong>Classificação:</strong> <span id="detalheClassificacao"></span></div>
             <div class="mb-3"><strong>Descrição:</strong> <p id="detalheDescricao"></p></div>
@@ -242,7 +250,6 @@
       const res   = await fetch(url);
       const lista = await res.json();
 
-      // guarda lista crua para filtros adicionais
       ULTIMA_LISTA = lista;
 
       popularFiltrosDinamicos(lista);
@@ -257,23 +264,18 @@
       const tecSel   = document.getElementById('filtroTecnico').value;
 
       return baseLista.filter(n=>{
-        // mês por dataRegistro
         if(mesSel !== ''){
           if(!n.dataRegistro) return false;
           const m = new Date(n.dataRegistro).getMonth();
           if(String(m) !== mesSel) return false;
         }
-        // prazo
         if(prazoSel){
           const diff = prazoDiffDays(n.prazo);
           if(prazoSel==='noprazo' && !(diff===0 || diff>0)) return false;
           if(prazoSel==='vencidas' && !(diff<0)) return false;
         }
-        // área
         if(areaSel && (n.area || '') !== areaSel) return false;
-        // técnico
         if(tecSel && (n.tecnico || '') !== tecSel) return false;
-
         return true;
       });
     }
@@ -286,13 +288,11 @@
       const areas = Array.from(new Set(lista.map(n=>n.area).filter(Boolean))).sort();
       const tecs  = Array.from(new Set(lista.map(n=>n.tecnico).filter(Boolean))).sort();
 
-      // Preserva opção "Todas"/"Todos" e reconstroi o resto
       const areaVal = areaSel.value, tecVal = tecSel.value;
 
       areaSel.innerHTML = '<option value="">Todas</option>' + areas.map(a=>`<option value="${a}">${a}</option>`).join('');
       tecSel.innerHTML  = '<option value="">Todos</option>' + tecs.map(t=>`<option value="${t}">${t}</option>`).join('');
 
-      // mantém seleção se ainda existir
       if(areas.includes(areaVal)) areaSel.value = areaVal;
       if(tecs.includes(tecVal))   tecSel.value  = tecVal;
     }
@@ -303,24 +303,21 @@
       tbody.innerHTML = '';
 
       const btnBulk = document.getElementById('btnExcluirSelecionadas');
-      btnBulk.disabled = true; // reset
+      btnBulk.disabled = true;
 
       lista.forEach(n=>{
         const tr = document.createElement('tr');
 
-        // checkbox
         const tdChk = document.createElement('td');
         tdChk.innerHTML = `<input type="checkbox" class="row-check" value="${n._id}">`;
         tr.appendChild(tdChk);
 
-        // ID, Técnico, Área
         ['_id','tecnico','area'].forEach(key=>{
           const td = document.createElement('td');
           td.textContent = key==='_id' ? n._id : (n[key] || '-');
           tr.appendChild(td);
         });
 
-        // status
         const tdStatus = document.createElement('td');
         let statusText = n.status;
         if(n.status==='Rejeitada' && n.comentarioAprovacao){
@@ -329,12 +326,10 @@
         tdStatus.textContent = statusText;
         tr.appendChild(tdStatus);
 
-        // data
         const tdData = document.createElement('td');
         tdData.textContent = n.dataRegistro ? new Date(n.dataRegistro).toLocaleString() : '-';
         tr.appendChild(tdData);
 
-        // prazo
         const tdPrazo = document.createElement('td');
         if(n.prazo){
           const diff = prazoDiffDays(n.prazo);
@@ -344,7 +339,6 @@
         }
         tr.appendChild(tdPrazo);
 
-        // ações
         const tdAcoes = document.createElement('td');
         tdAcoes.innerHTML = `<button class="btn btn-secondary btn-sm" onclick="visualizarDetalhes('${n._id}')" data-bs-toggle="modal" data-bs-target="#modalDetalhes">Detalhes</button>`;
         tr.appendChild(tdAcoes);
@@ -352,7 +346,6 @@
         tbody.appendChild(tr);
       });
 
-      // listeners de seleção
       syncSelectionUI();
     }
 
@@ -365,16 +358,13 @@
       const checks = document.querySelectorAll('.row-check');
       const btnBulk = document.getElementById('btnExcluirSelecionadas');
 
-      // estado do botão
       btnBulk.disabled = getSelectedIds().length===0;
 
-      // selectAll -> marcar/desmarcar todos
       selectAll.onchange = () => {
         checks.forEach(c=>{ c.checked = selectAll.checked; });
         btnBulk.disabled = getSelectedIds().length===0;
       };
 
-      // cada check atualiza estado do master e botão
       checks.forEach(c=>{
         c.onchange = ()=>{
           const total = checks.length;
@@ -385,17 +375,14 @@
         };
       });
 
-      // ação bulk
       document.getElementById('btnExcluirSelecionadas').onclick = async ()=>{
         const ids = getSelectedIds();
         if(ids.length===0) return;
         if(!confirm(`Confirmar exclusão de ${ids.length} notificação(ões)?`)) return;
 
-        // usa a mesma rota /excluir/:id, em série
         for(const id of ids){
-          try{
-            await fetch(`/excluir/${id}`, { method:'DELETE' });
-          }catch(e){ console.error('Erro ao excluir', id, e); }
+          try{ await fetch(`/excluir/${id}`, { method:'DELETE' }); }
+          catch(e){ console.error('Erro ao excluir', id, e); }
         }
         await carregarNotificacoes();
         alert('Exclusão concluída!');
@@ -455,6 +442,16 @@
       document.getElementById('detalheId').textContent            = d._id;
       document.getElementById('detalheTecnico').textContent       = d.tecnico || '-';
       document.getElementById('detalheEncarregado').textContent   = d.encarregado || '-';
+
+      // NOVOS CAMPOS (com múltiplos aliases para compatibilidade)
+      const supervisor = d.supervisor ?? d.supervisorObra ?? d.supervisorDaObra ?? '-';
+      const descAtiv   = d.descricaoAtividade ?? d.atividade ?? d.descricao_atividade ?? '-';
+      document.getElementById('detalheSupervisor').textContent = supervisor || '-';
+      document.getElementById('detalheDescricaoAtividade').textContent = descAtiv || '-';
+      document.getElementById('detalheNR').textContent = d.nr || '-';
+      document.getElementById('detalheAcoesRecomendadas').textContent = d.acao || '-';
+      // /NOVOS CAMPOS
+
       document.getElementById('detalheArea').textContent          = d.area || '-';
       document.getElementById('detalheClassificacao').textContent = d.classificacao || '-';
       document.getElementById('detalheDescricao').textContent     = d.descricao || '-';
