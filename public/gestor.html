@@ -106,6 +106,7 @@
             <th>ID</th>
             <th>Técnico</th>
             <th>Área</th>
+            <th>Classificação</th>
             <th>Status</th>
             <th>Data</th>
             <th>Prazo</th>
@@ -240,15 +241,12 @@
 
     // ---------- Carregar notificações ----------
     async function carregarNotificacoes(){
-      // Monta a URL da API primeiro
       const url = new URL('/api/notificacoes', window.location.origin);
 
-      // Lê Status e ID (filtros do servidor)
-      const statusEl = document.getElementById('status'); // id existente
+      const statusEl = document.getElementById('status');
       const status = (statusEl?.value || '').trim();
       const id     = (document.getElementById('idBusca').value || '').trim();
 
-      // Adiciona somente se for necessário
       if (status && status !== 'Todos') url.searchParams.append('status', status);
       if (id) url.searchParams.append('id', id);
 
@@ -257,7 +255,6 @@
 
       ULTIMA_LISTA = lista;
 
-      // Atualiza filtros dinâmicos e renderiza com filtros cliente
       popularFiltrosDinamicos(lista);
       renderTabela(aplicarFiltrosCliente(lista));
     }
@@ -296,8 +293,8 @@
 
       const areaVal = areaSel.value, tecVal = tecSel.value;
 
-      areaSel.innerHTML = '<option value=\"\">Todas</option>' + areas.map(a=>`<option value=\"${a}\">${a}</option>`).join('');
-      tecSel.innerHTML  = '<option value=\"\">Todos</option>' + tecs.map(t=>`<option value=\"${t}\">${t}</option>`).join('');
+      areaSel.innerHTML = '<option value="">Todas</option>' + areas.map(a=>`<option value="${a}">${a}</option>`).join('');
+      tecSel.innerHTML  = '<option value="">Todos</option>' + tecs.map(t=>`<option value="${t}">${t}</option>`).join('');
 
       if(areas.includes(areaVal)) areaSel.value = areaVal;
       if(tecs.includes(tecVal))   tecSel.value  = tecVal;
@@ -314,16 +311,24 @@
       lista.forEach(n=>{
         const tr = document.createElement('tr');
 
+        // checkbox
         const tdChk = document.createElement('td');
-        tdChk.innerHTML = `<input type=\"checkbox\" class=\"row-check\" value=\"${n._id}\">`;
+        tdChk.innerHTML = `<input type="checkbox" class="row-check" value="${n._id}">`;
         tr.appendChild(tdChk);
 
+        // ID, Técnico, Área
         ['_id','tecnico','area'].forEach(key=>{
           const td = document.createElement('td');
           td.textContent = key==='_id' ? n._id : (n[key] || '-');
           tr.appendChild(td);
         });
 
+        // Classificação
+        const tdClass = document.createElement('td');
+        tdClass.textContent = n.classificacao || '-';
+        tr.appendChild(tdClass);
+
+        // Status (com comentário, se rejeitada)
         const tdStatus = document.createElement('td');
         let statusText = n.status;
         if(n.status==='Rejeitada' && n.comentarioAprovacao){
@@ -332,21 +337,28 @@
         tdStatus.textContent = statusText;
         tr.appendChild(tdStatus);
 
+        // Data
         const tdData = document.createElement('td');
         tdData.textContent = n.dataRegistro ? new Date(n.dataRegistro).toLocaleString() : '-';
         tr.appendChild(tdData);
 
+        // Prazo (regras especiais para Aprovada)
         const tdPrazo = document.createElement('td');
         if(n.prazo){
-          const diff = prazoDiffDays(n.prazo);
-          tdPrazo.innerHTML = `<span class=\"${prazoClasse(diff)}\">${prazoTexto(n.prazo)}</span>`;
-        }else{
+          if(n.status === 'Aprovada'){
+            tdPrazo.textContent = new Date(n.prazo).toLocaleDateString();
+          } else {
+            const diff = prazoDiffDays(n.prazo);
+            tdPrazo.innerHTML = `<span class="${prazoClasse(diff)}">${prazoTexto(n.prazo)}</span>`;
+          }
+        } else {
           tdPrazo.textContent = '-';
         }
         tr.appendChild(tdPrazo);
 
+        // Ações
         const tdAcoes = document.createElement('td');
-        tdAcoes.innerHTML = `<button class=\"btn btn-secondary btn-sm\" onclick=\"visualizarDetalhes('${n._id}')\" data-bs-toggle=\"modal\" data-bs-target=\"#modalDetalhes\">Detalhes</button>`;
+        tdAcoes.innerHTML = `<button class="btn btn-secondary btn-sm" onclick="visualizarDetalhes('${n._id}')" data-bs-toggle="modal" data-bs-target="#modalDetalhes">Detalhes</button>`;
         tr.appendChild(tdAcoes);
 
         tbody.appendChild(tr);
@@ -466,9 +478,14 @@
 
       const spPrazo = document.getElementById('detalhePrazo');
       if(d.prazo){
-        const diff = prazoDiffDays(d.prazo);
-        spPrazo.className = prazoClasse(diff);
-        spPrazo.textContent = prazoTexto(d.prazo);
+        if(d.status === 'Aprovada'){
+          spPrazo.className = '';
+          spPrazo.textContent = new Date(d.prazo).toLocaleDateString();
+        } else {
+          const diff = prazoDiffDays(d.prazo);
+          spPrazo.className = prazoClasse(diff);
+          spPrazo.textContent = prazoTexto(d.prazo);
+        }
       }else{
         spPrazo.className = '';
         spPrazo.textContent = '-';
@@ -529,8 +546,7 @@
     // ---------- Submeter filtros ----------
     document.getElementById('filtroForm').addEventListener('submit', e=>{
       e.preventDefault();
-      // Recarrega da API para aplicar Status/ID no servidor
-      carregarNotificacoes();
+      carregarNotificacoes(); // recarrega da API (Status/ID) e aplica os demais no cliente
     });
 
     // ---------- Inicialização ----------
