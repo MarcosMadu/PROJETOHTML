@@ -11,23 +11,12 @@
   <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
 
   <style>
-    .back-container {
-      text-align: left;
-      margin: 16px;
+    .back-container{ text-align:left; margin:16px; }
+    .btn-back{
+      display:inline-block; padding:8px 12px; background:#2E7D32; color:#fff; border-radius:4px;
+      font-weight:500; text-decoration:none; transition:background .2s; font-family:Arial,sans-serif;
     }
-    .btn-back {
-      display: inline-block;
-      padding: 8px 12px;
-      background: #2E7D32;
-      color: #fff;
-      border-radius: 4px;
-      font-weight: 500;
-      text-decoration: none;
-      transition: background 0.2s;
-      font-family: Arial, sans-serif;
-    }
-    .btn-back i { margin-right: 6px; }
-    .btn-back:hover { background: #1b5e20; }
+    .btn-back:hover{ background:#1b5e20; }
   </style>
 </head>
 
@@ -43,8 +32,8 @@
 
     <!-- Filtros -->
     <form id="filtroForm" class="row g-2 align-items-end my-4">
-      <div class="col-md-3">
-        <label for="status" class="form-label">Filtrar por Status</label>
+      <div class="col-md-2">
+        <label for="status" class="form-label">Status</label>
         <select id="status" class="form-select">
           <option value="">Todos</option>
           <option value="Aberta">Aberta</option>
@@ -53,26 +42,73 @@
           <option value="Rejeitada">Rejeitada</option>
         </select>
       </div>
+
+      <div class="col-md-2">
+        <label for="filtroMes" class="form-label">Mês</label>
+        <select id="filtroMes" class="form-select">
+          <option value="">Todos</option>
+          <option value="0">Janeiro</option><option value="1">Fevereiro</option>
+          <option value="2">Março</option><option value="3">Abril</option>
+          <option value="4">Maio</option><option value="5">Junho</option>
+          <option value="6">Julho</option><option value="7">Agosto</option>
+          <option value="8">Setembro</option><option value="9">Outubro</option>
+          <option value="10">Novembro</option><option value="11">Dezembro</option>
+        </select>
+      </div>
+
+      <div class="col-md-2">
+        <label for="filtroPrazo" class="form-label">Prazo</label>
+        <select id="filtroPrazo" class="form-select">
+          <option value="">Todos</option>
+          <option value="noprazo">No prazo</option>
+          <option value="vencidas">Vencidas</option>
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label for="filtroArea" class="form-label">Área</label>
+        <select id="filtroArea" class="form-select">
+          <option value="">Todas</option>
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label for="filtroTecnico" class="form-label">Técnico</label>
+        <select id="filtroTecnico" class="form-select">
+          <option value="">Todos</option>
+        </select>
+      </div>
+
       <div class="col-md-3">
         <label for="idBusca" class="form-label">Buscar por ID</label>
         <input type="text" id="idBusca" class="form-control" placeholder="Digite o ID" />
       </div>
+
       <div class="col-md-2">
         <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+      </div>
+
+      <div class="col-md-3 ms-auto text-end">
+        <button id="btnExcluirSelecionadas" type="button" class="btn btn-outline-danger" disabled>
+          Excluir Selecionadas
+        </button>
       </div>
     </form>
 
     <!-- Tabela de Notificações -->
     <div class="table-responsive">
-      <table class="table table-striped" id="tabelaNotificacoes">
+      <table class="table table-striped align-middle" id="tabelaNotificacoes">
         <thead>
           <tr>
+            <th style="width:36px;">
+              <input type="checkbox" id="selectAll">
+            </th>
             <th>ID</th>
             <th>Técnico</th>
             <th>Área</th>
             <th>Status</th>
             <th>Data</th>
-            <th>Prazo</th> <!-- NOVO -->
+            <th>Prazo</th>
             <th>Ações</th>
           </tr>
         </thead>
@@ -95,7 +131,6 @@
           </div>
 
           <div class="modal-body">
-            <!-- Dados gerais -->
             <div class="mb-3"><strong>ID:</strong> <span id="detalheId"></span></div>
             <div class="mb-3"><strong>Técnico:</strong> <span id="detalheTecnico"></span></div>
             <div class="mb-3"><strong>Encarregado:</strong> <span id="detalheEncarregado"></span></div>
@@ -104,23 +139,18 @@
             <div class="mb-3"><strong>Descrição:</strong> <p id="detalheDescricao"></p></div>
             <div class="mb-3"><strong>Data de Registro:</strong> <span id="detalheDataRegistro"></span></div>
             <div class="mb-3"><strong>Status:</strong> <span id="detalheStatus"></span></div>
-
-            <!-- NOVO: Prazo -->
             <div class="mb-3"><strong>Prazo:</strong> <span id="detalhePrazo"></span></div>
 
-            <!-- Fotos da Notificação -->
             <hr />
             <h6>Fotos da Notificação</h6>
             <div id="detalheFotosNotificacao" class="d-flex flex-wrap gap-2 mb-3"></div>
 
-            <!-- Justificativa do Gestor -->
             <hr />
             <div class="mb-3">
               <strong>Justificativa do Gestor:</strong>
               <p id="detalheJustificativa" class="mb-0">—</p>
             </div>
 
-            <!-- Baixa (Resolução) -->
             <hr />
             <h6>Baixa (Resolução)</h6>
             <div class="mb-3"><strong>Resolvido Por:</strong> <span id="detalheResolvidoPor"></span></div>
@@ -163,156 +193,265 @@
   </div>
 
   <script>
-    // ---------- Utilidades de data/prazo ----------
+    // ---------- Datas / prazo ----------
     const DAY = 24 * 60 * 60 * 1000;
-
-    function prazoDiffDays(prazoISO) {
-      if (!prazoISO) return null;
+    function prazoDiffDays(prazoISO){
+      if(!prazoISO) return null;
       const hoje = new Date(); hoje.setHours(0,0,0,0);
       const prazo = new Date(prazoISO); prazo.setHours(0,0,0,0);
-      return Math.round((prazo - hoje) / DAY); // positivo = ainda falta; negativo = vencido
+      return Math.round((prazo - hoje)/DAY);
     }
-
-    function prazoTexto(prazoISO) {
-      if (!prazoISO) return '-';
+    function prazoTexto(prazoISO){
+      if(!prazoISO) return '-';
       const d = new Date(prazoISO);
       const diff = prazoDiffDays(prazoISO);
       const base = d.toLocaleDateString();
-      if (diff > 0) return `${base} (em ${diff} dia${diff>1?'s':''})`;
-      if (diff === 0) return `${base} (vence hoje)`;
+      if(diff>0) return `${base} (em ${diff} dia${diff>1?'s':''})`;
+      if(diff===0) return `${base} (vence hoje)`;
       const atras = Math.abs(diff);
       return `${base} (vencido há ${atras} dia${atras>1?'s':''})`;
     }
-
-    function prazoClasse(diff) {
-      if (diff === null) return '';
-      if (diff < 0) return 'text-danger fw-semibold';
-      if (diff === 0) return 'text-warning fw-semibold';
-      if (diff <= 3) return 'text-warning';
+    function prazoClasse(diff){
+      if(diff===null) return '';
+      if(diff<0) return 'text-danger fw-semibold';
+      if(diff===0) return 'text-warning fw-semibold';
+      if(diff<=3) return 'text-warning';
       return 'text-success';
     }
 
-    // ---------- Resolver caminho de imagem ----------
-    function resolveImgSrc(f) {
-      if (!f) return null;
-      if (typeof f === 'object' && f.url) return f.url;           // { url: '...' }
-      if (typeof f === 'string' && f.startsWith('http')) return f; // URL Cloudinary
-      return '/uploads/' + f;                                      // legado
+    // ---------- Imagens ----------
+    function resolveImgSrc(f){
+      if(!f) return null;
+      if(typeof f==='object' && f.url) return f.url;
+      if(typeof f==='string' && f.startsWith('http')) return f;
+      return '/uploads/' + f;
     }
 
-    // ---------- Carregar notificações (tabela) ----------
-    async function carregarNotificacoes() {
+    // Estado em memória
+    let ULTIMA_LISTA = [];
+
+    // ---------- Carregar notificações ----------
+    async function carregarNotificacoes(){
       const status = document.getElementById('status').value;
       const id     = document.getElementById('idBusca').value;
 
       const url = new URL('/api/notificacoes', window.location.origin);
-      if (status) url.searchParams.append('status', status);
-      if (id)     url.searchParams.append('id', id);
+      if(status) url.searchParams.append('status', status);
+      if(id)     url.searchParams.append('id', id);
 
       const res   = await fetch(url);
       const lista = await res.json();
 
+      // guarda lista crua para filtros adicionais
+      ULTIMA_LISTA = lista;
+
+      popularFiltrosDinamicos(lista);
+      renderTabela(aplicarFiltrosCliente(lista));
+    }
+
+    // ---------- Aplicar filtros cliente (mês, prazo, área, técnico) ----------
+    function aplicarFiltrosCliente(baseLista){
+      const mesSel   = document.getElementById('filtroMes').value;
+      const prazoSel = document.getElementById('filtroPrazo').value;
+      const areaSel  = document.getElementById('filtroArea').value;
+      const tecSel   = document.getElementById('filtroTecnico').value;
+
+      return baseLista.filter(n=>{
+        // mês por dataRegistro
+        if(mesSel !== ''){
+          if(!n.dataRegistro) return false;
+          const m = new Date(n.dataRegistro).getMonth();
+          if(String(m) !== mesSel) return false;
+        }
+        // prazo
+        if(prazoSel){
+          const diff = prazoDiffDays(n.prazo);
+          if(prazoSel==='noprazo' && !(diff===0 || diff>0)) return false;
+          if(prazoSel==='vencidas' && !(diff<0)) return false;
+        }
+        // área
+        if(areaSel && (n.area || '') !== areaSel) return false;
+        // técnico
+        if(tecSel && (n.tecnico || '') !== tecSel) return false;
+
+        return true;
+      });
+    }
+
+    // ---------- Popular dropdowns Área/Técnico ----------
+    function popularFiltrosDinamicos(lista){
+      const areaSel = document.getElementById('filtroArea');
+      const tecSel  = document.getElementById('filtroTecnico');
+
+      const areas = Array.from(new Set(lista.map(n=>n.area).filter(Boolean))).sort();
+      const tecs  = Array.from(new Set(lista.map(n=>n.tecnico).filter(Boolean))).sort();
+
+      // Preserva opção "Todas"/"Todos" e reconstroi o resto
+      const areaVal = areaSel.value, tecVal = tecSel.value;
+
+      areaSel.innerHTML = '<option value="">Todas</option>' + areas.map(a=>`<option value="${a}">${a}</option>`).join('');
+      tecSel.innerHTML  = '<option value="">Todos</option>' + tecs.map(t=>`<option value="${t}">${t}</option>`).join('');
+
+      // mantém seleção se ainda existir
+      if(areas.includes(areaVal)) areaSel.value = areaVal;
+      if(tecs.includes(tecVal))   tecSel.value  = tecVal;
+    }
+
+    // ---------- Render Tabela ----------
+    function renderTabela(lista){
       const tbody = document.querySelector('#tabelaNotificacoes tbody');
       tbody.innerHTML = '';
 
-      lista.forEach(n => {
+      const btnBulk = document.getElementById('btnExcluirSelecionadas');
+      btnBulk.disabled = true; // reset
+
+      lista.forEach(n=>{
         const tr = document.createElement('tr');
 
+        // checkbox
+        const tdChk = document.createElement('td');
+        tdChk.innerHTML = `<input type="checkbox" class="row-check" value="${n._id}">`;
+        tr.appendChild(tdChk);
+
         // ID, Técnico, Área
-        ['_id','tecnico','area'].forEach(key => {
+        ['_id','tecnico','area'].forEach(key=>{
           const td = document.createElement('td');
-          td.textContent = key === '_id' ? n._id : (n[key] || '-');
+          td.textContent = key==='_id' ? n._id : (n[key] || '-');
           tr.appendChild(td);
         });
 
-        // Status (com comentário de rejeição, se houver)
+        // status
         const tdStatus = document.createElement('td');
         let statusText = n.status;
-        if (n.status === 'Rejeitada' && n.comentarioAprovacao) {
+        if(n.status==='Rejeitada' && n.comentarioAprovacao){
           statusText += `: ${n.comentarioAprovacao}`;
         }
         tdStatus.textContent = statusText;
         tr.appendChild(tdStatus);
 
-        // Data de registro
+        // data
         const tdData = document.createElement('td');
         tdData.textContent = n.dataRegistro ? new Date(n.dataRegistro).toLocaleString() : '-';
         tr.appendChild(tdData);
 
-        // NOVO: Prazo
+        // prazo
         const tdPrazo = document.createElement('td');
-        if (n.prazo) {
+        if(n.prazo){
           const diff = prazoDiffDays(n.prazo);
           tdPrazo.innerHTML = `<span class="${prazoClasse(diff)}">${prazoTexto(n.prazo)}</span>`;
-        } else {
+        }else{
           tdPrazo.textContent = '-';
         }
         tr.appendChild(tdPrazo);
 
-        // Ações
+        // ações
         const tdAcoes = document.createElement('td');
         tdAcoes.innerHTML = `<button class="btn btn-secondary btn-sm" onclick="visualizarDetalhes('${n._id}')" data-bs-toggle="modal" data-bs-target="#modalDetalhes">Detalhes</button>`;
         tr.appendChild(tdAcoes);
 
         tbody.appendChild(tr);
       });
+
+      // listeners de seleção
+      syncSelectionUI();
     }
 
-    // ---------- Configuração de ações do modal ----------
-    function configurarAcoes(d) {
+    // ---------- Seleção múltipla ----------
+    function getSelectedIds(){
+      return Array.from(document.querySelectorAll('.row-check:checked')).map(i=>i.value);
+    }
+    function syncSelectionUI(){
+      const selectAll = document.getElementById('selectAll');
+      const checks = document.querySelectorAll('.row-check');
+      const btnBulk = document.getElementById('btnExcluirSelecionadas');
+
+      // estado do botão
+      btnBulk.disabled = getSelectedIds().length===0;
+
+      // selectAll -> marcar/desmarcar todos
+      selectAll.onchange = () => {
+        checks.forEach(c=>{ c.checked = selectAll.checked; });
+        btnBulk.disabled = getSelectedIds().length===0;
+      };
+
+      // cada check atualiza estado do master e botão
+      checks.forEach(c=>{
+        c.onchange = ()=>{
+          const total = checks.length;
+          const marcados = getSelectedIds().length;
+          selectAll.checked = marcados===total;
+          selectAll.indeterminate = marcados>0 && marcados<total;
+          btnBulk.disabled = marcados===0;
+        };
+      });
+
+      // ação bulk
+      document.getElementById('btnExcluirSelecionadas').onclick = async ()=>{
+        const ids = getSelectedIds();
+        if(ids.length===0) return;
+        if(!confirm(`Confirmar exclusão de ${ids.length} notificação(ões)?`)) return;
+
+        // usa a mesma rota /excluir/:id, em série
+        for(const id of ids){
+          try{
+            await fetch(`/excluir/${id}`, { method:'DELETE' });
+          }catch(e){ console.error('Erro ao excluir', id, e); }
+        }
+        await carregarNotificacoes();
+        alert('Exclusão concluída!');
+      };
+    }
+
+    // ---------- Ações do modal ----------
+    function configurarAcoes(d){
       const btnA = document.getElementById('btnAprovar');
       const btnR = document.getElementById('btnRejeitar');
 
-      if (d.status === 'Aprovada' || d.status === 'Rejeitada') {
-        btnA.style.display = 'none';
-        btnR.style.display = 'none';
-      } else {
+      if(d.status==='Aprovada' || d.status==='Rejeitada'){
+        btnA.style.display='none';
+        btnR.style.display='none';
+      }else{
         btnA.style.display = d.dataBaixa ? 'inline-block' : 'none';
         btnR.style.display = 'inline-block';
       }
 
-      btnA.onclick = async () => {
-        try {
+      btnA.onclick = async ()=>{
+        try{
           const res = await fetch('/aprovar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({ id: d._id })
+            method:'POST',
+            headers:{'Content-Type':'application/x-www-form-urlencoded'},
+            body:new URLSearchParams({ id:d._id })
           });
-          if (!res.ok) throw new Error(await res.text());
+          if(!res.ok) throw new Error(await res.text());
           alert('Notificação aprovada com sucesso!');
           location.reload();
-        } catch (err) {
-          alert('Erro ao aprovar: ' + err.message);
-        }
+        }catch(err){ alert('Erro ao aprovar: '+err.message); }
       };
 
-      btnR.onclick = () => {
-        document.getElementById('rejeicaoId').value = d._id;
-      };
+      btnR.onclick = ()=>{ document.getElementById('rejeicaoId').value = d._id; };
 
-      document.getElementById('btnExcluir').onclick = async () => {
-        if (confirm('Tem certeza que deseja excluir esta notificação?')) {
-          await fetch(`/excluir/${d._id}`, { method: 'DELETE' });
+      document.getElementById('btnExcluir').onclick = async ()=>{
+        if(confirm('Tem certeza que deseja excluir esta notificação?')){
+          await fetch(`/excluir/${d._id}`, { method:'DELETE' });
           location.reload();
         }
       };
 
       const justifEl = document.getElementById('detalheJustificativa');
-      if (d.status === 'Rejeitada') {
+      if(d.status==='Rejeitada'){
         justifEl.textContent = d.comentarioAprovacao || '—';
-      } else if (d.status === 'Aprovada') {
+      }else if(d.status==='Aprovada'){
         justifEl.textContent = `Aprovado por ${d.aprovadoPor || '—'} em ${new Date(d.dataAprovacao).toLocaleString()}`;
-      } else {
+      }else{
         justifEl.textContent = '—';
       }
     }
 
-    // ---------- Visualizar detalhes ----------
-    async function visualizarDetalhes(id) {
+    // ---------- Detalhes ----------
+    async function visualizarDetalhes(id){
       const res = await fetch(`/api/notificacoes/${id}`);
       const d   = await res.json();
 
-      // Dados básicos
       document.getElementById('detalheId').textContent            = d._id;
       document.getElementById('detalheTecnico').textContent       = d.tecnico || '-';
       document.getElementById('detalheEncarregado').textContent   = d.encarregado || '-';
@@ -322,90 +461,75 @@
       document.getElementById('detalheDataRegistro').textContent  = d.dataRegistro ? new Date(d.dataRegistro).toLocaleString() : '-';
       document.getElementById('detalheStatus').textContent        = d.status || '-';
 
-      // NOVO: Prazo
       const spPrazo = document.getElementById('detalhePrazo');
-      if (d.prazo) {
+      if(d.prazo){
         const diff = prazoDiffDays(d.prazo);
         spPrazo.className = prazoClasse(diff);
         spPrazo.textContent = prazoTexto(d.prazo);
-      } else {
+      }else{
         spPrazo.className = '';
         spPrazo.textContent = '-';
       }
 
-      // Fotos da Notificação
       const notifFotosDiv = document.getElementById('detalheFotosNotificacao');
-      notifFotosDiv.innerHTML = '';
-      if (d.notificacaoFotos?.length) {
-        d.notificacaoFotos.forEach(f => {
-          const src = resolveImgSrc(f);
-          if (!src) return;
+      notifFotosDiv.innerHTML='';
+      if(d.notificacaoFotos?.length){
+        d.notificacaoFotos.forEach(f=>{
+          const src = resolveImgSrc(f); if(!src) return;
           const link = document.createElement('a');
-          link.href = src;
-          link.className = 'glightbox';
-          link.setAttribute('data-gallery', 'notificacao');
+          link.href = src; link.className='glightbox'; link.setAttribute('data-gallery','notificacao');
           const img = document.createElement('img');
-          img.src = src;
-          img.width = 120;
-          img.className = 'border rounded me-2 mb-2';
-          link.appendChild(img);
-          notifFotosDiv.appendChild(link);
+          img.src = src; img.width=120; img.className='border rounded me-2 mb-2';
+          link.appendChild(img); notifFotosDiv.appendChild(link);
         });
         GLightbox({ selector: '.glightbox' });
-      } else {
+      }else{
         notifFotosDiv.textContent = 'Sem fotos da notificação.';
       }
 
-      // Baixa (Resolução)
       document.getElementById('detalheResolvidoPor').textContent = d.resolvidoPor || '—';
       document.getElementById('detalheDataBaixa').textContent   = d.dataBaixa ? new Date(d.dataBaixa).toLocaleString() : '—';
       document.getElementById('detalheComentario').textContent  = d.resolucaoComentario || 'Sem comentário';
 
       const fotosDiv = document.getElementById('detalheFotos');
-      fotosDiv.innerHTML = '';
-      if (d.resolucaoFotos?.length) {
-        d.resolucaoFotos.forEach(f => {
-          const src = resolveImgSrc(f);
-          if (!src) return;
+      fotosDiv.innerHTML='';
+      if(d.resolucaoFotos?.length){
+        d.resolucaoFotos.forEach(f=>{
+          const src = resolveImgSrc(f); if(!src) return;
           const link = document.createElement('a');
-          link.href = src;
-          link.className = 'glightbox';
-          link.setAttribute('data-gallery', 'baixa');
+          link.href = src; link.className='glightbox'; link.setAttribute('data-gallery','baixa');
           const img = document.createElement('img');
-          img.src = src;
-          img.width = 120;
-          img.className = 'border rounded me-2 mb-2';
-          link.appendChild(img);
-          fotosDiv.appendChild(link);
+          img.src = src; img.width=120; img.className='border rounded me-2 mb-2';
+          link.appendChild(img); fotosDiv.appendChild(link);
         });
         GLightbox({ selector: '.glightbox' });
-      } else {
+      }else{
         fotosDiv.textContent = 'Sem fotos da baixa.';
       }
 
       configurarAcoes(d);
     }
 
-    // ---------- Rejeição via AJAX ----------
-    document.getElementById('formRejeicao').addEventListener('submit', async e => {
+    // ---------- Rejeição ----------
+    document.getElementById('formRejeicao').addEventListener('submit', async e=>{
       e.preventDefault();
       const data = new URLSearchParams(new FormData(e.target));
-      try {
-        const res = await fetch('/rejeitar', { method: 'POST', body: data });
-        if (!res.ok) throw new Error(await res.text());
+      try{
+        const res = await fetch('/rejeitar', { method:'POST', body:data });
+        if(!res.ok) throw new Error(await res.text());
         alert('Notificação rejeitada com sucesso!');
         bootstrap.Modal.getInstance(document.getElementById('modalRejeicao')).hide();
         visualizarDetalhes(e.target.rejeicaoId.value);
-      } catch (err) {
-        alert('Erro ao rejeitar: ' + err.message);
-      }
+      }catch(err){ alert('Erro ao rejeitar: '+err.message); }
+    });
+
+    // ---------- Submeter filtros ----------
+    document.getElementById('filtroForm').addEventListener('submit', e=>{
+      e.preventDefault();
+      renderTabela(aplicarFiltrosCliente(ULTIMA_LISTA));
     });
 
     // ---------- Inicialização ----------
-    document.getElementById('filtroForm').addEventListener('submit', e => {
-      e.preventDefault();
-      carregarNotificacoes();
-    });
     window.addEventListener('DOMContentLoaded', carregarNotificacoes);
   </script>
 
