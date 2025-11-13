@@ -6,7 +6,7 @@ const NotificacaoSchema = new mongoose.Schema({
   encarregado:       String,
   classificacao:     String,
   supervisorObra:    String,
-  supervisorObra:    String,
+  descricaoAtividade:String,
   area:              String,
   descricao:         String,
   nr:                String,
