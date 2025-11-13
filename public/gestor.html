@@ -1,47 +1,43 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Painel do Gestor - Notificações e Interdições</title>
 
-<style>
-  .back-container {
-    text-align: left;
-    margin: 16px;
-  }
-  .btn-back {
-    display: inline-block;
-    padding: 8px 12px;
-    background: #2E7D32;
-    color: #fff;
-    border-radius: 4px;
-    font-weight: 500;
-    text-decoration: none;
-    transition: background 0.2s;
-    font-family: Arial, sans-serif;
-  }
-  .btn-back i {
-    margin-right: 6px;
-  }
-  .btn-back:hover {
-    background: #1b5e20;
-  }
-</style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <!-- GLightbox (para ampliar fotos) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
 
-<div class="back-container">
-  <a href="/dashboard.html" class="btn-back">
-    <i class="fas fa-arrow-left"></i> Voltar ao Painel Inicial
-  </a>
-</div>
-
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Painel do Gestor - Notificações e Interdições</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
-<!-- GLightbox (para ampliar fotos) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" />
-<script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
-
+  <style>
+    .back-container {
+      text-align: left;
+      margin: 16px;
+    }
+    .btn-back {
+      display: inline-block;
+      padding: 8px 12px;
+      background: #2E7D32;
+      color: #fff;
+      border-radius: 4px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background 0.2s;
+      font-family: Arial, sans-serif;
+    }
+    .btn-back i { margin-right: 6px; }
+    .btn-back:hover { background: #1b5e20; }
+  </style>
 </head>
+
 <body class="bg-light">
+  <div class="back-container">
+    <a href="/dashboard.html" class="btn-back">
+      <i class="fas fa-arrow-left"></i> Voltar ao Painel Inicial
+    </a>
+  </div>
+
   <div class="container py-4">
     <h2>🔍 Painel do Gestor - Notificações e Interdições</h2>
 
@@ -76,6 +72,7 @@
             <th>Área</th>
             <th>Status</th>
             <th>Data</th>
+            <th>Prazo</th> <!-- NOVO -->
             <th>Ações</th>
           </tr>
         </thead>
@@ -96,6 +93,7 @@
             </div>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
           </div>
+
           <div class="modal-body">
             <!-- Dados gerais -->
             <div class="mb-3"><strong>ID:</strong> <span id="detalheId"></span></div>
@@ -106,6 +104,9 @@
             <div class="mb-3"><strong>Descrição:</strong> <p id="detalheDescricao"></p></div>
             <div class="mb-3"><strong>Data de Registro:</strong> <span id="detalheDataRegistro"></span></div>
             <div class="mb-3"><strong>Status:</strong> <span id="detalheStatus"></span></div>
+
+            <!-- NOVO: Prazo -->
+            <div class="mb-3"><strong>Prazo:</strong> <span id="detalhePrazo"></span></div>
 
             <!-- Fotos da Notificação -->
             <hr />
@@ -129,6 +130,7 @@
               <div id="detalheFotos" class="d-flex flex-wrap gap-2"></div>
             </div>
           </div>
+
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
           </div>
@@ -158,164 +160,255 @@
         </form>
       </div>
     </div>
-
   </div>
 
-<script>
-  // Resolve o caminho da imagem (Cloudinary URL ou arquivo antigo)
-  function resolveImgSrc(f) {
-    if (!f) return null;
-    if (typeof f === 'object' && f.url) return f.url;
-    if (typeof f === 'string' && f.startsWith('http')) return f;
-    return '/uploads/' + f;
-  }
+  <script>
+    // ---------- Utilidades de data/prazo ----------
+    const DAY = 24 * 60 * 60 * 1000;
 
-  // Carregar notificações
-  async function carregarNotificacoes() {
-    const status = document.getElementById('status').value;
-    const id = document.getElementById('idBusca').value;
-    const url = new URL('/api/notificacoes', window.location.origin);
-    if (status) url.searchParams.append('status', status);
-    if (id) url.searchParams.append('id', id);
-
-    const res = await fetch(url);
-    const lista = await res.json();
-    const tbody = document.querySelector('#tabelaNotificacoes tbody');
-    tbody.innerHTML = '';
-
-    lista.forEach(n => {
-      const tr = document.createElement('tr');
-      ['_id','tecnico','area'].forEach(key => {
-        const td = document.createElement('td');
-        td.textContent = key === '_id' ? n._id : n[key] || '-';
-        tr.appendChild(td);
-      });
-      const tdStatus = document.createElement('td');
-      tdStatus.textContent = n.status || '-';
-      tr.appendChild(tdStatus);
-
-      const tdData = document.createElement('td');
-      tdData.textContent = n.dataRegistro ? new Date(n.dataRegistro).toLocaleString() : '-';
-      tr.appendChild(tdData);
-
-      const tdAcoes = document.createElement('td');
-      tdAcoes.innerHTML = `<button class="btn btn-secondary btn-sm" onclick="visualizarDetalhes('${n._id}')" data-bs-toggle="modal" data-bs-target="#modalDetalhes">Detalhes</button>`;
-      tr.appendChild(tdAcoes);
-
-      tbody.appendChild(tr);
-    });
-  }
-
-  // Configuração do modal
-  function configurarAcoes(d) {
-    const btnA = document.getElementById('btnAprovar');
-    const btnR = document.getElementById('btnRejeitar');
-
-    if (d.status === 'Aprovada' || d.status === 'Rejeitada') {
-      btnA.style.display = 'none';
-      btnR.style.display = 'none';
-    } else {
-      btnA.style.display = d.dataBaixa ? 'inline-block' : 'none';
-      btnR.style.display = 'inline-block';
+    function prazoDiffDays(prazoISO) {
+      if (!prazoISO) return null;
+      const hoje = new Date(); hoje.setHours(0,0,0,0);
+      const prazo = new Date(prazoISO); prazo.setHours(0,0,0,0);
+      return Math.round((prazo - hoje) / DAY); // positivo = ainda falta; negativo = vencido
     }
 
-    btnA.onclick = async () => {
-      try {
-        const res = await fetch('/aprovar', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({ id: d._id })
+    function prazoTexto(prazoISO) {
+      if (!prazoISO) return '-';
+      const d = new Date(prazoISO);
+      const diff = prazoDiffDays(prazoISO);
+      const base = d.toLocaleDateString();
+      if (diff > 0) return `${base} (em ${diff} dia${diff>1?'s':''})`;
+      if (diff === 0) return `${base} (vence hoje)`;
+      const atras = Math.abs(diff);
+      return `${base} (vencido há ${atras} dia${atras>1?'s':''})`;
+    }
+
+    function prazoClasse(diff) {
+      if (diff === null) return '';
+      if (diff < 0) return 'text-danger fw-semibold';
+      if (diff === 0) return 'text-warning fw-semibold';
+      if (diff <= 3) return 'text-warning';
+      return 'text-success';
+    }
+
+    // ---------- Resolver caminho de imagem ----------
+    function resolveImgSrc(f) {
+      if (!f) return null;
+      if (typeof f === 'object' && f.url) return f.url;           // { url: '...' }
+      if (typeof f === 'string' && f.startsWith('http')) return f; // URL Cloudinary
+      return '/uploads/' + f;                                      // legado
+    }
+
+    // ---------- Carregar notificações (tabela) ----------
+    async function carregarNotificacoes() {
+      const status = document.getElementById('status').value;
+      const id     = document.getElementById('idBusca').value;
+
+      const url = new URL('/api/notificacoes', window.location.origin);
+      if (status) url.searchParams.append('status', status);
+      if (id)     url.searchParams.append('id', id);
+
+      const res   = await fetch(url);
+      const lista = await res.json();
+
+      const tbody = document.querySelector('#tabelaNotificacoes tbody');
+      tbody.innerHTML = '';
+
+      lista.forEach(n => {
+        const tr = document.createElement('tr');
+
+        // ID, Técnico, Área
+        ['_id','tecnico','area'].forEach(key => {
+          const td = document.createElement('td');
+          td.textContent = key === '_id' ? n._id : (n[key] || '-');
+          tr.appendChild(td);
         });
+
+        // Status (com comentário de rejeição, se houver)
+        const tdStatus = document.createElement('td');
+        let statusText = n.status;
+        if (n.status === 'Rejeitada' && n.comentarioAprovacao) {
+          statusText += `: ${n.comentarioAprovacao}`;
+        }
+        tdStatus.textContent = statusText;
+        tr.appendChild(tdStatus);
+
+        // Data de registro
+        const tdData = document.createElement('td');
+        tdData.textContent = n.dataRegistro ? new Date(n.dataRegistro).toLocaleString() : '-';
+        tr.appendChild(tdData);
+
+        // NOVO: Prazo
+        const tdPrazo = document.createElement('td');
+        if (n.prazo) {
+          const diff = prazoDiffDays(n.prazo);
+          tdPrazo.innerHTML = `<span class="${prazoClasse(diff)}">${prazoTexto(n.prazo)}</span>`;
+        } else {
+          tdPrazo.textContent = '-';
+        }
+        tr.appendChild(tdPrazo);
+
+        // Ações
+        const tdAcoes = document.createElement('td');
+        tdAcoes.innerHTML = `<button class="btn btn-secondary btn-sm" onclick="visualizarDetalhes('${n._id}')" data-bs-toggle="modal" data-bs-target="#modalDetalhes">Detalhes</button>`;
+        tr.appendChild(tdAcoes);
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ---------- Configuração de ações do modal ----------
+    function configurarAcoes(d) {
+      const btnA = document.getElementById('btnAprovar');
+      const btnR = document.getElementById('btnRejeitar');
+
+      if (d.status === 'Aprovada' || d.status === 'Rejeitada') {
+        btnA.style.display = 'none';
+        btnR.style.display = 'none';
+      } else {
+        btnA.style.display = d.dataBaixa ? 'inline-block' : 'none';
+        btnR.style.display = 'inline-block';
+      }
+
+      btnA.onclick = async () => {
+        try {
+          const res = await fetch('/aprovar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ id: d._id })
+          });
+          if (!res.ok) throw new Error(await res.text());
+          alert('Notificação aprovada com sucesso!');
+          location.reload();
+        } catch (err) {
+          alert('Erro ao aprovar: ' + err.message);
+        }
+      };
+
+      btnR.onclick = () => {
+        document.getElementById('rejeicaoId').value = d._id;
+      };
+
+      document.getElementById('btnExcluir').onclick = async () => {
+        if (confirm('Tem certeza que deseja excluir esta notificação?')) {
+          await fetch(`/excluir/${d._id}`, { method: 'DELETE' });
+          location.reload();
+        }
+      };
+
+      const justifEl = document.getElementById('detalheJustificativa');
+      if (d.status === 'Rejeitada') {
+        justifEl.textContent = d.comentarioAprovacao || '—';
+      } else if (d.status === 'Aprovada') {
+        justifEl.textContent = `Aprovado por ${d.aprovadoPor || '—'} em ${new Date(d.dataAprovacao).toLocaleString()}`;
+      } else {
+        justifEl.textContent = '—';
+      }
+    }
+
+    // ---------- Visualizar detalhes ----------
+    async function visualizarDetalhes(id) {
+      const res = await fetch(`/api/notificacoes/${id}`);
+      const d   = await res.json();
+
+      // Dados básicos
+      document.getElementById('detalheId').textContent            = d._id;
+      document.getElementById('detalheTecnico').textContent       = d.tecnico || '-';
+      document.getElementById('detalheEncarregado').textContent   = d.encarregado || '-';
+      document.getElementById('detalheArea').textContent          = d.area || '-';
+      document.getElementById('detalheClassificacao').textContent = d.classificacao || '-';
+      document.getElementById('detalheDescricao').textContent     = d.descricao || '-';
+      document.getElementById('detalheDataRegistro').textContent  = d.dataRegistro ? new Date(d.dataRegistro).toLocaleString() : '-';
+      document.getElementById('detalheStatus').textContent        = d.status || '-';
+
+      // NOVO: Prazo
+      const spPrazo = document.getElementById('detalhePrazo');
+      if (d.prazo) {
+        const diff = prazoDiffDays(d.prazo);
+        spPrazo.className = prazoClasse(diff);
+        spPrazo.textContent = prazoTexto(d.prazo);
+      } else {
+        spPrazo.className = '';
+        spPrazo.textContent = '-';
+      }
+
+      // Fotos da Notificação
+      const notifFotosDiv = document.getElementById('detalheFotosNotificacao');
+      notifFotosDiv.innerHTML = '';
+      if (d.notificacaoFotos?.length) {
+        d.notificacaoFotos.forEach(f => {
+          const src = resolveImgSrc(f);
+          if (!src) return;
+          const link = document.createElement('a');
+          link.href = src;
+          link.className = 'glightbox';
+          link.setAttribute('data-gallery', 'notificacao');
+          const img = document.createElement('img');
+          img.src = src;
+          img.width = 120;
+          img.className = 'border rounded me-2 mb-2';
+          link.appendChild(img);
+          notifFotosDiv.appendChild(link);
+        });
+        GLightbox({ selector: '.glightbox' });
+      } else {
+        notifFotosDiv.textContent = 'Sem fotos da notificação.';
+      }
+
+      // Baixa (Resolução)
+      document.getElementById('detalheResolvidoPor').textContent = d.resolvidoPor || '—';
+      document.getElementById('detalheDataBaixa').textContent   = d.dataBaixa ? new Date(d.dataBaixa).toLocaleString() : '—';
+      document.getElementById('detalheComentario').textContent  = d.resolucaoComentario || 'Sem comentário';
+
+      const fotosDiv = document.getElementById('detalheFotos');
+      fotosDiv.innerHTML = '';
+      if (d.resolucaoFotos?.length) {
+        d.resolucaoFotos.forEach(f => {
+          const src = resolveImgSrc(f);
+          if (!src) return;
+          const link = document.createElement('a');
+          link.href = src;
+          link.className = 'glightbox';
+          link.setAttribute('data-gallery', 'baixa');
+          const img = document.createElement('img');
+          img.src = src;
+          img.width = 120;
+          img.className = 'border rounded me-2 mb-2';
+          link.appendChild(img);
+          fotosDiv.appendChild(link);
+        });
+        GLightbox({ selector: '.glightbox' });
+      } else {
+        fotosDiv.textContent = 'Sem fotos da baixa.';
+      }
+
+      configurarAcoes(d);
+    }
+
+    // ---------- Rejeição via AJAX ----------
+    document.getElementById('formRejeicao').addEventListener('submit', async e => {
+      e.preventDefault();
+      const data = new URLSearchParams(new FormData(e.target));
+      try {
+        const res = await fetch('/rejeitar', { method: 'POST', body: data });
         if (!res.ok) throw new Error(await res.text());
-        alert('Notificação aprovada com sucesso!');
-        location.reload();
+        alert('Notificação rejeitada com sucesso!');
+        bootstrap.Modal.getInstance(document.getElementById('modalRejeicao')).hide();
+        visualizarDetalhes(e.target.rejeicaoId.value);
       } catch (err) {
-        alert('Erro ao aprovar: ' + err.message);
+        alert('Erro ao rejeitar: ' + err.message);
       }
-    };
+    });
 
-    btnR.onclick = () => {
-      document.getElementById('rejeicaoId').value = d._id;
-    };
+    // ---------- Inicialização ----------
+    document.getElementById('filtroForm').addEventListener('submit', e => {
+      e.preventDefault();
+      carregarNotificacoes();
+    });
+    window.addEventListener('DOMContentLoaded', carregarNotificacoes);
+  </script>
 
-    document.getElementById('btnExcluir').onclick = async () => {
-      if (confirm('Tem certeza que deseja excluir esta notificação?')) {
-        await fetch(`/excluir/${d._id}`, { method: 'DELETE' });
-        location.reload();
-      }
-    };
-  }
-
-  // Visualizar detalhes
-  async function visualizarDetalhes(id) {
-    const res = await fetch(`/api/notificacoes/${id}`);
-    const d = await res.json();
-
-    document.getElementById('detalheId').textContent = d._id;
-    document.getElementById('detalheTecnico').textContent = d.tecnico || '-';
-    document.getElementById('detalheEncarregado').textContent = d.encarregado || '-';
-    document.getElementById('detalheArea').textContent = d.area || '-';
-    document.getElementById('detalheClassificacao').textContent = d.classificacao || '-';
-    document.getElementById('detalheDescricao').textContent = d.descricao || '-';
-    document.getElementById('detalheDataRegistro').textContent = d.dataRegistro ? new Date(d.dataRegistro).toLocaleString() : '-';
-    document.getElementById('detalheStatus').textContent = d.status || '-';
-
-    // Fotos da Notificação
-    const notifFotosDiv = document.getElementById('detalheFotosNotificacao');
-    notifFotosDiv.innerHTML = '';
-    if (d.notificacaoFotos?.length) {
-      d.notificacaoFotos.forEach(f => {
-        const src = resolveImgSrc(f);
-        if (!src) return;
-        const link = document.createElement('a');
-        link.href = src;
-        link.className = 'glightbox-notif';
-        link.setAttribute('data-gallery', 'notificacao');
-        const img = document.createElement('img');
-        img.src = src;
-        img.width = 120;
-        img.className = 'border rounded me-2 mb-2';
-        link.appendChild(img);
-        notifFotosDiv.appendChild(link);
-      });
-      GLightbox({ selector: '.glightbox-notif' });
-    } else {
-      notifFotosDiv.textContent = 'Sem fotos da notificação.';
-    }
-
-    // Fotos da Baixa
-    const fotosDiv = document.getElementById('detalheFotos');
-    fotosDiv.innerHTML = '';
-    if (d.resolucaoFotos?.length) {
-      d.resolucaoFotos.forEach(f => {
-        const src = resolveImgSrc(f);
-        if (!src) return;
-        const link = document.createElement('a');
-        link.href = src;
-        link.className = 'glightbox-baixa';
-        link.setAttribute('data-gallery', 'baixa');
-        const img = document.createElement('img');
-        img.src = src;
-        img.width = 120;
-        img.className = 'border rounded me-2 mb-2';
-        link.appendChild(img);
-        fotosDiv.appendChild(link);
-      });
-      GLightbox({ selector: '.glightbox-baixa' });
-    } else {
-      fotosDiv.textContent = 'Sem fotos da baixa.';
-    }
-
-    configurarAcoes(d);
-  }
-
-  document.getElementById('filtroForm').addEventListener('submit', e => {
-    e.preventDefault();
-    carregarNotificacoes();
-  });
-  window.addEventListener('DOMContentLoaded', carregarNotificacoes);
-</script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
