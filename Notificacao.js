@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
 const notificacaoSchema = new mongoose.Schema({
-  supervisorObra:      { type: String, default: '-' },
-  descricaoAtividade:  { type: String, default: '-' },
+  supervisorObra:      { type: String, required: true },
+  descricaoAtividade:  { type: String, required: true },
   tecnico:             { type: String, required: true },
   encarregado:         { type: String, required: true },
   classificacao:       { type: String, required: true },
