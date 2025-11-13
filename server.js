@@ -118,7 +118,8 @@ app.post('/enviar', uploadNotificacaoFotos, async (req, res) => {
       req.body.descricao_atividade ??
       req.body.descricaoDaAtividade ??
       req.body.atividadeDescricao ??
-      req.body.descAtividade ??
+      req.body.Atividade ??
+      req.body.atividade ??
       '-';
 
     // Normaliza o campo "área" (pode vir como 'squad' no formulário)
@@ -454,3 +455,4 @@ app.post('/inspecao',
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });
+
