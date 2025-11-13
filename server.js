@@ -103,6 +103,20 @@ app.post('/enviar', uploadNotificacaoFotos, async (req, res) => {
   try {
     const dados = req.body;
 
+    // Normaliza o campo "área" (pode vir como 'squad' no formulário)
+dados.area = (
+  req.body.area ||
+  req.body.squad ||
+  req.body.Area ||
+  req.body.local ||
+  req.body.setor ||
+  req.body.areaNotificada ||
+  req.body.squadArea ||
+  req.body.Squad ||
+  ''
+).toString().trim() || '-';
+
+    
     // 🔹 Agora salvando URL das fotos (Cloudinary) em vez de filename local
     if (req.files && req.files.length) {
       dados.notificacaoFotos = req.files.map(f => f.path || f.filename);
@@ -423,4 +437,5 @@ app.post('/inspecao',
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });
+
 
