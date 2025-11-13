@@ -5,6 +5,8 @@ const NotificacaoSchema = new mongoose.Schema({
    tecnico:           { type: String, required: true },
   encarregado:       String,
   classificacao:     String,
+  supervisorObra:    String,
+  supervisorObra:    String,
   area:              String,
   descricao:         String,
   nr:                String,
