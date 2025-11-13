@@ -32,15 +32,14 @@
   </a>
 </div>
 
-
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Painel do Gestor - Notificações e Interdições</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Painel do Gestor - Notificações e Interdições</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
 <!-- GLightbox (para ampliar fotos) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
-  
+
 </head>
 <body class="bg-light">
   <div class="container py-4">
@@ -101,7 +100,7 @@
             <!-- Dados gerais -->
             <div class="mb-3"><strong>ID:</strong> <span id="detalheId"></span></div>
             <div class="mb-3"><strong>Técnico:</strong> <span id="detalheTecnico"></span></div>
- <div class="mb-3"><strong>Encarregado:</strong> <span id="detalheEncarregado"></span></div>
+            <div class="mb-3"><strong>Encarregado:</strong> <span id="detalheEncarregado"></span></div>
             <div class="mb-3"><strong>Área:</strong> <span id="detalheArea"></span></div>
             <div class="mb-3"><strong>Classificação:</strong> <span id="detalheClassificacao"></span></div>
             <div class="mb-3"><strong>Descrição:</strong> <p id="detalheDescricao"></p></div>
@@ -162,214 +161,161 @@
 
   </div>
 
-  <script>
-    // 🔧 NOVO: resolve o caminho da imagem (Cloudinary URL ou arquivo antigo em /uploads)
-    function resolveImgSrc(f) {
-      if (!f) return null;
-      if (typeof f === 'object' && f.url) return f.url; // caso venha como { url: '...' }
-      if (typeof f === 'string' && f.startsWith('http')) return f; // URL Cloudinary
-      return '/uploads/' + f; // compatibilidade com imagens antigas
-    }
+<script>
+  // Resolve o caminho da imagem (Cloudinary URL ou arquivo antigo)
+  function resolveImgSrc(f) {
+    if (!f) return null;
+    if (typeof f === 'object' && f.url) return f.url;
+    if (typeof f === 'string' && f.startsWith('http')) return f;
+    return '/uploads/' + f;
+  }
 
-    // Carregar notificações
-    async function carregarNotificacoes() {
-      const status = document.getElementById('status').value;
-      const id = document.getElementById('idBusca').value;
-      const url = new URL('/api/notificacoes', window.location.origin);
-      if (status) url.searchParams.append('status', status);
-      if (id) url.searchParams.append('id', id);
+  // Carregar notificações
+  async function carregarNotificacoes() {
+    const status = document.getElementById('status').value;
+    const id = document.getElementById('idBusca').value;
+    const url = new URL('/api/notificacoes', window.location.origin);
+    if (status) url.searchParams.append('status', status);
+    if (id) url.searchParams.append('id', id);
 
-      const res = await fetch(url);
-      const lista = await res.json();
-      const tbody = document.querySelector('#tabelaNotificacoes tbody');
-      tbody.innerHTML = '';
+    const res = await fetch(url);
+    const lista = await res.json();
+    const tbody = document.querySelector('#tabelaNotificacoes tbody');
+    tbody.innerHTML = '';
 
-      lista.forEach(n => {
-        const tr = document.createElement('tr');
-        // ID, Técnico, Área
-        ['_id','tecnico','area'].forEach(key => {
-          const td = document.createElement('td');
-          td.textContent = key === '_id' ? n._id : n[key] || '-';
-          tr.appendChild(td);
-        });
-        // Status com comentário de rejeição inline
-        const tdStatus = document.createElement('td');
-        let statusText = n.status;
-        if (n.status === 'Rejeitada' && n.comentarioAprovacao) {
-          statusText += `: ${n.comentarioAprovacao}`;
-        }
-        tdStatus.textContent = statusText;
-        tr.appendChild(tdStatus);
-        // Data
-        const tdData = document.createElement('td');
-        tdData.textContent = n.dataRegistro ? new Date(n.dataRegistro).toLocaleString() : '-';
-        tr.appendChild(tdData);
-        // Ações
-        const tdAcoes = document.createElement('td');
-        tdAcoes.innerHTML = `<button class="btn btn-secondary btn-sm" onclick="visualizarDetalhes('${n._id}')" data-bs-toggle="modal" data-bs-target="#modalDetalhes">Detalhes</button>`;
-        tr.appendChild(tdAcoes);
-
-        tbody.appendChild(tr);
+    lista.forEach(n => {
+      const tr = document.createElement('tr');
+      ['_id','tecnico','area'].forEach(key => {
+        const td = document.createElement('td');
+        td.textContent = key === '_id' ? n._id : n[key] || '-';
+        tr.appendChild(td);
       });
+      const tdStatus = document.createElement('td');
+      tdStatus.textContent = n.status || '-';
+      tr.appendChild(tdStatus);
+
+      const tdData = document.createElement('td');
+      tdData.textContent = n.dataRegistro ? new Date(n.dataRegistro).toLocaleString() : '-';
+      tr.appendChild(tdData);
+
+      const tdAcoes = document.createElement('td');
+      tdAcoes.innerHTML = `<button class="btn btn-secondary btn-sm" onclick="visualizarDetalhes('${n._id}')" data-bs-toggle="modal" data-bs-target="#modalDetalhes">Detalhes</button>`;
+      tr.appendChild(tdAcoes);
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Configuração do modal
+  function configurarAcoes(d) {
+    const btnA = document.getElementById('btnAprovar');
+    const btnR = document.getElementById('btnRejeitar');
+
+    if (d.status === 'Aprovada' || d.status === 'Rejeitada') {
+      btnA.style.display = 'none';
+      btnR.style.display = 'none';
+    } else {
+      btnA.style.display = d.dataBaixa ? 'inline-block' : 'none';
+      btnR.style.display = 'inline-block';
     }
 
-    // Configurações do modal após carregar detalhes
-    function configurarAcoes(d) {
-      const btnA = document.getElementById('btnAprovar');
-      const btnR = document.getElementById('btnRejeitar');
-
-      // esconder aprovar/rejeitar se já finalizado
-      if (d.status === 'Aprovada' || d.status === 'Rejeitada') {
-        btnA.style.display = 'none';
-        btnR.style.display = 'none';
-      } else {
-        btnA.style.display = d.dataBaixa ? 'inline-block' : 'none';
-        btnR.style.display = 'inline-block';
-      }
-
-      // Aprovar
-      btnA.onclick = async () => {
-        try {
-          const res = await fetch('/aprovar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({ id: d._id })
-          });
-          if (!res.ok) throw new Error(await res.text());
-          alert('Notificação aprovada com sucesso!');
-          location.reload();
-        } catch (err) {
-          alert('Erro ao aprovar: ' + err.message);
-        }
-      };
-
-      // Rejeitar (abre modal)
-      btnR.onclick = () => {
-        document.getElementById('rejeicaoId').value = d._id;
-      };
-
-      // Excluir
-      document.getElementById('btnExcluir').onclick = async () => {
-        if (confirm('Tem certeza que deseja excluir esta notificação?')) {
-          await fetch(`/excluir/${d._id}`, { method: 'DELETE' });
-          location.reload();
-        }
-      };
-
-      // Preenche justificativa do gestor
-      const justifEl = document.getElementById('detalheJustificativa');
-      if (d.status === 'Rejeitada') {
-        justifEl.textContent = d.comentarioAprovacao || '—';
-      } else if (d.status === 'Aprovada') {
-        justifEl.textContent = `Aprovado por ${d.aprovadoPor || '—'} em ${new Date(d.dataAprovacao).toLocaleString()}`;
-      } else {
-        justifEl.textContent = '—';
-      }
-    }
-
-    // Visualizar detalhes
-    async function visualizarDetalhes(id) {
-      const res = await fetch(`/api/notificacoes/${id}`);
-      const d = await res.json();
-
-      // Dados básicos
-      document.getElementById('detalheId').textContent = d._id;
-      document.getElementById('detalheTecnico').textContent = d.tecnico || '-';
- document.getElementById('detalheEncarregado').textContent = d.encarregado || '-';
-
-      document.getElementById('detalheArea').textContent = d.area || '-';
-      document.getElementById('detalheClassificacao').textContent = d.classificacao || '-';
-      document.getElementById('detalheDescricao').textContent = d.descricao || '-';
-      document.getElementById('detalheDataRegistro').textContent = d.dataRegistro ? new Date(d.dataRegistro).toLocaleString() : '-';
-      document.getElementById('detalheStatus').textContent = d.status || '-';
-
-      // Fotos da Notificação
-if (d.notificacaoFotos?.length) {
-  d.notificacaoFotos.forEach(f => {
-    const link = document.createElement('a');
-    link.href = f;
-    link.className = 'glightbox';
-    link.setAttribute = ('data-gallery', 'notificacao');
-    const img = document.createElement('img');
-    img.src = f;
-    img.width = 120;
-    img.className = 'border rounded me-2 mb-2';
-    link.appendChild(img);
-    notifFotosDiv.appendChild(link);
-  });
-  GLightbox({ selector: '.glightbox' });
-} else {
-  notifFotosDiv.textContent = 'Sem fotos da notificação.';
-}
-
-// Fotos da Baixa (resolução)
-if (d.resolucaoFotos?.length) {
-  d.resolucaoFotos.forEach(f => {
-    const link = document.createElement('a');
-    link.href = f;
-    link.className = 'glightbox';
-    link.setAttribute('data-gallery', 'baixa');
-    const img = document.createElement('img');
-    img.src = f;
-    img.width = 120;
-    img.className = 'border rounded me-2 mb-2';
-    link.appendChild(img);
-    fotosDiv.appendChild(link);
-  });
-  GLightbox({ selector: '.glightbox' });
-} else {
-  fotosDiv.textContent = 'Sem fotos da baixa.';
-}
-
-      // Baixa (Resolução)
-      document.getElementById('detalheResolvidoPor').textContent = d.resolvidoPor || '—';
-      document.getElementById('detalheDataBaixa').textContent = d.dataBaixa ? new Date(d.dataBaixa).toLocaleString() : '—';
-      document.getElementById('detalheComentario').textContent = d.resolucaoComentario || 'Sem comentário';
-      const fotosDiv = document.getElementById('detalheFotos');
-      fotosDiv.innerHTML = '';
-      if (d.resolucaoFotos?.length) {
-        d.resolucaoFotos.forEach(f => {
-          const src = resolveImgSrc(f);
-          if (!src) return;
-          const img = document.createElement('img');
-          img.src = src;
-          img.width = 120;
-          img.className = 'border rounded me-2 mb-2';
-          img.loading = 'lazy';
-          fotosDiv.appendChild(img);
-        });
-      } else {
-        fotosDiv.textContent = 'Sem fotos da baixa.';
-      }
-
-      configurarAcoes(d);
-    }
-
-    // Formulário de Rejeição via AJAX
-    document.getElementById('formRejeicao').addEventListener('submit', async e => {
-      e.preventDefault();
-      const data = new URLSearchParams(new FormData(e.target));
+    btnA.onclick = async () => {
       try {
-        const res = await fetch('/rejeitar', { method: 'POST', body: data });
+        const res = await fetch('/aprovar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ id: d._id })
+        });
         if (!res.ok) throw new Error(await res.text());
-        alert('Notificação rejeitada com sucesso!');
-        bootstrap.Modal.getInstance(document.getElementById('modalRejeicao')).hide();
-        // Reabra os detalhes para atualizar status e justificativa
-        visualizarDetalhes(e.target.rejeicaoId.value);
+        alert('Notificação aprovada com sucesso!');
+        location.reload();
       } catch (err) {
-        alert('Erro ao rejeitar: ' + err.message);
+        alert('Erro ao aprovar: ' + err.message);
       }
-    });
+    };
 
-    // Inicialização
-    document.getElementById('filtroForm').addEventListener('submit', e => {
-      e.preventDefault();
-      carregarNotificacoes();
-    });
-    window.addEventListener('DOMContentLoaded', carregarNotificacoes);
-  </script>
+    btnR.onclick = () => {
+      document.getElementById('rejeicaoId').value = d._id;
+    };
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    document.getElementById('btnExcluir').onclick = async () => {
+      if (confirm('Tem certeza que deseja excluir esta notificação?')) {
+        await fetch(`/excluir/${d._id}`, { method: 'DELETE' });
+        location.reload();
+      }
+    };
+  }
+
+  // Visualizar detalhes
+  async function visualizarDetalhes(id) {
+    const res = await fetch(`/api/notificacoes/${id}`);
+    const d = await res.json();
+
+    document.getElementById('detalheId').textContent = d._id;
+    document.getElementById('detalheTecnico').textContent = d.tecnico || '-';
+    document.getElementById('detalheEncarregado').textContent = d.encarregado || '-';
+    document.getElementById('detalheArea').textContent = d.area || '-';
+    document.getElementById('detalheClassificacao').textContent = d.classificacao || '-';
+    document.getElementById('detalheDescricao').textContent = d.descricao || '-';
+    document.getElementById('detalheDataRegistro').textContent = d.dataRegistro ? new Date(d.dataRegistro).toLocaleString() : '-';
+    document.getElementById('detalheStatus').textContent = d.status || '-';
+
+    // Fotos da Notificação
+    const notifFotosDiv = document.getElementById('detalheFotosNotificacao');
+    notifFotosDiv.innerHTML = '';
+    if (d.notificacaoFotos?.length) {
+      d.notificacaoFotos.forEach(f => {
+        const src = resolveImgSrc(f);
+        if (!src) return;
+        const link = document.createElement('a');
+        link.href = src;
+        link.className = 'glightbox-notif';
+        link.setAttribute('data-gallery', 'notificacao');
+        const img = document.createElement('img');
+        img.src = src;
+        img.width = 120;
+        img.className = 'border rounded me-2 mb-2';
+        link.appendChild(img);
+        notifFotosDiv.appendChild(link);
+      });
+      GLightbox({ selector: '.glightbox-notif' });
+    } else {
+      notifFotosDiv.textContent = 'Sem fotos da notificação.';
+    }
+
+    // Fotos da Baixa
+    const fotosDiv = document.getElementById('detalheFotos');
+    fotosDiv.innerHTML = '';
+    if (d.resolucaoFotos?.length) {
+      d.resolucaoFotos.forEach(f => {
+        const src = resolveImgSrc(f);
+        if (!src) return;
+        const link = document.createElement('a');
+        link.href = src;
+        link.className = 'glightbox-baixa';
+        link.setAttribute('data-gallery', 'baixa');
+        const img = document.createElement('img');
+        img.src = src;
+        img.width = 120;
+        img.className = 'border rounded me-2 mb-2';
+        link.appendChild(img);
+        fotosDiv.appendChild(link);
+      });
+      GLightbox({ selector: '.glightbox-baixa' });
+    } else {
+      fotosDiv.textContent = 'Sem fotos da baixa.';
+    }
+
+    configurarAcoes(d);
+  }
+
+  document.getElementById('filtroForm').addEventListener('submit', e => {
+    e.preventDefault();
+    carregarNotificacoes();
+  });
+  window.addEventListener('DOMContentLoaded', carregarNotificacoes);
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
