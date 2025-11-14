@@ -231,6 +231,10 @@
           opt.textContent = `#${n.idSequencial}`;
         } else {
           opt.textContent = n._id;
+            const detalhes = [n.tecnico, n.area, n.classificacao].filter(Boolean).join(' · ');
+          const rotulo   = detalhes ? `${textoId} – ${detalhes}` : textoId;
+
+          opt.textContent = rotulo;
         }
 
         select.appendChild(opt);
@@ -279,3 +283,4 @@
 
 </body>
 </html>
+
