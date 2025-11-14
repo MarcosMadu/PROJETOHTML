@@ -289,9 +289,11 @@
       const statusEl = document.getElementById('status');
       const status = (statusEl?.value || '').trim();
       const id     = (document.getElementById('idBusca').value || '').trim();
+      const classSel = (document.getElementById('filtroClassificacao').value || '').trim();
 
       if (status && status !== 'Todos') url.searchParams.append('status', status);
       if (id) url.searchParams.append('id', id);
+      if (classSel && classSel !== 'Todas') url.searchParams.append('classificacao', classSel);
 
       const res   = await fetch(url);
       const lista = await res.json();
@@ -391,10 +393,15 @@
         tdChk.innerHTML = `<input type="checkbox" class="row-check" value="${n._id}">`;
         tr.appendChild(tdChk);
 
-        // ID, Técnico, Área
-        ['_id','tecnico','area'].forEach(key=>{
+        // ID (usa o sequencial quando existir)
+        const tdId = document.createElement('td');
+        tdId.textContent = n.displayId || n.id || n._id;
+        tr.appendChild(tdId);
+
+        // Técnico e Área
+        ['tecnico','area'].forEach(key=>{
           const td = document.createElement('td');
-          td.textContent = key==='_id' ? n._id : (n[key] || '-');
+          td.textContent = n[key] || '-';
           tr.appendChild(td);
         });
 
@@ -533,7 +540,10 @@
       const res = await fetch(`/api/notificacoes/${id}`);
       const d   = await res.json();
 
-      document.getElementById('detalheId').textContent            = d._id;
+      // ID exibido (sequencial quando existir)
+      const displayId = d.id || (typeof d.seq === 'number' ? String(d.seq) : d._id);
+      document.getElementById('detalheId').textContent = displayId;
+
       document.getElementById('detalheTecnico').textContent       = d.tecnico || '-';
       document.getElementById('detalheEncarregado').textContent   = d.encarregado || '-';
 
