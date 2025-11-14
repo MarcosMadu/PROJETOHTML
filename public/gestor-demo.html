@@ -202,6 +202,49 @@
 
 </div>
 
+<!-- MODAL DE DETALHES ----------------------------------------------- -->
+<div class="modal fade" id="modalDetalhes" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Detalhes da Notificação</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2"><strong>ID:</strong> <span id="detId"></span></div>
+        <div class="mb-2"><strong>Técnico:</strong> <span id="detTecnico"></span></div>
+        <div class="mb-2"><strong>Encarregado:</strong> <span id="detEncarregado"></span></div>
+        <div class="mb-2"><strong>Supervisor da Obra:</strong> <span id="detSupervisor"></span></div>
+        <div class="mb-2"><strong>Descrição da Atividade:</strong> <span id="detDescAtividade"></span></div>
+        <div class="mb-2"><strong>NR Relacionada:</strong> <span id="detNR"></span></div>
+        <div class="mb-2"><strong>Ações Recomendadas:</strong> <span id="detAcoes"></span></div>
+
+        <div class="mb-2"><strong>Área:</strong> <span id="detArea"></span></div>
+        <div class="mb-2"><strong>Classificação:</strong> <span id="detClassificacao"></span></div>
+        <div class="mb-2"><strong>Descrição:</strong> <span id="detDescricao"></span></div>
+        <div class="mb-2"><strong>Data de Registro:</strong> <span id="detDataRegistro"></span></div>
+        <div class="mb-2"><strong>Status:</strong> <span id="detStatus"></span></div>
+        <div class="mb-2"><strong>Prazo:</strong> <span id="detPrazo"></span></div>
+
+        <hr>
+        <h6>Fotos da Notificação</h6>
+        <div id="detFotosNotif" class="d-flex flex-wrap gap-2 mb-3"></div>
+
+        <hr>
+        <h6>Baixa (Resolução)</h6>
+        <div class="mb-2"><strong>Resolvido Por:</strong> <span id="detResolvidoPor"></span></div>
+        <div class="mb-2"><strong>Data da Baixa:</strong> <span id="detDataBaixa"></span></div>
+        <div class="mb-2"><strong>Comentário da Baixa:</strong> <span id="detComentario"></span></div>
+        <div class="mb-2"><strong>Fotos da Baixa:</strong></div>
+        <div id="detFotosBaixa" class="d-flex flex-wrap gap-2"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
@@ -244,6 +287,14 @@
     if (diff === 0) return "text-warning fw-semibold";
     if (diff <= 3) return "text-warning";
     return "text-success";
+  }
+
+  // ---------------------- AUXILIAR DE IMAGEM -------------------------
+  function resolveImgSrc(f) {
+    if (!f) return null;
+    if (typeof f === "object" && f.url) return f.url;
+    if (typeof f === "string" && f.startsWith("http")) return f;
+    return "/uploads/" + f; // compatibilidade com imagens antigas
   }
 
   // ---------------------- ESTADO EM MEMÓRIA -------------------------
@@ -342,13 +393,108 @@
       // Ações
       const tdAcoes = document.createElement("td");
       tdAcoes.innerHTML =
-        `<a class="btn btn-sm btn-outline-secondary" href="/gestor.html" target="_blank">
-          Abrir no painel detalhado
-        </a>`;
+        `<button class="btn btn-sm btn-outline-primary" onclick="abrirDetalhes('${n._id}')">
+          Detalhes
+        </button>`;
       tr.appendChild(tdAcoes);
 
       tbody.appendChild(tr);
     });
+  }
+
+  // ---------------------- MODAL DE DETALHES -------------------------
+  async function abrirDetalhes(id) {
+    try {
+      const res = await fetch(`/api/notificacoes/${id}`);
+      const d = await res.json();
+
+      document.getElementById("detId").textContent = d._id || "-";
+      document.getElementById("detTecnico").textContent = d.tecnico || "-";
+      document.getElementById("detEncarregado").textContent = d.encarregado || "-";
+
+      const supervisor = d.supervisorObra || d.supervisor || d.supervisorDaObra || "-";
+      const descAtiv = d.descricaoAtividade || d.atividade || d.descricao_atividade || "-";
+
+      document.getElementById("detSupervisor").textContent = supervisor || "-";
+      document.getElementById("detDescAtividade").textContent = descAtiv || "-";
+      document.getElementById("detNR").textContent = d.nr || "-";
+      document.getElementById("detAcoes").textContent = d.acao || "-";
+
+      document.getElementById("detArea").textContent = d.area || "-";
+      document.getElementById("detClassificacao").textContent = d.classificacao || "-";
+      document.getElementById("detDescricao").textContent = d.descricao || "-";
+      document.getElementById("detDataRegistro").textContent =
+        d.dataRegistro ? new Date(d.dataRegistro).toLocaleString() : "-";
+      document.getElementById("detStatus").textContent = d.status || "-";
+
+      const spPrazo = document.getElementById("detPrazo");
+      if (d.prazo) {
+        const diff = prazoDiffDays(d.prazo);
+        spPrazo.className = prazoClasse(diff, d.status);
+        spPrazo.textContent = prazoTexto(d.prazo, d.status);
+      } else {
+        spPrazo.className = "";
+        spPrazo.textContent = "-";
+      }
+
+      // Fotos da notificação
+      const notifDiv = document.getElementById("detFotosNotif");
+      notifDiv.innerHTML = "";
+      if (d.notificacaoFotos && d.notificacaoFotos.length) {
+        d.notificacaoFotos.forEach(f => {
+          const src = resolveImgSrc(f);
+          if (!src) return;
+          const a = document.createElement("a");
+          a.href = src;
+          a.className = "glightbox";
+          a.setAttribute("data-gallery", "notif");
+          const img = document.createElement("img");
+          img.src = src;
+          img.width = 120;
+          img.className = "border rounded me-2 mb-2";
+          a.appendChild(img);
+          notifDiv.appendChild(a);
+        });
+      } else {
+        notifDiv.textContent = "Sem fotos da notificação.";
+      }
+
+      // Baixa
+      document.getElementById("detResolvidoPor").textContent = d.resolvidoPor || "—";
+      document.getElementById("detDataBaixa").textContent =
+        d.dataBaixa ? new Date(d.dataBaixa).toLocaleString() : "—";
+      document.getElementById("detComentario").textContent =
+        d.resolucaoComentario || "Sem comentário";
+
+      const baixaDiv = document.getElementById("detFotosBaixa");
+      baixaDiv.innerHTML = "";
+      if (d.resolucaoFotos && d.resolucaoFotos.length) {
+        d.resolucaoFotos.forEach(f => {
+          const src = resolveImgSrc(f);
+          if (!src) return;
+          const a = document.createElement("a");
+          a.href = src;
+          a.className = "glightbox";
+          a.setAttribute("data-gallery", "baixa");
+          const img = document.createElement("img");
+          img.src = src;
+          img.width = 120;
+          img.className = "border rounded me-2 mb-2";
+          a.appendChild(img);
+          baixaDiv.appendChild(a);
+        });
+      } else {
+        baixaDiv.textContent = "Sem fotos da baixa.";
+      }
+
+      GLightbox({ selector: ".glightbox" });
+
+      const modal = new bootstrap.Modal(document.getElementById("modalDetalhes"));
+      modal.show();
+    } catch (err) {
+      console.error("Erro ao carregar detalhes:", err);
+      alert("Erro ao carregar detalhes da notificação.");
+    }
   }
 
   // ---------------------- CHIPS (FILTRO DE STATUS) -------------------
