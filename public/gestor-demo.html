@@ -448,11 +448,13 @@
   async function carregarNotificacoes() {
     const url = new URL('/api/notificacoes', window.location.origin);
 
-    const status = document.getElementById('status').value;
-    const id     = document.getElementById('idBusca').value.trim();
+    const status   = document.getElementById('status').value;
+    const id       = document.getElementById('idBusca').value.trim();
+    const classSel = document.getElementById('filtroClassificacao').value;
 
-    if (status) url.searchParams.append('status', status);
-    if (id)     url.searchParams.append('id', id);
+    if (status)   url.searchParams.append('status', status);
+    if (id)       url.searchParams.append('id', id);
+    if (classSel) url.searchParams.append('classificacao', classSel);
 
     const res   = await fetch(url);
     const lista = await res.json();
@@ -560,7 +562,10 @@
       tr.appendChild(tdChk);
 
       // ID, Técnico, Área
-      const tdId  = document.createElement('td'); tdId.textContent  = n._id || '-';
+      const tdId  = document.createElement('td');
+      const displayId = n.displayId || n.id || (typeof n.seq === 'number' ? String(n.seq) : n._id);
+      tdId.textContent  = displayId || '-';
+
       const tdTec = document.createElement('td'); tdTec.textContent = n.tecnico || '-';
       const tdAr  = document.createElement('td'); tdAr.textContent  = n.area || '-';
 
@@ -716,7 +721,8 @@
     const res = await fetch(`/api/notificacoes/${id}`);
     const d   = await res.json();
 
-    document.getElementById('detalheId').textContent          = d._id;
+    const displayId = d.id || (typeof d.seq === 'number' ? String(d.seq) : d._id);
+    document.getElementById('detalheId').textContent          = displayId || '-';
     document.getElementById('detalheTecnico').textContent     = d.tecnico || '-';
     document.getElementById('detalheEncarregado').textContent = d.encarregado || '-';
 
