@@ -14,6 +14,7 @@
       margin: 0;
       background: #f4f4f7;
       font-family: "Arial", sans-serif;
+      transition: margin-left 0.25s ease;
     }
 
     /* SIDEBAR ------------------------------------------------------ */
@@ -28,12 +29,14 @@
       padding: 25px 15px;
       box-shadow: 4px 0 10px rgba(0, 0, 0, 0.4);
       z-index: 1000;
+      transition: transform 0.25s ease, width 0.25s ease;
     }
 
     .sidebar .logo {
       font-size: 20px;
       font-weight: bold;
       margin-bottom: 30px;
+      white-space: nowrap;
     }
 
     .sidebar-menu-title {
@@ -51,6 +54,7 @@
       text-decoration: none;
       transition: 0.2s;
       font-size: 14px;
+      white-space: nowrap;
     }
 
     .sidebar a:hover,
@@ -61,10 +65,11 @@
       box-shadow: 0 0 15px #00ff8855;
     }
 
-    /* CONTENT ------------------------------------------------------ */
+    /* CONTEÚDO ------------------------------------------------------ */
     .content {
       margin-left: 260px;
       padding: 25px;
+      transition: margin-left 0.25s ease;
     }
 
     .page-title {
@@ -109,6 +114,35 @@
     .table-placeholder {
       height: 80px;
     }
+
+    /* BOTÃO TOGGLE SIDEBAR ------------------------------------------ */
+    #btnToggleSidebar {
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 10px;
+    }
+
+    /* ESTADO COLAPSADO ---------------------------------------------- */
+    body.sidebar-closed .sidebar {
+      transform: translateX(-260px);
+    }
+
+    body.sidebar-closed .content {
+      margin-left: 0;
+    }
+
+    @media (max-width: 768px) {
+      .content {
+        margin-left: 0;
+      }
+      body.sidebar-open-mobile .sidebar {
+        transform: translateX(0);
+      }
+    }
   </style>
 </head>
 
@@ -120,14 +154,13 @@
 
   <div class="sidebar-menu-title">VISÃO GERAL</div>
   <a href="/dashboard.html">Dashboard</a>
-  <a href="/dashboard.html">Painel Inicial</a>
+  <a href="/dashboard.html">Página Inicial</a>
 
   <div class="sidebar-menu-title">NOTIFICAÇÕES</div>
-  <a class="active" href="#">Todas</a>
-  <a href="#" onclick="selecionarChipStatus('', 'Aberta'); return false;">Abertas</a>
-  <a href="#" onclick="selecionarChipStatus('', 'Pendente de aprovação'); return false;">Pendentes</a>
-  <a href="#" onclick="selecionarChipStatus('', 'Aprovada'); return false;">Aprovadas</a>
-  <a href="#" onclick="selecionarChipStatus('', 'Rejeitada'); return false;">Rejeitadas</a>
+  <a href="/index.html">Nova Notificação</a>
+  <a href="/status.html">Status das Notificações</a>
+  <a href="/baixa.html">Baixa de Notificações</a>
+  <a href="/gestor.html" class="active">Painel do Gestor</a>
 </div>
 
 <!-- CONTEÚDO ----------------------------------------------------------- -->
@@ -135,9 +168,14 @@
 
   <!-- Header -->
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-      <div class="page-title">Painel do Gestor</div>
-      <small class="text-muted">Gerencie notificações, interdições e prazos</small>
+    <div class="d-flex align-items-center">
+      <button class="btn btn-outline-secondary btn-sm" id="btnToggleSidebar" type="button">
+        ☰
+      </button>
+      <div>
+        <div class="page-title">Painel do Gestor</div>
+        <small class="text-muted">Gerencie notificações, interdições e prazos</small>
+      </div>
     </div>
 
     <button class="btn btn-success px-3" onclick="window.location.href='/index.html'">
@@ -231,17 +269,6 @@
             <option value="">Todas</option>
           </select>
         </div>
-
-         <!-- Filtro Classificação -->
-      <div class="col-md-2">
-        <label for="filtroClassificacao" class="form-label">Classificação</label>
-        <select id="filtroClassificacao" class="form-select">
-          <option value="">Todas</option>
-          <option value="Notificação">Notificação</option>
-          <option value="Interdição">Interdição</option>
-        </select>
-      </div>
-      <!-- /Filtro Classificação -->
 
         <div class="col-md-3">
           <label for="filtroTecnico" class="form-label">Técnico</label>
@@ -796,7 +823,7 @@
     });
   }
 
-  // Função chamada pela sidebar (links de status)
+  // Mantido por compatibilidade (não é mais usado diretamente)
   function selecionarChipStatus(_, status) {
     const chips = document.querySelectorAll('.chip-status');
     chips.forEach(c => {
@@ -810,9 +837,18 @@
     carregarNotificacoes();
   }
 
+  // ---------- Toggle Sidebar ----------
+  function configurarSidebarToggle() {
+    const btn = document.getElementById('btnToggleSidebar');
+    btn.addEventListener('click', () => {
+      document.body.classList.toggle('sidebar-closed');
+    });
+  }
+
   // ---------- Inicialização ----------
   window.addEventListener('DOMContentLoaded', () => {
     configurarChips();
+    configurarSidebarToggle();
     carregarNotificacoes();
   });
 </script>
