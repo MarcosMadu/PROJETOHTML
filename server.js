@@ -108,6 +108,13 @@ app.post('/enviar', uploadNotificacaoFotos, async (req, res) => {
   try {
     const dados = req.body;
 
+      // 🔹 Gera ID sequencial numérico (1, 2, 3...)
+    // Conta apenas documentos que já têm "id" preenchido
+    const totalComId = await Notificacao.countDocuments({
+      id: { $exists: true, $ne: null }
+    });
+    dados.id = String(totalComId + 1);
+    
     // 🔧 NORMALIZAÇÃO: Supervisor e Descrição da Atividade (aceita variações)
     dados.supervisorObra =
       req.body.supervisorObra ??
@@ -500,3 +507,4 @@ app.post('/inspecao',
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });
+
