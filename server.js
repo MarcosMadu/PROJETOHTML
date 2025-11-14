@@ -108,13 +108,6 @@ app.post('/enviar', uploadNotificacaoFotos, async (req, res) => {
   try {
     const dados = req.body;
 
-      // 🔹 Gera ID sequencial numérico (1, 2, 3...)
-    // Conta apenas documentos que já têm "id" preenchido
-    const totalComId = await Notificacao.countDocuments({
-      id: { $exists: true, $ne: null }
-    });
-    dados.id = String(totalComId + 1);
-    
     // 🔧 NORMALIZAÇÃO: Supervisor e Descrição da Atividade (aceita variações)
     dados.supervisorObra =
       req.body.supervisorObra ??
@@ -157,15 +150,29 @@ app.post('/enviar', uploadNotificacaoFotos, async (req, res) => {
     dados.status = 'Aberta';
     dados.dataRegistro = new Date();
 
-    // 🔹 Geração de ID sequencial (seq + id string)
-    const ultimo = await Notificacao.findOne().sort({ seq: -1 }).lean();
-    const nextSeq = ultimo && typeof ultimo.seq === 'number' ? ultimo.seq + 1 : 1;
+   // 🔢 GERAR ID SEQUENCIAL (1, 2, 3...):
+    // procura a notificação com MAIOR idSequencial e soma 1
+    const ultima = await Notificacao
+      .findOne({ idSequencial: { $ne: null } })
+      .sort({ idSequencial: -1 })
+      .lean();
 
-    dados.seq = nextSeq;
-    dados.id  = String(nextSeq);
+    let proximoNumero = 1;
+    if (ultima && typeof ultima.idSequencial === 'number') {
+      proximoNumero = ultima.idSequencial + 1;
+    }
+
+    dados.idSequencial = proximoNumero;
 
     const nova = new Notificacao(dados);
     await nova.save();
+
+    res.status(200).json({ _id: nova._id });
+  } catch (err) {
+    console.error('Erro ao enviar notificação:', err);
+    res.status(500).send('Erro ao processar notificação.');
+  }
+});
 
     // ==========================
     // 🔴 ENVIO DE E-MAIL REMOVIDO
@@ -507,4 +514,5 @@ app.post('/inspecao',
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });
+
 
