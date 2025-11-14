@@ -722,7 +722,8 @@
     const d   = await res.json();
 
     const displayId = d.id || (typeof d.seq === 'number' ? String(d.seq) : d._id);
-    document.getElementById('detalheId').textContent          = displayId || '-';
+    document.getElementById('detalheId').textContent =
+   (d.idSequencial != null ? d.idSequencial : d._id);
     document.getElementById('detalheTecnico').textContent     = d.tecnico || '-';
     document.getElementById('detalheEncarregado').textContent = d.encarregado || '-';
 
