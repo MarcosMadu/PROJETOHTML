@@ -162,8 +162,23 @@
         select.innerHTML = '<option value="">Selecione uma notificação</option>';
         lista.forEach(n => {
           const opt = document.createElement('option');
+          // valor continua sendo o _id (usado pela rota /baixa)
           opt.value = n._id;
-          opt.textContent = n._id + ' – ' + (n.titulo || '');
+
+          // rótulo: tenta usar idSequencial; se não tiver, usa o _id
+          const labelId = (n.idSequencial !== undefined && n.idSequencial !== null && n.idSequencial !== '')
+            ? `ID ${n.idSequencial}`
+            : n._id;
+
+          // informação extra (técnico / classificação, se existir)
+          let extra = '';
+          if (n.tecnico) {
+            extra = `Técnico: ${n.tecnico}`;
+          } else if (n.classificacao) {
+            extra = n.classificacao;
+          }
+
+          opt.textContent = extra ? `${labelId} – ${extra}` : labelId;
           select.appendChild(opt);
         });
       } catch (err) {
