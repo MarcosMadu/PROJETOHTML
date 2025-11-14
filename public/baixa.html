@@ -153,36 +153,49 @@
   </div>
 
   <script>
-    // carrega notificações abertas no select
+    // 🔹 Carrega somente notificações ABERTAS, usando idSequencial quando existir
     async function carregarNotificacoesAbertas() {
       const select = document.getElementById('id');
       try {
-        const resp = await fetch('/api/notificacoes-abertas');
+        const resp  = await fetch('/api/notificacoes-abertas');
         const lista = await resp.json();
+
+        console.log('Notificações abertas recebidas:', lista);
+
         select.innerHTML = '<option value="">Selecione uma notificação</option>';
+
+        if (!Array.isArray(lista) || lista.length === 0) {
+          const opt = document.createElement('option');
+          opt.value = '';
+          opt.textContent = 'Não há notificações em aberto';
+          select.appendChild(opt);
+          select.disabled = true;
+          return;
+        }
+
+        // ordena por idSequencial quando houver
+        lista.sort((a, b) => {
+          const aa = (typeof a.idSequencial === 'number') ? a.idSequencial : Number.MAX_SAFE_INTEGER;
+          const bb = (typeof b.idSequencial === 'number') ? b.idSequencial : Number.MAX_SAFE_INTEGER;
+          return aa - bb;
+        });
+
         lista.forEach(n => {
           const opt = document.createElement('option');
-          // valor continua sendo o _id (usado pela rota /baixa)
           opt.value = n._id;
 
-          // rótulo: tenta usar idSequencial; se não tiver, usa o _id
-          const labelId = (n.idSequencial !== undefined && n.idSequencial !== null && n.idSequencial !== '')
-            ? `ID ${n.idSequencial}`
+          const textoId = (typeof n.idSequencial === 'number')
+            ? `#${n.idSequencial}`
             : n._id;
 
-          // informação extra (técnico / classificação, se existir)
-          let extra = '';
-          if (n.tecnico) {
-            extra = `Técnico: ${n.tecnico}`;
-          } else if (n.classificacao) {
-            extra = n.classificacao;
-          }
+          const detalhes = [n.tecnico, n.area, n.classificacao].filter(Boolean).join(' · ');
+          const rotulo   = detalhes ? `${textoId} – ${detalhes}` : textoId;
 
-          opt.textContent = extra ? `${labelId} – ${extra}` : labelId;
+          opt.textContent = rotulo;
           select.appendChild(opt);
         });
       } catch (err) {
-        console.error(err);
+        console.error('Erro ao carregar notificações abertas:', err);
         select.innerHTML = '<option value="">Erro ao carregar notificações</option>';
       }
     }
