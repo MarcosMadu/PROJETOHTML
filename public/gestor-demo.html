@@ -70,7 +70,6 @@
       transition: margin-left 0.3s ease;
     }
 
-    /* Quando a sidebar estiver fechada */
     body.sidebar-closed .sidebar {
       transform: translateX(-260px);
     }
@@ -245,7 +244,7 @@
           </select>
         </div>
 
-        <!-- NOVO: Filtro de Classificação -->
+        <!-- Filtro de Classificação -->
         <div class="col-md-2">
           <label for="filtroClassificacao" class="form-label">Classificação</label>
           <select id="filtroClassificacao" class="form-select">
@@ -271,7 +270,7 @@
 
         <div class="col-md-3">
           <label for="idBusca" class="form-label">Buscar por ID</label>
-          <input type="text" id="idBusca" class="form-control" placeholder="Digite o ID" />
+          <input type="text" id="idBusca" class="form-control" placeholder="Digite o ID (_id do Mongo)" />
         </div>
 
         <div class="col-md-2">
@@ -412,7 +411,6 @@
     if (!prazoISO) return '-';
     const d = new Date(prazoISO);
 
-    // Para notificações aprovadas, apenas a data
     if (status === 'Aprovada') {
       return d.toLocaleDateString();
     }
@@ -427,7 +425,7 @@
 
   function prazoClasse(diff, status) {
     if (diff === null) return '';
-    if (status === 'Aprovada') return ''; // aprovado = sem cor especial
+    if (status === 'Aprovada') return '';
     if (diff < 0)  return 'text-danger fw-semibold';
     if (diff === 0) return 'text-warning fw-semibold';
     if (diff <= 3) return 'text-warning';
@@ -439,35 +437,45 @@
     if (!f) return null;
     if (typeof f === 'object' && f.url) return f.url;
     if (typeof f === 'string' && f.startsWith('http')) return f;
-    return '/uploads/' + f; // compatibilidade com imagens antigas
+    return '/uploads/' + f;
   }
 
   let ULTIMA_LISTA = [];
 
-  // ---------- Carregar notificações do backend ----------
+  // ---------- Carregar notificações ----------
   async function carregarNotificacoes() {
-    const url = new URL('/api/notificacoes', window.location.origin);
+    try {
+      const url = new URL('/api/notificacoes', window.location.origin);
 
-    const status   = document.getElementById('status').value;
-    const id       = document.getElementById('idBusca').value.trim();
-    const classSel = document.getElementById('filtroClassificacao').value;
+      const status = document.getElementById('status').value;
+      const id     = document.getElementById('idBusca').value.trim();
 
-    if (status)   url.searchParams.append('status', status);
-    if (id)       url.searchParams.append('id', id);
-    if (classSel) url.searchParams.append('classificacao', classSel);
+      if (status) url.searchParams.append('status', status);
+      if (id)     url.searchParams.append('id', id); // ainda busca pelo _id do Mongo
 
-    const res   = await fetch(url);
-    const lista = await res.json();
+      const res = await fetch(url);
+      if (!res.ok) {
+        console.error('Erro ao buscar /api/notificacoes:', res.status, await res.text());
+        document.getElementById('tbodyNotificacoes').innerHTML =
+          '<tr><td colspan="9" class="text-center py-4 text-danger">Erro ao carregar notificações.</td></tr>';
+        return;
+      }
 
-    ULTIMA_LISTA = lista;
+      const lista = await res.json();
+      ULTIMA_LISTA = lista;
 
-    popularFiltrosDinamicos(lista);
-    const filtrada = aplicarFiltrosCliente(lista);
-    renderTabela(filtrada);
-    atualizarKPIs(filtrada);
+      popularFiltrosDinamicos(lista);
+      const filtrada = aplicarFiltrosCliente(lista);
+      renderTabela(filtrada);
+      atualizarKPIs(filtrada);
+    } catch (err) {
+      console.error('Falha geral em carregarNotificacoes:', err);
+      document.getElementById('tbodyNotificacoes').innerHTML =
+        '<tr><td colspan="9" class="text-center py-4 text-danger">Erro ao carregar notificações.</td></tr>';
+    }
   }
 
-  // ---------- Aplicar filtros cliente (mês, prazo, área, técnico, classificação) ----------
+  // ---------- Filtros cliente ----------
   function aplicarFiltrosCliente(listaBase) {
     const mesSel    = document.getElementById('filtroMes').value;
     const prazoSel  = document.getElementById('filtroPrazo').value;
@@ -499,7 +507,7 @@
     });
   }
 
-  // ---------- Popular filtros dinâmicos (Área e Técnico) ----------
+  // ---------- Filtros dinâmicos ----------
   function popularFiltrosDinamicos(lista) {
     const areaSel = document.getElementById('filtroArea');
     const tecSel  = document.getElementById('filtroTecnico');
@@ -519,7 +527,7 @@
     if (tecs.includes(tecVal))   tecSel.value  = tecVal;
   }
 
-  // ---------- Atualizar KPIs ----------
+  // ---------- KPIs ----------
   function atualizarKPIs(lista) {
     const total      = lista.length;
     const abertas    = lista.filter(n => n.status === 'Aberta').length;
@@ -533,11 +541,11 @@
       (n.classificacao || '').toLowerCase().includes('interdição')
     ).length;
 
-    document.getElementById('kpiTotal').textContent          = total;
-    document.getElementById('kpiAbertas').textContent        = abertas;
-    document.getElementById('kpiPendentes').textContent      = pendentes;
-    document.getElementById('kpiNotificacoes').textContent   = notificacoes;
-    document.getElementById('kpiInterdicoes').textContent    = interds;
+    document.getElementById('kpiTotal').textContent        = total;
+    document.getElementById('kpiAbertas').textContent      = abertas;
+    document.getElementById('kpiPendentes').textContent    = pendentes;
+    document.getElementById('kpiNotificacoes').textContent = notificacoes;
+    document.getElementById('kpiInterdicoes').textContent  = interds;
   }
 
   // ---------- Tabela + seleção múltipla ----------
@@ -561,15 +569,18 @@
       tdChk.innerHTML = `<input type="checkbox" class="row-check" value="${n._id}">`;
       tr.appendChild(tdChk);
 
-      // ID, Técnico, Área
-    const tdId  = document.createElement('td');
-      tdId.textContent = (n.idSequencial != null ? n.idSequencial : n._id) || '-';
-      tdId.textContent  = displayId || '-';
+      // ID (sequencial se existir, senão _id)
+      const tdId = document.createElement('td');
+      tdId.textContent =
+        (typeof n.idSequencial === 'number')
+          ? n.idSequencial
+          : (n._id || '-');
+      tr.appendChild(tdId);
 
+      // Técnico e Área
       const tdTec = document.createElement('td'); tdTec.textContent = n.tecnico || '-';
       const tdAr  = document.createElement('td'); tdAr.textContent  = n.area || '-';
 
-      tr.appendChild(tdId);
       tr.appendChild(tdTec);
       tr.appendChild(tdAr);
 
@@ -578,7 +589,7 @@
       tdClass.textContent = n.classificacao || '-';
       tr.appendChild(tdClass);
 
-      // Status (com comentário se rejeitada)
+      // Status
       const tdStatus = document.createElement('td');
       let statusText = n.status || '-';
       if (n.status === 'Rejeitada' && n.comentarioAprovacao) {
@@ -675,7 +686,6 @@
       btnR.style.display = 'inline-block';
     }
 
-    // Aprovar
     btnA.onclick = async () => {
       try {
         const res = await fetch('/aprovar', {
@@ -691,12 +701,10 @@
       }
     };
 
-    // Rejeitar
     btnR.onclick = () => {
       document.getElementById('rejeicaoId').value = d._id;
     };
 
-    // Excluir única
     document.getElementById('btnExcluir').onclick = async () => {
       if (confirm('Tem certeza que deseja excluir esta notificação?')) {
         await fetch(`/excluir/${d._id}`, { method: 'DELETE' });
@@ -704,7 +712,6 @@
       }
     };
 
-    // Justificativa do gestor
     const justifEl = document.getElementById('detalheJustificativa');
     if (d.status === 'Rejeitada') {
       justifEl.textContent = d.comentarioAprovacao || '—';
@@ -721,9 +728,13 @@
     const res = await fetch(`/api/notificacoes/${id}`);
     const d   = await res.json();
 
-    const displayId = d.id || (typeof d.seq === 'number' ? String(d.seq) : d._id);
-    document.getElementById('detalheId').textContent =
-   (d.idSequencial != null ? d.idSequencial : d._id);
+    // ID no modal: sequencial se existir, senão _id
+    const idLabel =
+      (typeof d.idSequencial === 'number')
+        ? d.idSequencial
+        : d._id;
+
+    document.getElementById('detalheId').textContent          = idLabel;
     document.getElementById('detalheTecnico').textContent     = d.tecnico || '-';
     document.getElementById('detalheEncarregado').textContent = d.encarregado || '-';
 
@@ -751,7 +762,6 @@
       spPrazo.textContent = '-';
     }
 
-    // Fotos da Notificação
     const notifFotosDiv = document.getElementById('detalheFotosNotificacao');
     notifFotosDiv.innerHTML = '';
     if (d.notificacaoFotos?.length) {
@@ -773,7 +783,6 @@
       notifFotosDiv.textContent = 'Sem fotos da notificação.';
     }
 
-    // Baixa (Resolução)
     document.getElementById('detalheResolvidoPor').textContent = d.resolvidoPor || '—';
     document.getElementById('detalheDataBaixa').textContent   =
       d.dataBaixa ? new Date(d.dataBaixa).toLocaleString() : '—';
