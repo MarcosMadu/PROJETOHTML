@@ -33,7 +33,6 @@
       --success: #1dd1a1;
     }
 
-    /* Reset */
     *,*:before,*:after{ box-sizing:border-box; }
     html,body{ height:100%; }
     body{
@@ -46,7 +45,6 @@
       overflow-x:hidden;
     }
 
-    /* Ambient glow */
     .ambient{
       position: fixed; inset: -20vmax; pointer-events:none; z-index:0;
       background:
@@ -58,7 +56,6 @@
     }
     @keyframes float{ 0%{ transform: translate3d(0,0,0) scale(1);} 100%{ transform: translate3d(2%,-1%,0) scale(1.03);} }
 
-    /* Header */
     header{
       position:sticky; top:0; z-index:5;
       backdrop-filter: blur(10px);
@@ -83,7 +80,6 @@
     .title{ font-weight:800; letter-spacing:.2px; line-height:1.1; }
     .subtitle{ font-size:.9rem; color:var(--muted); }
 
-    /* Container */
     .container{
       position:relative; z-index:1;
       max-width:900px;
@@ -91,7 +87,6 @@
       padding: 0 clamp(1rem,3vw,1.5rem) 2rem;
     }
 
-    /* Back button */
     .back-container{ margin-bottom:1rem; }
     .btn-back{
       display:inline-flex; align-items:center; gap:.6rem;
@@ -103,7 +98,6 @@
     }
     .btn-back:hover{ transform:translateY(-2px); box-shadow: 0 14px 28px rgba(0,191,166,.35); filter:saturate(110%); }
 
-    /* Form card */
     .form-card{
       background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
       border:1px solid var(--borderC);
@@ -120,14 +114,12 @@
     }
     .form-sub{ margin:0 0 1rem 0; color:var(--muted); }
 
-    /* Grid fields */
     .grid{ display:grid; gap:1rem; }
     @media(min-width:720px){
       .grid-2{ grid-template-columns: 1fr 1fr; }
       .grid-3{ grid-template-columns: 1fr 1fr 1fr; }
     }
 
-    /* Field */
     .field{ display:flex; flex-direction:column; gap:.45rem; }
     label{ font-weight:700; font-size:.95rem; letter-spacing:.15px; }
     .input{
@@ -137,12 +129,6 @@
       border-radius:14px;
       padding:.8rem .9rem;
       transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
-    }
-    .input i{ color:var(--muted); font-size:1rem; }
-    .input:focus-within{
-      border-color: rgba(0,191,166,.6);
-      box-shadow: var(--ring);
-      transform: translateY(-1px);
     }
     .input select option { color: #000; background-color: #fff; }
 
@@ -156,7 +142,12 @@
     .input textarea{ resize: vertical; min-height: 84px; }
     .input ::placeholder{ color: var(--input-ph); }
 
-    /* File drop */
+    /* 🔴 Estilo de campo inválido (validação em tempo real) */
+    .input.input-error{
+      border-color: var(--danger);
+      box-shadow: 0 0 0 1px rgba(255,107,107,.4);
+    }
+
     .dropzone{
       position:relative; border:1px dashed rgba(255,255,255,.25);
       background: linear-gradient(180deg, rgba(0,191,166,.06), rgba(64,188,255,.05));
@@ -173,7 +164,6 @@
     .file-label{ display:flex; align-items:center; gap:.6rem; font-weight:700; }
     .file-info{ font-size:.9rem; color:var(--muted); }
 
-    /* Actions */
     .actions{ margin-top:1rem; display:flex; gap:.8rem; flex-wrap:wrap; }
     .btn{
       appearance:none; border:none; cursor:pointer;
@@ -188,7 +178,6 @@
     .btn:hover{ transform: translateY(-2px); box-shadow: 0 14px 28px rgba(0,191,166,.35); filter:saturate(110%); }
     @media(min-width:520px){ .btn{ width:auto; } }
 
-    /* Success alert (toast) */
     .alert{
       position: fixed; right: 1rem; bottom: 1rem; z-index: 10;
       display:flex; align-items:center; gap:.8rem; flex-wrap:wrap;
@@ -213,18 +202,73 @@
     }
     .alert a:hover{ transform: translateY(-1px); filter:saturate(110%); }
 
-    /* Section divider */
     .divider{
       height:1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
       margin:.4rem 0 1rem;
     }
 
-    /* A11y focus */
     :focus-visible{ outline:2px solid #40bcff; outline-offset:2px; border-radius:12px; }
 
-    /* Motion */
     @media (prefers-reduced-motion: reduce){
       .ambient, .btn, .input, .alert{ transition: none; animation: none; }
+    }
+
+    /* 🔵 Overlay de envio (bloqueia a tela) */
+    .overlay-envio{
+      position:fixed;
+      inset:0;
+      background:rgba(3,7,15,.85);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:20;
+    }
+    .overlay-envio.show{
+      display:flex;
+    }
+    .overlay-card{
+      background:rgba(9,22,30,.95);
+      border:1px solid var(--borderC);
+      border-radius:16px;
+      padding:1.5rem 1.75rem;
+      box-shadow:var(--shadow);
+      max-width:320px;
+      width:100%;
+      text-align:left;
+    }
+    .overlay-title{
+      display:flex;
+      align-items:center;
+      gap:.6rem;
+      font-weight:700;
+      margin-bottom:.5rem;
+    }
+    .overlay-title i{
+      color:var(--primary);
+    }
+    .overlay-text{
+      font-size:.9rem;
+      color:var(--muted);
+      margin-bottom:.9rem;
+    }
+    .progress-wrap{
+      width:100%;
+      background:rgba(255,255,255,.08);
+      border-radius:999px;
+      overflow:hidden;
+      height:9px;
+      margin-bottom:.4rem;
+    }
+    .progress-bar{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg, var(--primary), #40bcff);
+      transition:width .15s linear;
+    }
+    .progress-percent{
+      font-size:.8rem;
+      color:var(--muted);
+      text-align:right;
     }
   </style>
 </head>
@@ -323,33 +367,31 @@
                 <option value="Valdemir Matos">Valdemir Matos</option>
                 <option value="Villian Oliveira da Silva">Villian Oliveira da Silva</option>
                 <option value="Wesley Oliveira da Silva">Wesley Oliveira da Silva</option>
-                
               </select>
             </div>
           </div>
         </div>
 
-<div class="field">
-            <label for="supervisor"> Supervisor da Obra</label>
-            <div class="input"><i class="fa-solid fa-user-tie"></i>
-              <select id="supervisorObra" name="supervisorObra" required>
-                <option value="">Selecione...</option>
-                <option value="Antonio Carlos Medeiros Barroso">Antonio Carlos Medeiros Barroso</option>
-                 <option value="Cleudevaldo Costa Silva">Cleudevaldo Costa Silva</option>
-                  <option value="Evaristo de Oliveira Rabelo">Evaristo de Oliveira Rabelo</option>
-                   <option value="Gilmar Conceiçao Silva">Gilmar Conceiçao Silva</option>
-                    <option value="Luciano Etelvino Coelho">Luciano Etelvino Coelho</option>
-                    <option value="Paulo Alessandro de Amorim de Oliveira">Paulo Alessandro de Amorim de Oliveira</option>
-                    <option value="Paulo Pires Gomes">Paulo Pires Gomes</option>
-                    <option value="Raimundo Ribeiro Pinheiro">Raimundo Ribeiro Pinheiro</option>
-                    <option value="Risonildo Amaral Alves">Risonildo Amaral Alves</option>
-                    <option value="Wesley Kane da Silva Pires">Wesley Kane da Silva Pires</option>
-                    <option value="Roberval dos Santos">Roberval dos Santos</option>
-                  </select>
-            </div>
+        <div class="field">
+          <label for="supervisor"> Supervisor da Obra</label>
+          <div class="input"><i class="fa-solid fa-user-tie"></i>
+            <select id="supervisorObra" name="supervisorObra" required>
+              <option value="">Selecione...</option>
+              <option value="Antonio Carlos Medeiros Barroso">Antonio Carlos Medeiros Barroso</option>
+              <option value="Cleudevaldo Costa Silva">Cleudevaldo Costa Silva</option>
+              <option value="Evaristo de Oliveira Rabelo">Evaristo de Oliveira Rabelo</option>
+              <option value="Gilmar Conceiçao Silva">Gilmar Conceiçao Silva</option>
+              <option value="Luciano Etelvino Coelho">Luciano Etelvino Coelho</option>
+              <option value="Paulo Alessandro de Amorim de Oliveira">Paulo Alessandro de Amorim de Oliveira</option>
+              <option value="Paulo Pires Gomes">Paulo Pires Gomes</option>
+              <option value="Raimundo Ribeiro Pinheiro">Raimundo Ribeiro Pinheiro</option>
+              <option value="Risonildo Amaral Alves">Risonildo Amaral Alves</option>
+              <option value="Wesley Kane da Silva Pires">Wesley Kane da Silva Pires</option>
+              <option value="Roberval dos Santos">Roberval dos Santos</option>
+            </select>
           </div>
-        
-        
+        </div>
+
         <!-- Datas e classificação -->
         <div class="grid grid-3">
           <div class="field">
@@ -478,7 +520,7 @@
         </div>
 
         <div class="actions">
-          <button class="btn" type="submit">
+          <button class="btn" type="submit" id="btnEnviar">
             <i class="fas fa-paper-plane"></i> Enviar Notificação
           </button>
         </div>
@@ -493,40 +535,140 @@
     <a id="btnPdf" href="#" target="_blank"><i class="fas fa-file-pdf"></i> Baixar PDF</a>
   </div>
 
+  <!-- 🔵 Overlay de envio + barra de progresso -->
+  <div id="overlayEnvio" class="overlay-envio" aria-hidden="true">
+    <div class="overlay-card">
+      <div class="overlay-title">
+        <i class="fas fa-spinner fa-spin"></i>
+        <span>Enviando notificação...</span>
+      </div>
+      <p class="overlay-text">
+        Aguarde enquanto suas informações e fotos são enviadas para o servidor.
+        Não feche esta página.
+      </p>
+      <div class="progress-wrap">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+      <div class="progress-percent" id="progressPercent">0%</div>
+    </div>
+  </div>
+
   <script>
-    // --------- Submissão ----------
     const form = document.getElementById('formNotificacao');
     const alertBox = document.getElementById('mensagemSucesso');
     const btnPdf = document.getElementById('btnPdf');
 
-    // Inputs de arquivo
     const dropArea = document.getElementById('dropArea');
     const fileInput = document.getElementById('fotos');
     const fileInfo = document.getElementById('fileInfo');
 
-    form.addEventListener('submit', async (e) => {
+    const botaoEnviar = document.getElementById('btnEnviar');
+
+    const overlayEnvio = document.getElementById('overlayEnvio');
+    const progressBar = document.getElementById('progressBar');
+    const progressPercent = document.getElementById('progressPercent');
+
+    // --------- Validação em tempo real ----------
+    const camposObrigatorios = form.querySelectorAll('[required]');
+    function marcarValidade(campo){
+      const wrapper = campo.closest('.input') || campo.closest('.dropzone');
+      if(!wrapper) return;
+      if(!campo.value || (campo.type === 'file' && !campo.files.length)){
+        wrapper.classList.add('input-error');
+      }else{
+        wrapper.classList.remove('input-error');
+      }
+    }
+    camposObrigatorios.forEach(campo=>{
+      campo.addEventListener('blur', ()=>marcarValidade(campo));
+      campo.addEventListener('change', ()=>marcarValidade(campo));
+      campo.addEventListener('input', ()=>marcarValidade(campo));
+    });
+
+    // --------- Submissão com XHR + progresso ----------
+    form.addEventListener('submit', (e) => {
       e.preventDefault();
 
-      // Validação: exigir pelo menos 1 foto
+      // Validação HTML5 geral
+      if(!form.checkValidity()){
+        camposObrigatorios.forEach(marcarValidade);
+        alert('Preencha todos os campos obrigatórios.');
+        return;
+      }
+
+      // Validação específica das fotos
       if (!fileInput.files || fileInput.files.length === 0) {
         alert('Anexe ao menos 1 foto como evidência.');
         fileInput.focus();
+        marcarValidade(fileInput);
         return;
       }
 
       const fd = new FormData(form);
 
-      try{
-        const res = await fetch('/enviar', { method:'POST', body: fd });
-        if(!res.ok) throw new Error('Erro ao enviar notificação.');
-        const { _id } = await res.json();
-        btnPdf.href = `/notificacoes/${_id}/pdf`;
-        alertBox.classList.add('show');
-        // auto-hide após 10s
-        setTimeout(() => alertBox.classList.remove('show'), 10000);
-      }catch(err){
-        alert('Erro ao enviar notificação.');
-      }
+      // Desabilita botão + estado "Enviando..."
+      botaoEnviar.disabled = true;
+      botaoEnviar.style.opacity = "0.6";
+      botaoEnviar.style.cursor = "not-allowed";
+      botaoEnviar.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Enviando...`;
+
+      // Mostra overlay
+      overlayEnvio.classList.add('show');
+      progressBar.style.width = '0%';
+      progressPercent.textContent = '0%';
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/enviar');
+
+      // Progresso do upload
+      xhr.upload.onprogress = function(e){
+        if(e.lengthComputable){
+          const percent = Math.round((e.loaded / e.total) * 100);
+          progressBar.style.width = percent + '%';
+          progressPercent.textContent = percent + '%';
+        }
+      };
+
+      xhr.onreadystatechange = function(){
+        if(xhr.readyState === 4){
+          // Esconde overlay
+          overlayEnvio.classList.remove('show');
+
+          if(xhr.status === 200){
+            try{
+              const data = JSON.parse(xhr.responseText);
+              if(data && data._id){
+                btnPdf.href = `/notificacoes/${data._id}/pdf`;
+                alertBox.classList.add('show');
+                setTimeout(() => alertBox.classList.remove('show'), 10000);
+              }else{
+                alert('Notificação enviada, mas não foi possível obter o ID para o PDF.');
+              }
+            }catch(err){
+              alert('Erro ao processar resposta do servidor.');
+            }
+            // Mantém o botão desabilitado (evita novo envio em cima do mesmo formulário)
+          }else{
+            alert('Erro ao enviar notificação.');
+            // Reabilita o botão em caso de erro
+            botaoEnviar.disabled = false;
+            botaoEnviar.style.opacity = "1";
+            botaoEnviar.style.cursor = "pointer";
+            botaoEnviar.innerHTML = `<i class="fas fa-paper-plane"></i> Enviar Notificação`;
+          }
+        }
+      };
+
+      xhr.onerror = function(){
+        overlayEnvio.classList.remove('show');
+        alert('Erro de conexão ao enviar notificação.');
+        botaoEnviar.disabled = false;
+        botaoEnviar.style.opacity = "1";
+        botaoEnviar.style.cursor = "pointer";
+        botaoEnviar.innerHTML = `<i class="fas fa-paper-plane"></i> Enviar Notificação`;
+      };
+
+      xhr.send(fd);
     });
 
     // --------- Dropzone ----------
@@ -539,18 +681,21 @@
     ['dragenter','dragover'].forEach(evt =>
       dropArea.addEventListener(evt, (e)=>{ e.preventDefault(); e.stopPropagation(); dropArea.classList.add('dragover'); })
     );
-    ;['dragleave','drop'].forEach(evt =>
+    ['dragleave','drop'].forEach(evt =>
       dropArea.addEventListener(evt, (e)=>{ e.preventDefault(); e.stopPropagation(); dropArea.classList.remove('dragover'); })
     );
     dropArea.addEventListener('drop', (e)=>{
       const files = e.dataTransfer.files;
       fileInput.files = files;
       updateFileInfo(files);
+      marcarValidade(fileInput);
     });
-    fileInput.addEventListener('change', (e)=> updateFileInfo(e.target.files));
+    fileInput.addEventListener('change', (e)=> {
+      updateFileInfo(e.target.files);
+      marcarValidade(fileInput);
+    });
 
     // --------- UX extra ----------
-    // Pré-preencher data de hoje se vazio
     const dataInput = document.getElementById('data');
     if(!dataInput.value){
       const today = new Date();
