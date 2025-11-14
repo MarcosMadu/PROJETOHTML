@@ -173,10 +173,10 @@ app.post('/baixa', uploadResolucaoFotos, async (req, res) => {
     const n = await Notificacao.findById(id);
     if (!n) return res.status(404).send('Notificação não encontrada.');
 
-    n.status             = 'Pendente de aprovação';
-    n.resolvidoPor       = resolvidoPor;
+    n.status              = 'Pendente de aprovação';
+    n.resolvidoPor        = resolvidoPor;
     n.resolucaoComentario = resolucaoComentario;
-    n.dataBaixa          = new Date();
+    n.dataBaixa           = new Date();
 
     if (req.files && req.files.length) {
       n.resolucaoFotos = req.files.map(f => f.path || f.filename);
@@ -220,9 +220,15 @@ app.get('/api/notificacoes/:id', async (req, res) => {
   }
 });
 
+// 🔹 LISTA APENAS NOTIFICAÇÕES EM ABERTO (PARA A BAIXA)
+//    Já envia também o idSequencial, técnico, área e classificação
 app.get('/api/notificacoes-abertas', async (req, res) => {
   try {
-    const abertas = await Notificacao.find({ status: 'Aberta' }).select('_id');
+    const abertas = await Notificacao
+      .find({ status: 'Aberta' })
+      .select('_id idSequencial tecnico area classificacao')
+      .sort({ idSequencial: 1, dataRegistro: 1 });
+
     res.json(abertas);
   } catch (err) {
     console.error('Erro ao buscar notificações abertas:', err);
