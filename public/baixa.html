@@ -1,223 +1,281 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Dar Baixa em Notificação</title>
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Baixa de Notificação</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+  <!-- Font Awesome (para ícones, se quiser usar) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
   <style>
-    /* Textura de fundo via TransparentTextures */
     body {
       margin: 0;
-      font-family: 'Roboto', sans-serif;
-      background-color: #f1f3f5;
-      background-image: url('https://www.transparenttextures.com/patterns/gray-wash-wall.png');
-      background-attachment: fixed;
-      color: #333;
+      background: #f4f4f7;
+      font-family: "Arial", sans-serif;
+      transition: margin-left 0.3s ease;
     }
-    .back-container {
-      margin: 16px;
-    }
-    .btn-back {
-      display: inline-block;
-      padding: 8px 12px;
-      background: #2E7D32;
-      color: #fff;
-      border-radius: 4px;
-      font-weight: 500;
-      text-decoration: none;
-      transition: background 0.2s;
-    }
-    .btn-back i { margin-right: 6px; }
-    .btn-back:hover { background: #1b5e20; }
 
-    .container {
-      max-width: 800px;
-      margin: 40px auto;
-      background: #fff;
-      padding: 30px;
+    /* SIDEBAR ------------------------------------------------------ */
+    .sidebar {
+      width: 250px;
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      background: linear-gradient(180deg, #0d1117, #050608);
+      color: white;
+      padding: 25px 15px;
+      box-shadow: 4px 0 10px rgba(0, 0, 0, 0.4);
+      z-index: 1000;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar .logo {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 30px;
+    }
+
+    .sidebar-menu-title {
+      font-size: 13px;
+      opacity: 0.6;
+      margin: 20px 0 10px;
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 10px 12px;
+      color: #d9d9d9;
       border-radius: 8px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      margin-bottom: 6px;
+      text-decoration: none;
+      transition: 0.2s;
+      font-size: 14px;
     }
 
-    /* FORMULÁRIO */
-    .form-section { display: block; }
-    .form-section .mb-3 label { font-weight: 500; margin-bottom: 6px; display: block; }
-    .form-section .mb-3 select,
-    .form-section .mb-3 input,
-    .form-section .mb-3 textarea {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 0.95rem;
-      font-family: inherit;
-      transition: border-color 0.2s;
+    .sidebar a:hover,
+    .sidebar a.active {
+      background: #00cc66;
+      color: #000;
+      font-weight: 600;
+      box-shadow: 0 0 15px #00ff8855;
     }
-    .form-section .mb-3 select:focus,
-    .form-section .mb-3 input:focus,
-    .form-section .mb-3 textarea:focus {
-      border-color: #2E7D32;
-      outline: none;
-    }
-    .form-section button {
-      display: inline-block;
-      padding: 10px 16px;
-      background: #2E7D32;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .form-section button:hover { background: #1b5e20; }
 
-    /* CONFIRMAÇÃO */
-    .confirm-section {
-      display: none;
-      text-align: center;
-      padding: 40px 20px;
+    /* CONTENT ------------------------------------------------------ */
+    .content {
+      margin-left: 260px;
+      padding: 25px;
+      transition: margin-left 0.3s ease;
     }
-    .confirm-section i {
+
+    /* Quando a sidebar estiver fechada */
+    body.sidebar-closed .sidebar {
+      transform: translateX(-260px);
+    }
+    body.sidebar-closed .content {
+      margin-left: 20px;
+    }
+
+    .page-title {
+      font-size: 26px;
+      font-weight: bold;
+    }
+
+    .card-main {
+      border-radius: 14px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    }
+
+    .card-success-icon {
       font-size: 3rem;
       color: #2E7D32;
-      margin-bottom: 16px;
-    }
-    .confirm-section h2 {
-      font-size: 1.5rem;
-      margin-bottom: 12px;
-      font-weight: 500;
-    }
-    .confirm-section p {
-      font-size: 1rem;
-      margin-bottom: 24px;
-    }
-    .confirm-section .btn-back {
-      margin-top: 0;
-    }
-
-    @media (max-width: 600px) {
-      .container { margin: 20px 10px; padding: 20px; }
     }
   </style>
 </head>
+
 <body>
 
-  <div class="back-container">
-    <a href="/dashboard.html" class="btn-back">
-      <i class="fas fa-arrow-left"></i> Voltar ao Painel Inicial
-    </a>
-  </div>
+<!-- SIDEBAR ----------------------------------------------------------- -->
+<div class="sidebar">
+  <div class="logo">🛡️ Painel SESMT</div>
 
-  <div class="container">
+  <div class="sidebar-menu-title">NAVEGAÇÃO</div>
+  <a href="/dashboard.html">Dashboard</a>
+  <a href="/index.html">Formulário Notificação</a>
+  <a href="/status.html">Status das Notificações</a>
+  <a class="active" href="/baixa.html">Baixa de Notificação</a>
 
-    <!-- SEÇÃO DE FORMULÁRIO -->
-    <div class="form-section" id="form-section">
-      <h2>Dar Baixa em Notificação</h2>
-      <form id="baixa-form">
-        <div class="mb-3">
-          <label for="id">Selecione a Notificação (Abertas)</label>
-          <select id="id" name="id" required>
-            <option value="">Carregando notificações...</option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label for="resolvidoPor">Responsável pela Baixa</label>
-          <input type="text" id="resolvidoPor" name="resolvidoPor" required>
-        </div>
-        <div class="mb-3">
-          <label for="resolucaoComentario">Comentário da Resolução</label>
-          <textarea id="resolucaoComentario" name="resolucaoComentario" rows="4" required></textarea>
-        </div>
-        <div class="mb-3">
-          <label for="resolucaoFotos">Fotos da Resolução</label>
-          <input type="file" id="resolucaoFotos" name="resolucaoFotos" multiple accept="image/*">
-        </div>
-        <button type="submit">Enviar Baixa</button>
-      </form>
+  <div class="sidebar-menu-title">PAINÉIS</div>
+  <a href="/gestor.html">Painel do Gestor</a>
+</div>
+
+<!-- CONTEÚDO ----------------------------------------------------------- -->
+<div class="content">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex align-items-center">
+      <button id="btnToggleSidebar" class="btn btn-outline-secondary me-3">
+        ☰
+      </button>
+      <div>
+        <div class="page-title">Baixa de Notificação</div>
+        <small class="text-muted">Registre a resolução das notificações em aberto</small>
+      </div>
     </div>
 
-    <!-- SEÇÃO DE CONFIRMAÇÃO -->
-    <div class="confirm-section" id="confirm-section">
-      <i class="fas fa-check-circle"></i>
-      <h2>Baixa registrada com sucesso!</h2>
-      <p>Aguarde aprovação do gestor.</p>
-      <a href="/dashboard.html" class="btn-back">
-        <i class="fas fa-arrow-left"></i> Voltar ao Painel Inicial
-      </a>
-    </div>
-
+    <button class="btn btn-success px-3" onclick="window.location.href='/index.html'">
+      + Nova Notificação
+    </button>
   </div>
 
-  <script>
-    // 🔹 Carrega somente notificações ABERTAS, usando idSequencial quando existir
-    async function carregarNotificacoesAbertas() {
-      const select = document.getElementById('id');
-      try {
-        const resp  = await fetch('/api/notificacoes-abertas');
-        const lista = await resp.json();
+  <!-- CARD FORM / CONFIRMAÇÃO -->
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
 
-        console.log('Notificações abertas recebidas:', lista);
+      <!-- SEÇÃO DE FORMULÁRIO -->
+      <div class="card card-main mb-3" id="form-section">
+        <div class="card-body">
+          <h5 class="mb-3">Dados da Baixa</h5>
 
-        select.innerHTML = '<option value="">Selecione uma notificação</option>';
+          <form id="baixa-form">
+            <div class="mb-3">
+              <label for="id" class="form-label">Selecione a Notificação (Abertas)</label>
+              <select id="id" name="id" class="form-select" required>
+                <option value="">Carregando notificações...</option>
+              </select>
+              <div class="form-text">
+                Apenas notificações com status <strong>Aberta</strong> são exibidas.  
+                As mais recentes já aparecem com o <strong>ID sequencial</strong>.
+              </div>
+            </div>
 
-        if (!Array.isArray(lista) || lista.length === 0) {
-          const opt = document.createElement('option');
-          opt.value = '';
-          opt.textContent = 'Não há notificações em aberto';
-          select.appendChild(opt);
-          select.disabled = true;
-          return;
+            <div class="mb-3">
+              <label for="resolvidoPor" class="form-label">Responsável pela Baixa</label>
+              <input type="text" id="resolvidoPor" name="resolvidoPor" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="resolucaoComentario" class="form-label">Comentário da Resolução</label>
+              <textarea id="resolucaoComentario" name="resolucaoComentario" rows="4" class="form-control" required></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="resolucaoFotos" class="form-label">Fotos da Resolução</label>
+              <input type="file" id="resolucaoFotos" name="resolucaoFotos" class="form-control" multiple accept="image/*">
+              <div class="form-text">
+                Envie fotos da condição após a correção (opcional, mas recomendado).
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-success">
+              Enviar Baixa
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- SEÇÃO DE CONFIRMAÇÃO -->
+      <div class="card card-main text-center py-5" id="confirm-section" style="display:none;">
+        <div class="card-body">
+          <i class="fas fa-check-circle card-success-icon mb-3"></i>
+          <h3 class="mb-2">Baixa registrada com sucesso!</h3>
+          <p class="mb-4">A notificação foi enviada ao gestor e está <strong>pendente de aprovação</strong>.</p>
+
+          <button class="btn btn-outline-secondary me-2" onclick="window.location.href='/gestor.html'">
+            Ir para o Painel do Gestor
+          </button>
+          <button class="btn btn-success" onclick="window.location.href='/baixa.html'">
+            Registrar nova baixa
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- SCRIPTS ----------------------------------------------------------- -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  // ---------- Carregar notificações abertas (apenas status 'Aberta') ----------
+  async function carregarNotificacoesAbertas() {
+    const select = document.getElementById('id');
+    try {
+      const resp  = await fetch('/api/notificacoes-abertas');
+      const lista = await resp.json();
+
+      select.innerHTML = '<option value="">Selecione uma notificação</option>';
+
+      if (!lista.length) {
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = 'Não há notificações em aberto';
+        select.appendChild(opt);
+        select.disabled = true;
+        return;
+      }
+
+      lista.forEach(n => {
+        const opt = document.createElement('option');
+        opt.value = n._id;
+
+        // Se tiver idSequencial, mostra ele; senão, mostra o _id normal
+        if (n.idSequencial != null) {
+          opt.textContent = `#${n.idSequencial}`;
+        } else {
+          opt.textContent = n._id;
         }
 
-        // ordena por idSequencial quando houver
-        lista.sort((a, b) => {
-          const aa = (typeof a.idSequencial === 'number') ? a.idSequencial : Number.MAX_SAFE_INTEGER;
-          const bb = (typeof b.idSequencial === 'number') ? b.idSequencial : Number.MAX_SAFE_INTEGER;
-          return aa - bb;
-        });
-
-        lista.forEach(n => {
-          const opt = document.createElement('option');
-          opt.value = n._id;
-
-          const textoId = (typeof n.idSequencial === 'number')
-            ? `#${n.idSequencial}`
-            : n._id;
-
-          const detalhes = [n.tecnico, n.area, n.classificacao].filter(Boolean).join(' · ');
-          const rotulo   = detalhes ? `${textoId} – ${detalhes}` : textoId;
-
-          opt.textContent = rotulo;
-          select.appendChild(opt);
-        });
-      } catch (err) {
-        console.error('Erro ao carregar notificações abertas:', err);
-        select.innerHTML = '<option value="">Erro ao carregar notificações</option>';
-      }
+        select.appendChild(opt);
+      });
+      select.disabled = false;
+    } catch (err) {
+      console.error(err);
+      select.innerHTML = '<option value="">Erro ao carregar notificações</option>';
+      select.disabled = true;
     }
+  }
 
-    // tratamento do envio
-    document.getElementById('baixa-form').addEventListener('submit', async e => {
-      e.preventDefault();
-      const form = e.target;
-      const data = new FormData(form);
-      try {
-        const resp = await fetch('/baixa', { method: 'POST', body: data });
-        if (!resp.ok) throw new Error('Status ' + resp.status);
-        // exibe tela de confirmação
-        document.getElementById('form-section').style.display = 'none';
-        document.getElementById('confirm-section').style.display = 'block';
-      } catch (err) {
-        console.error(err);
-        alert('Erro ao registrar baixa. Tente novamente.');
-      }
+  // ---------- Envio da baixa ----------
+  document.getElementById('baixa-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const form = e.target;
+    const data = new FormData(form);
+
+    try {
+      const resp = await fetch('/baixa', { method: 'POST', body: data });
+      if (!resp.ok) throw new Error('Status ' + resp.status);
+
+      // Exibe tela de confirmação
+      document.getElementById('form-section').style.display    = 'none';
+      document.getElementById('confirm-section').style.display = 'block';
+    } catch (err) {
+      console.error(err);
+      alert('Erro ao registrar baixa. Tente novamente.');
+    }
+  });
+
+  // ---------- Toggle da sidebar ----------
+  function configurarToggleSidebar() {
+    const btn = document.getElementById('btnToggleSidebar');
+    btn.addEventListener('click', () => {
+      document.body.classList.toggle('sidebar-closed');
     });
+  }
 
-    window.addEventListener('DOMContentLoaded', carregarNotificacoesAbertas);
-  </script>
+  // ---------- Inicialização ----------
+  window.addEventListener('DOMContentLoaded', () => {
+    configurarToggleSidebar();
+    carregarNotificacoesAbertas();
+  });
+</script>
+
 </body>
 </html>
