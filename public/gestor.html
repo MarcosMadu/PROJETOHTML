@@ -1,642 +1,868 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Painel do Gestor - Notificações e Interdições</title>
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
-  <!-- GLightbox (para ampliar fotos) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
 
   <style>
-    .back-container{ text-align:left; margin:16px; }
-    .btn-back{
-      display:inline-block; padding:8px 12px; background:#2E7D32; color:#fff; border-radius:4px;
-      font-weight:500; text-decoration:none; transition:background .2s; font-family:Arial,sans-serif;
+    body {
+      margin: 0;
+      background: #f4f4f7;
+      font-family: "Arial", sans-serif;
+      transition: margin-left 0.3s ease;
     }
-    .btn-back:hover{ background:#1b5e20; }
+
+    /* SIDEBAR ------------------------------------------------------ */
+    .sidebar {
+      width: 250px;
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      background: linear-gradient(180deg, #0d1117, #050608);
+      color: white;
+      padding: 25px 15px;
+      box-shadow: 4px 0 10px rgba(0, 0, 0, 0.4);
+      z-index: 1000;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar .logo {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 30px;
+    }
+
+    .sidebar-menu-title {
+      font-size: 13px;
+      opacity: 0.6;
+      margin: 20px 0 10px;
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 10px 12px;
+      color: #d9d9d9;
+      border-radius: 8px;
+      margin-bottom: 6px;
+      text-decoration: none;
+      transition: 0.2s;
+      font-size: 14px;
+    }
+
+    .sidebar a:hover,
+    .sidebar a.active {
+      background: #00cc66;
+      color: #000;
+      font-weight: 600;
+      box-shadow: 0 0 15px #00ff8855;
+    }
+
+    /* CONTENT ------------------------------------------------------ */
+    .content {
+      margin-left: 260px;
+      padding: 25px;
+      transition: margin-left 0.3s ease;
+    }
+
+    body.sidebar-closed .sidebar {
+      transform: translateX(-260px);
+    }
+    body.sidebar-closed .content {
+      margin-left: 20px;
+    }
+
+    .page-title {
+      font-size: 26px;
+      font-weight: bold;
+    }
+
+    .card-kpi {
+      padding: 18px;
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+      height: 110px;
+      transition: 0.2s;
+    }
+
+    .card-kpi:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 12px rgba(0,0,0,0.15);
+    }
+
+    .chip-status {
+      padding: 7px 16px;
+      border-radius: 25px;
+      background: #e9ecef;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-right: 8px;
+    }
+
+    .chip-status.active {
+      background: #00cc66;
+      color: #fff;
+      box-shadow: 0 0 10px #00ff8850;
+    }
+
+    table thead {
+      background: #e2e6ef;
+    }
+
+    .table-placeholder {
+      height: 80px;
+    }
   </style>
 </head>
 
-<body class="bg-light">
-  <div class="back-container">
-    <a href="/dashboard.html" class="btn-back">
-      <i class="fas fa-arrow-left"></i> Voltar ao Painel Inicial
-    </a>
+<body>
+
+<!-- SIDEBAR ----------------------------------------------------------- -->
+<div class="sidebar">
+  <div class="logo">🛡️ Painel SESMT</div>
+
+  <div class="sidebar-menu-title">NAVEGAÇÃO</div>
+  <a href="/dashboard.html">Dashboard</a>
+  <a href="/index.html">Formulário Notificação</a>
+  <a href="/status.html">Status das Notificações</a>
+  <a href="/baixa.html">Baixa de Notificação</a>
+
+  <div class="sidebar-menu-title">PAINÉIS</div>
+  <a class="active" href="#">Painel do Gestor</a>
+</div>
+
+<!-- CONTEÚDO ----------------------------------------------------------- -->
+<div class="content">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex align-items-center">
+      <button id="btnToggleSidebar" class="btn btn-outline-secondary me-3">
+        ☰
+      </button>
+      <div>
+        <div class="page-title">Painel do Gestor</div>
+        <small class="text-muted">Gerencie notificações, interdições e prazos</small>
+      </div>
+    </div>
+
+    <button class="btn btn-success px-3" onclick="window.location.href='/index.html'">
+      + Nova Notificação
+    </button>
   </div>
 
-  <div class="container py-4">
-    <h2>🔍 Painel do Gestor - Notificações e Interdições</h2>
+  <!-- KPIs -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3 col-xl-2">
+      <div class="card-kpi">
+        <h6 class="mb-1">Total Exibido</h6>
+        <h3 id="kpiTotal">0</h3>
+      </div>
+    </div>
+    <div class="col-md-3 col-xl-2">
+      <div class="card-kpi">
+        <h6 class="mb-1">Abertas</h6>
+        <h3 id="kpiAbertas">0</h3>
+      </div>
+    </div>
+    <div class="col-md-3 col-xl-2">
+      <div class="card-kpi">
+        <h6 class="mb-1">Pendentes</h6>
+        <h3 id="kpiPendentes">0</h3>
+      </div>
+    </div>
+    <div class="col-md-3 col-xl-2">
+      <div class="card-kpi">
+        <h6 class="mb-1">Notificações</h6>
+        <h3 id="kpiNotificacoes">0</h3>
+      </div>
+    </div>
+    <div class="col-md-3 col-xl-2">
+      <div class="card-kpi">
+        <h6 class="mb-1">Interdições</h6>
+        <h3 id="kpiInterdicoes">0</h3>
+      </div>
+    </div>
+  </div>
 
-    <!-- Filtros -->
-    <form id="filtroForm" class="row g-2 align-items-end my-4">
-      <div class="col-md-2">
-        <label for="status" class="form-label">Status</label>
-        <select id="status" class="form-select">
-          <option value="">Todos</option>
-          <option value="Aberta">Aberta</option>
-          <option value="Pendente de aprovação">Pendente de aprovação</option>
-          <option value="Aprovada">Aprovada</option>
-          <option value="Rejeitada">Rejeitada</option>
-        </select>
+  <!-- Chips de status rápido -->
+  <div class="mb-3">
+    <span class="chip-status active" data-status="">Todas</span>
+    <span class="chip-status" data-status="Aberta">Abertas</span>
+    <span class="chip-status" data-status="Pendente de aprovação">Pendentes</span>
+    <span class="chip-status" data-status="Aprovada">Aprovadas</span>
+    <span class="chip-status" data-status="Rejeitada">Rejeitadas</span>
+  </div>
+
+  <!-- Filtros avançados -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <form id="filtroForm" class="row g-2 align-items-end">
+        <div class="col-md-2">
+          <label for="status" class="form-label">Status</label>
+          <select id="status" class="form-select">
+            <option value="">Todos</option>
+            <option value="Aberta">Aberta</option>
+            <option value="Pendente de aprovação">Pendente de aprovação</option>
+            <option value="Aprovada">Aprovada</option>
+            <option value="Rejeitada">Rejeitada</option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label for="filtroMes" class="form-label">Mês</label>
+          <select id="filtroMes" class="form-select">
+            <option value="">Todos</option>
+            <option value="0">Janeiro</option>
+            <option value="1">Fevereiro</option>
+            <option value="2">Março</option>
+            <option value="3">Abril</option>
+            <option value="4">Maio</option>
+            <option value="5">Junho</option>
+            <option value="6">Julho</option>
+            <option value="7">Agosto</option>
+            <option value="8">Setembro</option>
+            <option value="9">Outubro</option>
+            <option value="10">Novembro</option>
+            <option value="11">Dezembro</option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label for="filtroPrazo" class="form-label">Prazo</label>
+          <select id="filtroPrazo" class="form-select">
+            <option value="">Todos</option>
+            <option value="noprazo">No prazo</option>
+            <option value="vencidas">Vencidas</option>
+          </select>
+        </div>
+
+        <!-- Filtro de Classificação -->
+        <div class="col-md-2">
+          <label for="filtroClassificacao" class="form-label">Classificação</label>
+          <select id="filtroClassificacao" class="form-select">
+            <option value="">Todas</option>
+            <option value="Notificação">Notificação</option>
+            <option value="Interdição">Interdição</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label for="filtroArea" class="form-label">Área</label>
+          <select id="filtroArea" class="form-select">
+            <option value="">Todas</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label for="filtroTecnico" class="form-label">Técnico</label>
+          <select id="filtroTecnico" class="form-select">
+            <option value="">Todos</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label for="idBusca" class="form-label">Buscar por ID</label>
+          <input type="text" id="idBusca" class="form-control" placeholder="Digite o ID (_id do Mongo)" />
+        </div>
+
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+        </div>
+
+        <div class="col-md-3 ms-auto text-end">
+          <button id="btnExcluirSelecionadas" type="button" class="btn btn-outline-danger" disabled>
+            Excluir Selecionadas
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tabela -->
+  <div class="card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle" id="tabelaNotificacoes">
+          <thead>
+            <tr>
+              <th style="width:36px;">
+                <input type="checkbox" id="selectAll">
+              </th>
+              <th>ID</th>
+              <th>Técnico</th>
+              <th>Área</th>
+              <th>Classificação</th>
+              <th>Status</th>
+              <th>Data</th>
+              <th>Prazo</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyNotificacoes">
+            <tr><td colspan="9" class="text-center py-4">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALHES -------------------------------------------------- -->
+<div class="modal fade" id="modalDetalhes" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header d-flex align-items-center">
+        <h5 class="modal-title">Detalhes da Notificação</h5>
+        <div class="ms-auto">
+          <button id="btnExcluir" class="btn btn-outline-danger btn-sm me-2">Excluir</button>
+          <button id="btnRejeitar" class="btn btn-danger btn-sm me-2" data-bs-toggle="modal" data-bs-target="#modalRejeicao">Rejeitar</button>
+          <button id="btnAprovar" class="btn btn-success btn-sm">Aprovar</button>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
 
-      <div class="col-md-2">
-        <label for="filtroMes" class="form-label">Mês</label>
-        <select id="filtroMes" class="form-select">
-          <option value="">Todos</option>
-          <option value="0">Janeiro</option><option value="1">Fevereiro</option>
-          <option value="2">Março</option><option value="3">Abril</option>
-          <option value="4">Maio</option><option value="5">Junho</option>
-          <option value="6">Julho</option><option value="7">Agosto</option>
-          <option value="8">Setembro</option><option value="9">Outubro</option>
-          <option value="10">Novembro</option><option value="11">Dezembro</option>
-        </select>
+      <div class="modal-body">
+        <div class="mb-2"><strong>ID:</strong> <span id="detalheId"></span></div>
+        <div class="mb-2"><strong>Técnico:</strong> <span id="detalheTecnico"></span></div>
+        <div class="mb-2"><strong>Encarregado:</strong> <span id="detalheEncarregado"></span></div>
+        <div class="mb-2"><strong>Supervisor da Obra:</strong> <span id="detalheSupervisor"></span></div>
+        <div class="mb-2"><strong>Descrição da Atividade:</strong> <span id="detalheDescricaoAtividade"></span></div>
+        <div class="mb-2"><strong>NR Relacionada:</strong> <span id="detalheNR"></span></div>
+        <div class="mb-2"><strong>Ações Recomendadas:</strong> <span id="detalheAcoesRecomendadas"></span></div>
+
+        <div class="mb-2"><strong>Área:</strong> <span id="detalheArea"></span></div>
+        <div class="mb-2"><strong>Classificação:</strong> <span id="detalheClassificacao"></span></div>
+        <div class="mb-2"><strong>Descrição:</strong> <span id="detalheDescricao"></span></div>
+        <div class="mb-2"><strong>Data de Registro:</strong> <span id="detalheDataRegistro"></span></div>
+        <div class="mb-2"><strong>Status:</strong> <span id="detalheStatus"></span></div>
+        <div class="mb-2"><strong>Prazo:</strong> <span id="detalhePrazo"></span></div>
+
+        <hr />
+        <div class="mb-2">
+          <strong>Justificativa do Gestor:</strong>
+          <p id="detalheJustificativa" class="mb-0">—</p>
+        </div>
+
+        <hr />
+        <h6>Fotos da Notificação</h6>
+        <div id="detalheFotosNotificacao" class="d-flex flex-wrap gap-2 mb-3"></div>
+
+        <hr />
+        <h6>Baixa (Resolução)</h6>
+        <div class="mb-2"><strong>Resolvido Por:</strong> <span id="detalheResolvidoPor"></span></div>
+        <div class="mb-2"><strong>Data da Baixa:</strong> <span id="detalheDataBaixa"></span></div>
+        <div class="mb-2"><strong>Comentário da Baixa:</strong> <span id="detalheComentario"></span></div>
+        <div class="mb-2"><strong>Fotos da Baixa:</strong></div>
+        <div id="detalheFotos" class="d-flex flex-wrap gap-2"></div>
       </div>
 
-      <div class="col-md-2">
-        <label for="filtroPrazo" class="form-label">Prazo</label>
-        <select id="filtroPrazo" class="form-select">
-          <option value="">Todos</option>
-          <option value="noprazo">No prazo</option>
-          <option value="vencidas">Vencidas</option>
-        </select>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
       </div>
+    </div>
+  </div>
+</div>
 
-      <div class="col-md-3">
-        <label for="filtroArea" class="form-label">Área</label>
-        <select id="filtroArea" class="form-select">
-          <option value="">Todas</option>
-        </select>
+<!-- MODAL REJEIÇÃO -------------------------------------------------- -->
+<div class="modal fade" id="modalRejeicao" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="formRejeicao" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Justificativa de Rejeição</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-
-      <div class="col-md-3">
-        <label for="filtroTecnico" class="form-label">Técnico</label>
-        <select id="filtroTecnico" class="form-select">
-          <option value="">Todos</option>
-        </select>
+      <div class="modal-body">
+        <input type="hidden" name="id" id="rejeicaoId">
+        <div class="mb-3">
+          <label for="justificativa" class="form-label">Motivo da Rejeição</label>
+          <textarea name="justificativa" id="justificativa" class="form-control" rows="3" required></textarea>
+        </div>
       </div>
-
-      <!-- Filtro Classificação -->
-      <div class="col-md-2">
-        <label for="filtroClassificacao" class="form-label">Classificação</label>
-        <select id="filtroClassificacao" class="form-select">
-          <option value="">Todas</option>
-          <option value="Notificação">Notificação</option>
-          <option value="Interdição">Interdição</option>
-        </select>
-      </div>
-      <!-- /Filtro Classificação -->
-
-      <div class="col-md-3">
-        <label for="idBusca" class="form-label">Buscar por ID</label>
-        <input type="text" id="idBusca" class="form-control" placeholder="Digite o ID" />
-      </div>
-
-      <div class="col-md-2">
-        <button type="submit" class="btn btn-primary w-100">Filtrar</button>
-      </div>
-
-      <div class="col-md-3 ms-auto text-end">
-        <button id="btnExcluirSelecionadas" type="button" class="btn btn-outline-danger" disabled>
-          Excluir Selecionadas
-        </button>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-danger">Confirmar Rejeição</button>
       </div>
     </form>
-
-    <!-- NOVO: Resumo com cards e mini-tabelas -->
-    <div id="resumoCards" class="row g-3 mb-3">
-      <div class="col-md-3">
-        <div class="card h-100">
-          <div class="card-body d-flex flex-column justify-content-center text-center">
-            <h6 class="text-muted mb-1">Total exibido</h6>
-            <div id="resumoTotal" class="display-6">0</div>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-5">
-        <div class="card h-100">
-          <div class="card-body">
-            <h6 class="mb-2">Por Status</h6>
-            <table class="table table-sm mb-0 align-middle">
-              <tbody id="tResumoStatus"><tr><td class="text-muted">—</td><td class="text-end">0</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card h-100">
-          <div class="card-body">
-            <h6 class="mb-2">Por Classificação</h6>
-            <table class="table table-sm mb-0 align-middle">
-              <tbody id="tResumoClass"><tr><td class="text-muted">—</td><td class="text-end">0</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- /NOVO -->
-
-    <!-- Tabela de Notificações -->
-    <div class="table-responsive">
-      <table class="table table-striped align-middle" id="tabelaNotificacoes">
-        <thead>
-          <tr>
-            <th style="width:36px;">
-              <input type="checkbox" id="selectAll">
-            </th>
-            <th>ID</th>
-            <th>Técnico</th>
-            <th>Área</th>
-            <th>Classificação</th>
-            <th>Status</th>
-            <th>Data</th>
-            <th>Prazo</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-    <!-- Modal de Detalhes -->
-    <div class="modal fade" id="modalDetalhes" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header d-flex align-items-center">
-            <h5 class="modal-title">Detalhes da Notificação</h5>
-            <div class="ms-auto" id="acoesModal">
-              <button id="btnExcluir" class="btn btn-outline-danger btn-sm me-2">Excluir</button>
-              <button id="btnRejeitar" class="btn btn-danger btn-sm me-2" data-bs-toggle="modal" data-bs-target="#modalRejeicao">Rejeitar</button>
-              <button id="btnAprovar" class="btn btn-success btn-sm">Aprovar</button>
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-          </div>
-
-          <div class="modal-body">
-            <div class="mb-3"><strong>ID:</strong> <span id="detalheId"></span></div>
-            <div class="mb-3"><strong>Técnico:</strong> <span id="detalheTecnico"></span></div>
-            <div class="mb-3"><strong>Encarregado:</strong> <span id="detalheEncarregado"></span></div>
-
-            <!-- Campos extras -->
-            <div class="mb-3"><strong>Supervisor da Obra:</strong> <span id="detalheSupervisor"></span></div>
-            <div class="mb-3"><strong>Descrição da Atividade:</strong> <span id="detalheDescricaoAtividade"></span></div>
-            <div class="mb-3"><strong>NR Relacionada:</strong> <span id="detalheNR"></span></div>
-            <div class="mb-3"><strong>Ações Recomendadas:</strong> <span id="detalheAcoesRecomendadas"></span></div>
-
-            <div class="mb-3"><strong>Área:</strong> <span id="detalheArea"></span></div>
-            <div class="mb-3"><strong>Classificação:</strong> <span id="detalheClassificacao"></span></div>
-            <div class="mb-3"><strong>Descrição:</strong> <p id="detalheDescricao"></p></div>
-            <div class="mb-3"><strong>Data de Registro:</strong> <span id="detalheDataRegistro"></span></div>
-            <div class="mb-3"><strong>Status:</strong> <span id="detalheStatus"></span></div>
-            <div class="mb-3"><strong>Prazo:</strong> <span id="detalhePrazo"></span></div>
-
-            <hr />
-            <h6>Fotos da Notificação</h6>
-            <div id="detalheFotosNotificacao" class="d-flex flex-wrap gap-2 mb-3"></div>
-
-            <hr />
-            <div class="mb-3">
-              <strong>Justificativa do Gestor:</strong>
-              <p id="detalheJustificativa" class="mb-0">—</p>
-            </div>
-
-            <hr />
-            <h6>Baixa (Resolução)</h6>
-            <div class="mb-3"><strong>Resolvido Por:</strong> <span id="detalheResolvidoPor"></span></div>
-            <div class="mb-3"><strong>Data da Baixa:</strong> <span id="detalheDataBaixa"></span></div>
-            <div class="mb-3"><strong>Comentário da Baixa:</strong> <p id="detalheComentario"></p></div>
-            <div class="mb-3"><strong>Fotos da Baixa:</strong>
-              <div id="detalheFotos" class="d-flex flex-wrap gap-2"></div>
-            </div>
-          </div>
-
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal de Rejeição -->
-    <div class="modal fade" id="modalRejeicao" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog">
-        <form id="formRejeicao" class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Justificativa de Rejeição</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body">
-            <input type="hidden" name="id" id="rejeicaoId">
-            <div class="mb-3">
-              <label for="justificativa" class="form-label">Motivo da Rejeição</label>
-              <textarea name="justificativa" id="justificativa" class="form-control" rows="3" required></textarea>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-danger">Confirmar Rejeição</button>
-          </div>
-        </form>
-      </div>
-    </div>
   </div>
+</div>
 
-  <script>
-    // ---------- Datas / prazo ----------
-    const DAY = 24 * 60 * 60 * 1000;
-    function prazoDiffDays(prazoISO){
-      if(!prazoISO) return null;
-      const hoje = new Date(); hoje.setHours(0,0,0,0);
-      const prazo = new Date(prazoISO); prazo.setHours(0,0,0,0);
-      return Math.round((prazo - hoje)/DAY);
-    }
-    function prazoTexto(prazoISO){
-      if(!prazoISO) return '-';
-      const d = new Date(prazoISO);
-      const diff = prazoDiffDays(prazoISO);
-      const base = d.toLocaleDateString();
-      if(diff>0) return `${base} (em ${diff} dia${diff>1?'s':''})`;
-      if(diff===0) return `${base} (vence hoje)`;
-      const atras = Math.abs(diff);
-      return `${base} (vencido há ${atras} dia${atras>1?'s':''})`;
-    }
-    function prazoClasse(diff){
-      if(diff===null) return '';
-      if(diff<0) return 'text-danger fw-semibold';
-      if(diff===0) return 'text-warning fw-semibold';
-      if(diff<=3) return 'text-warning';
-      return 'text-success';
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  // ---------- Datas / prazo ----------
+  const DAY = 24 * 60 * 60 * 1000;
+
+  function prazoDiffDays(prazoISO) {
+    if (!prazoISO) return null;
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+    const prazo = new Date(prazoISO); prazo.setHours(0,0,0,0);
+    return Math.round((prazo - hoje)/DAY);
+  }
+
+  function prazoTexto(prazoISO, status) {
+    if (!prazoISO) return '-';
+    const d = new Date(prazoISO);
+
+    if (status === 'Aprovada') {
+      return d.toLocaleDateString();
     }
 
-    // ---------- Imagens ----------
-    function resolveImgSrc(f){
-      if(!f) return null;
-      if(typeof f==='object' && f.url) return f.url;
-      if(typeof f==='string' && f.startsWith('http')) return f;
-      return '/uploads/' + f;
-    }
+    const diff = prazoDiffDays(prazoISO);
+    const base = d.toLocaleDateString();
+    if (diff > 0)  return `${base} (em ${diff} dia${diff>1?'s':''})`;
+    if (diff === 0) return `${base} (vence hoje)`;
+    const atras = Math.abs(diff);
+    return `${base} (vencido há ${atras} dia${atras>1?'s':''})`;
+  }
 
-    // Estado em memória
-    let ULTIMA_LISTA = [];
+  function prazoClasse(diff, status) {
+    if (diff === null) return '';
+    if (status === 'Aprovada') return '';
+    if (diff < 0)  return 'text-danger fw-semibold';
+    if (diff === 0) return 'text-warning fw-semibold';
+    if (diff <= 3) return 'text-warning';
+    return 'text-success';
+  }
 
-    // ---------- Carregar notificações (Status/ID server-side) ----------
-    async function carregarNotificacoes(){
+  // ---------- Imagens ----------
+  function resolveImgSrc(f) {
+    if (!f) return null;
+    if (typeof f === 'object' && f.url) return f.url;
+    if (typeof f === 'string' && f.startsWith('http')) return f;
+    return '/uploads/' + f;
+  }
+
+  let ULTIMA_LISTA = [];
+
+  // ---------- Carregar notificações ----------
+  async function carregarNotificacoes() {
+    try {
       const url = new URL('/api/notificacoes', window.location.origin);
 
-      const statusEl = document.getElementById('status');
-      const status = (statusEl?.value || '').trim();
-      const id     = (document.getElementById('idBusca').value || '').trim();
-      const classSel = (document.getElementById('filtroClassificacao').value || '').trim();
+      const status = document.getElementById('status').value;
+      const id     = document.getElementById('idBusca').value.trim();
 
-      if (status && status !== 'Todos') url.searchParams.append('status', status);
-      if (id) url.searchParams.append('id', id);
-      if (classSel && classSel !== 'Todas') url.searchParams.append('classificacao', classSel);
+      if (status) url.searchParams.append('status', status);
+      if (id)     url.searchParams.append('id', id); // ainda busca pelo _id do Mongo
 
-      const res   = await fetch(url);
+      const res = await fetch(url);
+      if (!res.ok) {
+        console.error('Erro ao buscar /api/notificacoes:', res.status, await res.text());
+        document.getElementById('tbodyNotificacoes').innerHTML =
+          '<tr><td colspan="9" class="text-center py-4 text-danger">Erro ao carregar notificações.</td></tr>';
+        return;
+      }
+
       const lista = await res.json();
-
       ULTIMA_LISTA = lista;
 
       popularFiltrosDinamicos(lista);
       const filtrada = aplicarFiltrosCliente(lista);
       renderTabela(filtrada);
+      atualizarKPIs(filtrada);
+    } catch (err) {
+      console.error('Falha geral em carregarNotificacoes:', err);
+      document.getElementById('tbodyNotificacoes').innerHTML =
+        '<tr><td colspan="9" class="text-center py-4 text-danger">Erro ao carregar notificações.</td></tr>';
     }
+  }
 
-    // ---------- Aplicar filtros cliente (mês, prazo, área, técnico, classificação) ----------
-    function aplicarFiltrosCliente(baseLista){
-      const mesSel   = document.getElementById('filtroMes').value;
-      const prazoSel = document.getElementById('filtroPrazo').value;
-      const areaSel  = document.getElementById('filtroArea').value;
-      const tecSel   = document.getElementById('filtroTecnico').value;
-      const classSel = document.getElementById('filtroClassificacao').value;
+  // ---------- Filtros cliente ----------
+  function aplicarFiltrosCliente(listaBase) {
+    const mesSel    = document.getElementById('filtroMes').value;
+    const prazoSel  = document.getElementById('filtroPrazo').value;
+    const areaSel   = document.getElementById('filtroArea').value;
+    const tecSel    = document.getElementById('filtroTecnico').value;
+    const classSel  = document.getElementById('filtroClassificacao').value;
 
-      return baseLista.filter(n=>{
-        if(mesSel !== ''){
-          if(!n.dataRegistro) return false;
-          const m = new Date(n.dataRegistro).getMonth();
-          if(String(m) !== mesSel) return false;
-        }
-        if(prazoSel){
-          const diff = prazoDiffDays(n.prazo);
-          if(prazoSel==='noprazo' && !(diff===0 || diff>0)) return false;
-          if(prazoSel==='vencidas' && !(diff<0)) return false;
-        }
-        if(areaSel && (n.area || '') !== areaSel) return false;
-        if(tecSel && (n.tecnico || '') !== tecSel) return false;
-        if(classSel && (n.classificacao || '') !== classSel) return false;
-        return true;
-      });
-    }
-
-    // ---------- Popular dropdowns Área/Técnico ----------
-    function popularFiltrosDinamicos(lista){
-      const areaSel = document.getElementById('filtroArea');
-      const tecSel  = document.getElementById('filtroTecnico');
-
-      const areas = Array.from(new Set(lista.map(n=>n.area).filter(Boolean))).sort();
-      const tecs  = Array.from(new Set(lista.map(n=>n.tecnico).filter(Boolean))).sort();
-
-      const areaVal = areaSel.value, tecVal = tecSel.value;
-
-      areaSel.innerHTML = '<option value="">Todas</option>' + areas.map(a=>`<option value="${a}">${a}</option>`).join('');
-      tecSel.innerHTML  = '<option value="">Todos</option>' + tecs.map(t=>`<option value="${t}">${t}</option>`).join('');
-
-      if(areas.includes(areaVal)) areaSel.value = areaVal;
-      if(tecs.includes(tecVal))   tecSel.value  = tecVal;
-    }
-
-    // ---------- Resumo com cards (NOVO) ----------
-    function atualizarResumo(lista){
-      // total
-      const total = lista.length;
-      document.getElementById('resumoTotal').textContent = total;
-
-      // helper para preencher mini-tabela
-      function preencherTabela(tbodyId, mapa){
-        const tbody = document.getElementById(tbodyId);
-        const linhas = Object.entries(mapa)
-          .sort((a,b)=>b[1]-a[1]) // ordena desc por quantidade
-          .map(([k,v])=>`<tr><td>${k}</td><td class="text-end fw-semibold">${v}</td></tr>`)
-          .join('');
-        tbody.innerHTML = linhas || '<tr><td class="text-muted">—</td><td class="text-end">0</td></tr>';
+    return listaBase.filter(n => {
+      if (mesSel !== '') {
+        if (!n.dataRegistro) return false;
+        const m = new Date(n.dataRegistro).getMonth();
+        if (String(m) !== mesSel) return false;
       }
 
-      // por status
-      const porStatus = lista.reduce((acc, n)=>{
-        const k = n.status || '—'; acc[k] = (acc[k]||0)+1; return acc;
-      }, {});
-      preencherTabela('tResumoStatus', porStatus);
-
-      // por classificação
-      const porClass = lista.reduce((acc, n)=>{
-        const k = n.classificacao || '—'; acc[k] = (acc[k]||0)+1; return acc;
-      }, {});
-      preencherTabela('tResumoClass', porClass);
-    }
-
-    // ---------- Render Tabela ----------
-    function renderTabela(lista){
-      const tbody = document.querySelector('#tabelaNotificacoes tbody');
-      tbody.innerHTML = '';
-
-      const btnBulk = document.getElementById('btnExcluirSelecionadas');
-      btnBulk.disabled = true;
-
-      lista.forEach(n=>{
-        const tr = document.createElement('tr');
-
-        // checkbox
-        const tdChk = document.createElement('td');
-        tdChk.innerHTML = `<input type="checkbox" class="row-check" value="${n._id}">`;
-        tr.appendChild(tdChk);
-
-        // ID (usa o sequencial quando existir)
-        const tdId = document.createElement('td');
-        tdId.textContent = n.displayId || n.id || n._id;
-        tr.appendChild(tdId);
-
-        // Técnico e Área
-        ['tecnico','area'].forEach(key=>{
-          const td = document.createElement('td');
-          td.textContent = n[key] || '-';
-          tr.appendChild(td);
-        });
-
-        // Classificação
-        const tdClass = document.createElement('td');
-        tdClass.textContent = n.classificacao || '-';
-        tr.appendChild(tdClass);
-
-        // Status
-        const tdStatus = document.createElement('td');
-        let statusText = n.status;
-        if(n.status==='Rejeitada' && n.comentarioAprovacao){
-          statusText += `: ${n.comentarioAprovacao}`;
-        }
-        tdStatus.textContent = statusText;
-        tr.appendChild(tdStatus);
-
-        // Data
-        const tdData = document.createElement('td');
-        tdData.textContent = n.dataRegistro ? new Date(n.dataRegistro).toLocaleString() : '-';
-        tr.appendChild(tdData);
-
-        // Prazo (sem rótulos para Aprovada)
-        const tdPrazo = document.createElement('td');
-        if(n.prazo){
-          if(n.status === 'Aprovada'){
-            tdPrazo.textContent = new Date(n.prazo).toLocaleDateString();
-          } else {
-            const diff = prazoDiffDays(n.prazo);
-            tdPrazo.innerHTML = `<span class="${prazoClasse(diff)}">${prazoTexto(n.prazo)}</span>`;
-          }
-        } else {
-          tdPrazo.textContent = '-';
-        }
-        tr.appendChild(tdPrazo);
-
-        // Ações
-        const tdAcoes = document.createElement('td');
-        tdAcoes.innerHTML = `<button class="btn btn-secondary btn-sm" onclick="visualizarDetalhes('${n._id}')" data-bs-toggle="modal" data-bs-target="#modalDetalhes">Detalhes</button>`;
-        tr.appendChild(tdAcoes);
-
-        tbody.appendChild(tr);
-      });
-
-      syncSelectionUI();
-      atualizarResumo(lista); // <<< atualiza os cards/tabelas
-    }
-
-    // ---------- Seleção múltipla ----------
-    function getSelectedIds(){
-      return Array.from(document.querySelectorAll('.row-check:checked')).map(i=>i.value);
-    }
-    function syncSelectionUI(){
-      const selectAll = document.getElementById('selectAll');
-      const checks = document.querySelectorAll('.row-check');
-      const btnBulk = document.getElementById('btnExcluirSelecionadas');
-
-      btnBulk.disabled = getSelectedIds().length===0;
-
-      selectAll.onchange = () => {
-        checks.forEach(c=>{ c.checked = selectAll.checked; });
-        btnBulk.disabled = getSelectedIds().length===0;
-      };
-
-      checks.forEach(c=>{
-        c.onchange = ()=>{
-          const total = checks.length;
-          const marcados = getSelectedIds().length;
-          selectAll.checked = marcados===total;
-          selectAll.indeterminate = marcados>0 && marcados<total;
-          btnBulk.disabled = marcados===0;
-        };
-      });
-
-      document.getElementById('btnExcluirSelecionadas').onclick = async ()=>{
-        const ids = getSelectedIds();
-        if(ids.length===0) return;
-        if(!confirm(`Confirmar exclusão de ${ids.length} notificação(ões)?`)) return;
-
-        for(const id of ids){
-          try{ await fetch(`/excluir/${id}`, { method:'DELETE' }); }
-          catch(e){ console.error('Erro ao excluir', id, e); }
-        }
-        await carregarNotificacoes();
-        alert('Exclusão concluída!');
-      };
-    }
-
-    // ---------- Ações do modal ----------
-    function configurarAcoes(d){
-      const btnA = document.getElementById('btnAprovar');
-      const btnR = document.getElementById('btnRejeitar');
-
-      if(d.status==='Aprovada' || d.status==='Rejeitada'){
-        btnA.style.display='none';
-        btnR.style.display='none';
-      }else{
-        btnA.style.display = d.dataBaixa ? 'inline-block' : 'none';
-        btnR.style.display = 'inline-block';
+      if (prazoSel) {
+        const diff = prazoDiffDays(n.prazo);
+        if (prazoSel === 'noprazo' && !(diff === 0 || diff > 0)) return false;
+        if (prazoSel === 'vencidas' && !(diff < 0)) return false;
       }
 
-      btnA.onclick = async ()=>{
-        try{
-          const res = await fetch('/aprovar', {
-            method:'POST',
-            headers:{'Content-Type':'application/x-www-form-urlencoded'},
-            body:new URLSearchParams({ id:d._id })
-          });
-          if(!res.ok) throw new Error(await res.text());
-          alert('Notificação aprovada com sucesso!');
-          location.reload();
-        }catch(err){ alert('Erro ao aprovar: '+err.message); }
-      };
+      if (areaSel && (n.area || '') !== areaSel) return false;
+      if (tecSel && (n.tecnico || '') !== tecSel) return false;
 
-      btnR.onclick = ()=>{ document.getElementById('rejeicaoId').value = d._id; };
-
-      document.getElementById('btnExcluir').onclick = async ()=>{
-        if(confirm('Tem certeza que deseja excluir esta notificação?')){
-          await fetch(`/excluir/${d._id}`, { method:'DELETE' });
-          location.reload();
-        }
-      };
-
-      const justifEl = document.getElementById('detalheJustificativa');
-      if(d.status==='Rejeitada'){
-        justifEl.textContent = d.comentarioAprovacao || '—';
-      }else if(d.status==='Aprovada'){
-        justifEl.textContent = `Aprovado por ${d.aprovadoPor || '—'} em ${new Date(d.dataAprovacao).toLocaleString()}`;
-      }else{
-        justifEl.textContent = '—';
+      if (classSel) {
+        if ((n.classificacao || '') !== classSel) return false;
       }
+
+      return true;
+    });
+  }
+
+  // ---------- Filtros dinâmicos ----------
+  function popularFiltrosDinamicos(lista) {
+    const areaSel = document.getElementById('filtroArea');
+    const tecSel  = document.getElementById('filtroTecnico');
+
+    const areas = Array.from(new Set(lista.map(n => n.area).filter(Boolean))).sort();
+    const tecs  = Array.from(new Set(lista.map(n => n.tecnico).filter(Boolean))).sort();
+
+    const areaVal = areaSel.value;
+    const tecVal  = tecSel.value;
+
+    areaSel.innerHTML = '<option value="">Todas</option>' +
+      areas.map(a => `<option value="${a}">${a}</option>`).join('');
+    tecSel.innerHTML  = '<option value="">Todos</option>' +
+      tecs.map(t => `<option value="${t}">${t}</option>`).join('');
+
+    if (areas.includes(areaVal)) areaSel.value = areaVal;
+    if (tecs.includes(tecVal))   tecSel.value  = tecVal;
+  }
+
+  // ---------- KPIs ----------
+  function atualizarKPIs(lista) {
+    const total      = lista.length;
+    const abertas    = lista.filter(n => n.status === 'Aberta').length;
+    const pendentes  = lista.filter(n => n.status === 'Pendente de aprovação').length;
+
+    const notificacoes = lista.filter(n =>
+      (n.classificacao || '').toLowerCase().includes('notificação')
+    ).length;
+
+    const interds = lista.filter(n =>
+      (n.classificacao || '').toLowerCase().includes('interdição')
+    ).length;
+
+    document.getElementById('kpiTotal').textContent        = total;
+    document.getElementById('kpiAbertas').textContent      = abertas;
+    document.getElementById('kpiPendentes').textContent    = pendentes;
+    document.getElementById('kpiNotificacoes').textContent = notificacoes;
+    document.getElementById('kpiInterdicoes').textContent  = interds;
+  }
+
+  // ---------- Tabela + seleção múltipla ----------
+  function renderTabela(lista) {
+    const tbody = document.getElementById('tbodyNotificacoes');
+    tbody.innerHTML = '';
+
+    const btnBulk = document.getElementById('btnExcluirSelecionadas');
+    btnBulk.disabled = true;
+
+    if (!lista.length) {
+      tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4">Nenhuma notificação encontrada.</td></tr>';
+      return;
     }
 
-    // ---------- Detalhes ----------
-    async function visualizarDetalhes(id){
-      const res = await fetch(`/api/notificacoes/${id}`);
-      const d   = await res.json();
+    lista.forEach(n => {
+      const tr = document.createElement('tr');
 
-      // ID exibido (sequencial quando existir)
-      const displayId = d.id || (typeof d.seq === 'number' ? String(d.seq) : d._id);
-      document.getElementById('detalheId').textContent = displayId;
+      // checkbox
+      const tdChk = document.createElement('td');
+      tdChk.innerHTML = `<input type="checkbox" class="row-check" value="${n._id}">`;
+      tr.appendChild(tdChk);
 
-      document.getElementById('detalheTecnico').textContent       = d.tecnico || '-';
-      document.getElementById('detalheEncarregado').textContent   = d.encarregado || '-';
+      // ID (sequencial se existir, senão _id)
+      const tdId = document.createElement('td');
+      tdId.textContent =
+        (typeof n.idSequencial === 'number')
+          ? n.idSequencial
+          : (n._id || '-');
+      tr.appendChild(tdId);
 
-      const supervisor = d.supervisor ?? d.supervisorObra ?? d.supervisorDaObra ?? '-';
-      const descAtiv   = d.descricaoAtividade ?? d.atividade ?? d.descricao_atividade ?? '-';
-      document.getElementById('detalheSupervisor').textContent = supervisor || '-';
-      document.getElementById('detalheDescricaoAtividade').textContent = descAtiv || '-';
-      document.getElementById('detalheNR').textContent = d.nr || '-';
-      document.getElementById('detalheAcoesRecomendadas').textContent = d.acao || '-';
+      // Técnico e Área
+      const tdTec = document.createElement('td'); tdTec.textContent = n.tecnico || '-';
+      const tdAr  = document.createElement('td'); tdAr.textContent  = n.area || '-';
 
-      document.getElementById('detalheArea').textContent          = d.area || '-';
-      document.getElementById('detalheClassificacao').textContent = d.classificacao || '-';
-      document.getElementById('detalheDescricao').textContent     = d.descricao || '-';
-      document.getElementById('detalheDataRegistro').textContent  = d.dataRegistro ? new Date(d.dataRegistro).toLocaleString() : '-';
-      document.getElementById('detalheStatus').textContent        = d.status || '-';
+      tr.appendChild(tdTec);
+      tr.appendChild(tdAr);
 
-      const spPrazo = document.getElementById('detalhePrazo');
-      if(d.prazo){
-        if(d.status === 'Aprovada'){
-          spPrazo.className = '';
-          spPrazo.textContent = new Date(d.prazo).toLocaleDateString();
-        } else {
-          const diff = prazoDiffDays(d.prazo);
-          spPrazo.className = prazoClasse(diff);
-          spPrazo.textContent = prazoTexto(d.prazo);
-        }
-      }else{
-        spPrazo.className = '';
-        spPrazo.textContent = '-';
+      // Classificação
+      const tdClass = document.createElement('td');
+      tdClass.textContent = n.classificacao || '-';
+      tr.appendChild(tdClass);
+
+      // Status
+      const tdStatus = document.createElement('td');
+      let statusText = n.status || '-';
+      if (n.status === 'Rejeitada' && n.comentarioAprovacao) {
+        statusText += `: ${n.comentarioAprovacao}`;
       }
+      tdStatus.textContent = statusText;
+      tr.appendChild(tdStatus);
 
-      const notifFotosDiv = document.getElementById('detalheFotosNotificacao');
-      notifFotosDiv.innerHTML='';
-      if(d.notificacaoFotos?.length){
-        d.notificacaoFotos.forEach(f=>{
-          const src = resolveImgSrc(f); if(!src) return;
-          const link = document.createElement('a');
-          link.href = src; link.className='glightbox'; link.setAttribute('data-gallery','notificacao');
-          const img = document.createElement('img');
-          img.src = src; img.width=120; img.className='border rounded me-2 mb-2';
-          link.appendChild(img); notifFotosDiv.appendChild(link);
-        });
-        GLightbox({ selector: '.glightbox' });
-      }else{
-        notifFotosDiv.textContent = 'Sem fotos da notificação.';
+      // Data
+      const tdData = document.createElement('td');
+      tdData.textContent = n.dataRegistro ? new Date(n.dataRegistro).toLocaleString() : '-';
+      tr.appendChild(tdData);
+
+      // Prazo
+      const tdPrazo = document.createElement('td');
+      if (n.prazo) {
+        const diff = prazoDiffDays(n.prazo);
+        tdPrazo.innerHTML =
+          `<span class="${prazoClasse(diff, n.status)}">${prazoTexto(n.prazo, n.status)}</span>`;
+      } else {
+        tdPrazo.textContent = '-';
       }
+      tr.appendChild(tdPrazo);
 
-      document.getElementById('detalheResolvidoPor').textContent = d.resolvidoPor || '—';
-      document.getElementById('detalheDataBaixa').textContent   = d.dataBaixa ? new Date(d.dataBaixa).toLocaleString() : '—';
-      document.getElementById('detalheComentario').textContent  = d.resolucaoComentario || 'Sem comentário';
+      // Ações
+      const tdAcoes = document.createElement('td');
+      tdAcoes.innerHTML =
+        `<button class="btn btn-secondary btn-sm"
+            onclick="visualizarDetalhes('${n._id}')"
+            data-bs-toggle="modal" data-bs-target="#modalDetalhes">
+           Detalhes
+         </button>`;
+      tr.appendChild(tdAcoes);
 
-      const fotosDiv = document.getElementById('detalheFotos');
-      fotosDiv.innerHTML='';
-      if(d.resolucaoFotos?.length){
-        d.resolucaoFotos.forEach(f=>{
-          const src = resolveImgSrc(f); if(!src) return;
-          const link = document.createElement('a');
-          link.href = src; link.className='glightbox'; link.setAttribute('data-gallery','baixa');
-          const img = document.createElement('img');
-          img.src = src; img.width=120; img.className='border rounded me-2 mb-2';
-          link.appendChild(img); fotosDiv.appendChild(link);
-        });
-        GLightbox({ selector: '.glightbox' });
-      }else{
-        fotosDiv.textContent = 'Sem fotos da baixa.';
-      }
-
-      configurarAcoes(d);
-    }
-
-    // ---------- Rejeição ----------
-    document.getElementById('formRejeicao').addEventListener('submit', async e=>{
-      e.preventDefault();
-      const data = new URLSearchParams(new FormData(e.target));
-      try{
-        const res = await fetch('/rejeitar', { method:'POST', body:data });
-        if(!res.ok) throw new Error(await res.text());
-        alert('Notificação rejeitada com sucesso!');
-        bootstrap.Modal.getInstance(document.getElementById('modalRejeicao')).hide();
-        visualizarDetalhes(e.target.rejeicaoId.value);
-      }catch(err){ alert('Erro ao rejeitar: '+err.message); }
+      tbody.appendChild(tr);
     });
 
-    // ---------- Submeter filtros ----------
-    document.getElementById('filtroForm').addEventListener('submit', e=>{
-      e.preventDefault();
-      carregarNotificacoes(); // recarrega da API (Status/ID) e aplica os demais no cliente
+    syncSelectionUI();
+  }
+
+  function getSelectedIds() {
+    return Array.from(document.querySelectorAll('.row-check:checked')).map(i => i.value);
+  }
+
+  function syncSelectionUI() {
+    const selectAll = document.getElementById('selectAll');
+    const checks    = document.querySelectorAll('.row-check');
+    const btnBulk   = document.getElementById('btnExcluirSelecionadas');
+
+    btnBulk.disabled = getSelectedIds().length === 0;
+
+    selectAll.onchange = () => {
+      checks.forEach(c => { c.checked = selectAll.checked; });
+      btnBulk.disabled = getSelectedIds().length === 0;
+    };
+
+    checks.forEach(c => {
+      c.onchange = () => {
+        const total    = checks.length;
+        const marcados = getSelectedIds().length;
+        selectAll.checked       = marcados === total;
+        selectAll.indeterminate = marcados > 0 && marcados < total;
+        btnBulk.disabled        = marcados === 0;
+      };
     });
 
-    // ---------- Inicialização ----------
-    window.addEventListener('DOMContentLoaded', carregarNotificacoes);
-  </script>
+    document.getElementById('btnExcluirSelecionadas').onclick = async () => {
+      const ids = getSelectedIds();
+      if (!ids.length) return;
+      if (!confirm(`Confirmar exclusão de ${ids.length} notificação(ões)?`)) return;
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+      for (const id of ids) {
+        try {
+          await fetch(`/excluir/${id}`, { method: 'DELETE' });
+        } catch (e) {
+          console.error('Erro ao excluir', id, e);
+        }
+      }
+      await carregarNotificacoes();
+      alert('Exclusão concluída!');
+    };
+  }
+
+  // ---------- Modal: configurar ações ----------
+  function configurarAcoes(d) {
+    const btnA = document.getElementById('btnAprovar');
+    const btnR = document.getElementById('btnRejeitar');
+
+    if (d.status === 'Aprovada' || d.status === 'Rejeitada') {
+      btnA.style.display = 'none';
+      btnR.style.display = 'none';
+    } else {
+      btnA.style.display = d.dataBaixa ? 'inline-block' : 'none';
+      btnR.style.display = 'inline-block';
+    }
+
+    btnA.onclick = async () => {
+      try {
+        const res = await fetch('/aprovar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ id: d._id })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        alert('Notificação aprovada com sucesso!');
+        location.reload();
+      } catch (err) {
+        alert('Erro ao aprovar: ' + err.message);
+      }
+    };
+
+    btnR.onclick = () => {
+      document.getElementById('rejeicaoId').value = d._id;
+    };
+
+    document.getElementById('btnExcluir').onclick = async () => {
+      if (confirm('Tem certeza que deseja excluir esta notificação?')) {
+        await fetch(`/excluir/${d._id}`, { method: 'DELETE' });
+        location.reload();
+      }
+    };
+
+    const justifEl = document.getElementById('detalheJustificativa');
+    if (d.status === 'Rejeitada') {
+      justifEl.textContent = d.comentarioAprovacao || '—';
+    } else if (d.status === 'Aprovada') {
+      justifEl.textContent =
+        `Aprovado por ${d.aprovadoPor || '—'} em ${d.dataAprovacao ? new Date(d.dataAprovacao).toLocaleString() : '—'}`;
+    } else {
+      justifEl.textContent = '—';
+    }
+  }
+
+  // ---------- Visualizar detalhes ----------
+  async function visualizarDetalhes(id) {
+    const res = await fetch(`/api/notificacoes/${id}`);
+    const d   = await res.json();
+
+    // ID no modal: sequencial se existir, senão _id
+    const idLabel =
+      (typeof d.idSequencial === 'number')
+        ? d.idSequencial
+        : d._id;
+
+    document.getElementById('detalheId').textContent          = idLabel;
+    document.getElementById('detalheTecnico').textContent     = d.tecnico || '-';
+    document.getElementById('detalheEncarregado').textContent = d.encarregado || '-';
+
+    const supervisor = d.supervisorObra ?? d.supervisor ?? d.supervisorDaObra ?? '-';
+    const descAtiv   = d.descricaoAtividade ?? d.atividade ?? d.descricao_atividade ?? '-';
+    document.getElementById('detalheSupervisor').textContent         = supervisor || '-';
+    document.getElementById('detalheDescricaoAtividade').textContent = descAtiv || '-';
+    document.getElementById('detalheNR').textContent                 = d.nr || '-';
+    document.getElementById('detalheAcoesRecomendadas').textContent  = d.acao || '-';
+
+    document.getElementById('detalheArea').textContent          = d.area || '-';
+    document.getElementById('detalheClassificacao').textContent = d.classificacao || '-';
+    document.getElementById('detalheDescricao').textContent     = d.descricao || '-';
+    document.getElementById('detalheDataRegistro').textContent  =
+      d.dataRegistro ? new Date(d.dataRegistro).toLocaleString() : '-';
+    document.getElementById('detalheStatus').textContent        = d.status || '-';
+
+    const spPrazo = document.getElementById('detalhePrazo');
+    if (d.prazo) {
+      const diff = prazoDiffDays(d.prazo);
+      spPrazo.className   = prazoClasse(diff, d.status);
+      spPrazo.textContent = prazoTexto(d.prazo, d.status);
+    } else {
+      spPrazo.className = '';
+      spPrazo.textContent = '-';
+    }
+
+    const notifFotosDiv = document.getElementById('detalheFotosNotificacao');
+    notifFotosDiv.innerHTML = '';
+    if (d.notificacaoFotos?.length) {
+      d.notificacaoFotos.forEach(f => {
+        const src = resolveImgSrc(f); if (!src) return;
+        const link = document.createElement('a');
+        link.href = src;
+        link.className = 'glightbox';
+        link.setAttribute('data-gallery', 'notificacao');
+        const img = document.createElement('img');
+        img.src = src;
+        img.width = 120;
+        img.className = 'border rounded me-2 mb-2';
+        link.appendChild(img);
+        notifFotosDiv.appendChild(link);
+      });
+      GLightbox({ selector: '.glightbox' });
+    } else {
+      notifFotosDiv.textContent = 'Sem fotos da notificação.';
+    }
+
+    document.getElementById('detalheResolvidoPor').textContent = d.resolvidoPor || '—';
+    document.getElementById('detalheDataBaixa').textContent   =
+      d.dataBaixa ? new Date(d.dataBaixa).toLocaleString() : '—';
+    document.getElementById('detalheComentario').textContent  = d.resolucaoComentario || 'Sem comentário';
+
+    const fotosDiv = document.getElementById('detalheFotos');
+    fotosDiv.innerHTML = '';
+    if (d.resolucaoFotos?.length) {
+      d.resolucaoFotos.forEach(f => {
+        const src = resolveImgSrc(f); if (!src) return;
+        const link = document.createElement('a');
+        link.href = src;
+        link.className = 'glightbox';
+        link.setAttribute('data-gallery', 'baixa');
+        const img = document.createElement('img');
+        img.src = src;
+        img.width = 120;
+        img.className = 'border rounded me-2 mb-2';
+        link.appendChild(img);
+        fotosDiv.appendChild(link);
+      });
+      GLightbox({ selector: '.glightbox' });
+    } else {
+      fotosDiv.textContent = 'Sem fotos da baixa.';
+    }
+
+    configurarAcoes(d);
+  }
+
+  // ---------- Rejeição ----------
+  document.getElementById('formRejeicao').addEventListener('submit', async e => {
+    e.preventDefault();
+    const data = new URLSearchParams(new FormData(e.target));
+    try {
+      const res = await fetch('/rejeitar', { method: 'POST', body: data });
+      if (!res.ok) throw new Error(await res.text());
+      alert('Notificação rejeitada com sucesso!');
+      bootstrap.Modal.getInstance(document.getElementById('modalRejeicao')).hide();
+      visualizarDetalhes(e.target.rejeicaoId.value);
+    } catch (err) {
+      alert('Erro ao rejeitar: ' + err.message);
+    }
+  });
+
+  // ---------- Submeter filtros ----------
+  document.getElementById('filtroForm').addEventListener('submit', e => {
+    e.preventDefault();
+    carregarNotificacoes();
+  });
+
+  // ---------- Chips de status ----------
+  function configurarChips() {
+    const chips = document.querySelectorAll('.chip-status');
+    chips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        chips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+
+        const status = chip.getAttribute('data-status') || '';
+        document.getElementById('status').value = status;
+        carregarNotificacoes();
+      });
+    });
+  }
+
+  // ---------- Toggle da sidebar ----------
+  function configurarToggleSidebar() {
+    const btn = document.getElementById('btnToggleSidebar');
+    btn.addEventListener('click', () => {
+      document.body.classList.toggle('sidebar-closed');
+    });
+  }
+
+  // ---------- Inicialização ----------
+  window.addEventListener('DOMContentLoaded', () => {
+    configurarChips();
+    configurarToggleSidebar();
+    carregarNotificacoes();
+  });
+</script>
+
 </body>
 </html>
