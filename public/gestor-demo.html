@@ -562,8 +562,8 @@
       tr.appendChild(tdChk);
 
       // ID, Técnico, Área
-      const tdId  = document.createElement('td');
-      const displayId = n.displayId || n.id || (typeof n.seq === 'number' ? String(n.seq) : n._id);
+    const tdId  = document.createElement('td');
+      tdId.textContent = (n.idSequencial != null ? n.idSequencial : n._id) || '-';
       tdId.textContent  = displayId || '-';
 
       const tdTec = document.createElement('td'); tdTec.textContent = n.tecnico || '-';
