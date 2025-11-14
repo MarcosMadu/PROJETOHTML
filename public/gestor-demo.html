@@ -1,110 +1,110 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Painel do Gestor</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do Gestor</title>
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css"/>
-<script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
 
-<style>
-  body {
-    margin: 0;
-    background: #f4f4f7;
-    font-family: "Arial", sans-serif;
-  }
+  <style>
+    body {
+      margin: 0;
+      background: #f4f4f7;
+      font-family: "Arial", sans-serif;
+    }
 
-  /* SIDEBAR ------------------------------------------------------ */
-  .sidebar {
-    width: 250px;
-    height: 100vh;
-    position: fixed;
-    left: 0;
-    top: 0;
-    background: linear-gradient(180deg, #0d1117, #0a0d12, #050608);
-    color: white;
-    padding: 25px 15px;
-    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.4);
-  }
+    /* SIDEBAR ------------------------------------------------------ */
+    .sidebar {
+      width: 250px;
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      background: linear-gradient(180deg, #0d1117, #0a0d12, #050608);
+      color: white;
+      padding: 25px 15px;
+      box-shadow: 4px 0 10px rgba(0, 0, 0, 0.4);
+    }
 
-  .sidebar .logo {
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 30px;
-  }
+    .sidebar .logo {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 30px;
+    }
 
-  .sidebar-menu-title {
-    font-size: 13px;
-    opacity: 0.6;
-    margin: 20px 0 10px;
-  }
+    .sidebar-menu-title {
+      font-size: 13px;
+      opacity: 0.6;
+      margin: 20px 0 10px;
+    }
 
-  .sidebar a {
-    display: block;
-    padding: 10px 12px;
-    color: #d9d9d9;
-    border-radius: 8px;
-    margin-bottom: 6px;
-    text-decoration: none;
-    transition: 0.2s;
-  }
+    .sidebar a {
+      display: block;
+      padding: 10px 12px;
+      color: #d9d9d9;
+      border-radius: 8px;
+      margin-bottom: 6px;
+      text-decoration: none;
+      transition: 0.2s;
+    }
 
-  .sidebar a:hover,
-  .sidebar a.active {
-    background: #00cc66;
-    color: #000;
-    font-weight: 600;
-    box-shadow: 0 0 15px #00ff8855;
-  }
+    .sidebar a:hover,
+    .sidebar a.active {
+      background: #00cc66;
+      color: #000;
+      font-weight: 600;
+      box-shadow: 0 0 15px #00ff8855;
+    }
 
-  /* CONTENT ------------------------------------------------------ */
-  .content {
-    margin-left: 260px;
-    padding: 25px;
-  }
+    /* CONTENT ------------------------------------------------------ */
+    .content {
+      margin-left: 260px;
+      padding: 25px;
+    }
 
-  .page-title {
-    font-size: 28px;
-    font-weight: bold;
-  }
+    .page-title {
+      font-size: 28px;
+      font-weight: bold;
+    }
 
-  .card-kpi {
-    padding: 18px;
-    background: white;
-    border-radius: 14px;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
-    height: 110px;
-    transition: 0.2s;
-  }
+    .card-kpi {
+      padding: 18px;
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+      height: 110px;
+      transition: 0.2s;
+    }
 
-  .card-kpi:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 5px 12px rgba(0,0,0,0.15);
-  }
+    .card-kpi:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 12px rgba(0,0,0,0.15);
+    }
 
-  .chip {
-    padding: 7px 16px;
-    border-radius: 25px;
-    background: #e9ecef;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    margin-right: 8px;
-  }
+    .chip {
+      padding: 7px 16px;
+      border-radius: 25px;
+      background: #e9ecef;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-right: 8px;
+    }
 
-  .chip.active {
-    background: #00cc66;
-    color: #fff;
-    box-shadow: 0 0 10px #00ff8850;
-  }
+    .chip.active {
+      background: #00cc66;
+      color: #fff;
+      box-shadow: 0 0 10px #00ff8850;
+    }
 
-  /* TABELA -------------------------------------------------------- */
-  table thead {
-    background: #dfe3ea;
-  }
-</style>
+    /* TABELA -------------------------------------------------------- */
+    table thead {
+      background: #dfe3ea;
+    }
+  </style>
 </head>
 
 <body>
@@ -134,7 +134,9 @@
       <small class="text-muted">Gerencie notificações, interdições e prazos</small>
     </div>
 
-    <button class="btn btn-success px-3">+ Nova Notificação</button>
+    <button class="btn btn-success px-3" onclick="window.location.href='/index.html'">
+      + Nova Notificação
+    </button>
   </div>
 
   <!-- CARDS KPI ---------------------------------------------------- -->
@@ -170,11 +172,11 @@
 
   <!-- CHIPS DE FILTRO --------------------------------------------- -->
   <div class="mb-4">
-    <span class="chip active">Todas</span>
-    <span class="chip">Abertas</span>
-    <span class="chip">Pendentes</span>
-    <span class="chip">Aprovadas</span>
-    <span class="chip">Rejeitadas</span>
+    <span class="chip active" data-status="">Todas</span>
+    <span class="chip" data-status="Aberta">Abertas</span>
+    <span class="chip" data-status="Pendente de aprovação">Pendentes</span>
+    <span class="chip" data-status="Aprovada">Aprovadas</span>
+    <span class="chip" data-status="Rejeitada">Rejeitadas</span>
   </div>
 
   <!-- TABELA ------------------------------------------------------- -->
@@ -201,6 +203,175 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  // ---------------------- AUXILIARES DE PRAZO ------------------------
+  const DAY_MS = 24 * 60 * 60 * 1000;
+
+  function prazoDiffDays(prazoISO) {
+    if (!prazoISO) return null;
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const prazo = new Date(prazoISO);
+    prazo.setHours(0, 0, 0, 0);
+    return Math.round((prazo - hoje) / DAY_MS);
+  }
+
+  function prazoTexto(prazoISO, status) {
+    if (!prazoISO) return "-";
+
+    // Para notificações aprovadas, não mostrar "vence hoje / vencido / em x dias"
+    if (status === "Aprovada") {
+      const d = new Date(prazoISO);
+      return d.toLocaleDateString();
+    }
+
+    const d = new Date(prazoISO);
+    const diff = prazoDiffDays(prazoISO);
+    const base = d.toLocaleDateString();
+
+    if (diff > 0)  return base + ` (em ${diff} dia${diff > 1 ? "s" : ""})`;
+    if (diff === 0) return base + " (vence hoje)";
+    const atras = Math.abs(diff);
+    return base + ` (vencido há ${atras} dia${atras > 1 ? "s" : ""})`;
+  }
+
+  function prazoClasse(diff, status) {
+    if (diff === null) return "";
+    if (status === "Aprovada") return ""; // sem cor especial para aprovadas
+
+    if (diff < 0)  return "text-danger fw-semibold";
+    if (diff === 0) return "text-warning fw-semibold";
+    if (diff <= 3) return "text-warning";
+    return "text-success";
+  }
+
+  // ---------------------- ESTADO EM MEMÓRIA -------------------------
+  let LISTA_ATUAL = [];
+  let STATUS_ATUAL = ""; // '', 'Aberta', 'Pendente de aprovação', ...
+
+  // ---------------------- CARREGAR NOTIFICAÇÕES ----------------------
+  async function carregarNotificacoes() {
+    try {
+      const url = new URL("/api/notificacoes", window.location.origin);
+      if (STATUS_ATUAL) {
+        url.searchParams.append("status", STATUS_ATUAL);
+      }
+
+      const res = await fetch(url);
+      const lista = await res.json();
+
+      LISTA_ATUAL = lista;
+      atualizarKPIs(lista);
+      renderTabela(lista);
+    } catch (err) {
+      console.error("Erro ao carregar notificações:", err);
+      const tbody = document.getElementById("tbodyRegistros");
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">Erro ao carregar notificações.</td></tr>';
+    }
+  }
+
+  // ---------------------- KPI CARDS ---------------------------------
+  function atualizarKPIs(lista) {
+    const total = lista.length;
+    const abertas = lista.filter(n => n.status === "Aberta").length;
+    const pendentes = lista.filter(n => n.status === "Pendente de aprovação").length;
+    const interds = lista.filter(n => (n.classificacao || "").toLowerCase().includes("interdição")).length;
+
+    document.getElementById("kpiTotal").textContent = total;
+    document.getElementById("kpiAbertas").textContent = abertas;
+    document.getElementById("kpiPendentes").textContent = pendentes;
+    document.getElementById("kpiInterdicoes").textContent = interds;
+  }
+
+  // ---------------------- TABELA ------------------------------------
+  function renderTabela(lista) {
+    const tbody = document.getElementById("tbodyRegistros");
+    tbody.innerHTML = "";
+
+    if (!lista.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4">Nenhuma notificação encontrada.</td></tr>';
+      return;
+    }
+
+    lista.forEach(n => {
+      const tr = document.createElement("tr");
+
+      // ID
+      const tdId = document.createElement("td");
+      tdId.textContent = n._id || "-";
+      tr.appendChild(tdId);
+
+      // Técnico
+      const tdTec = document.createElement("td");
+      tdTec.textContent = n.tecnico || "-";
+      tr.appendChild(tdTec);
+
+      // Área
+      const tdArea = document.createElement("td");
+      tdArea.textContent = n.area || "-";
+      tr.appendChild(tdArea);
+
+      // Classificação
+      const tdClass = document.createElement("td");
+      tdClass.textContent = n.classificacao || "-";
+      tr.appendChild(tdClass);
+
+      // Status
+      const tdStatus = document.createElement("td");
+      tdStatus.textContent = n.status || "-";
+      tr.appendChild(tdStatus);
+
+      // Data
+      const tdData = document.createElement("td");
+      const dataRef = n.dataRegistro || n.data;
+      tdData.textContent = dataRef ? new Date(dataRef).toLocaleString() : "-";
+      tr.appendChild(tdData);
+
+      // Prazo
+      const tdPrazo = document.createElement("td");
+      if (n.prazo) {
+        const diff = prazoDiffDays(n.prazo);
+        const cls = prazoClasse(diff, n.status);
+        tdPrazo.innerHTML = `<span class="${cls}">${prazoTexto(n.prazo, n.status)}</span>`;
+      } else {
+        tdPrazo.textContent = "-";
+      }
+      tr.appendChild(tdPrazo);
+
+      // Ações
+      const tdAcoes = document.createElement("td");
+      tdAcoes.innerHTML =
+        `<a class="btn btn-sm btn-outline-secondary" href="/gestor.html" target="_blank">
+          Abrir no painel detalhado
+        </a>`;
+      tr.appendChild(tdAcoes);
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ---------------------- CHIPS (FILTRO DE STATUS) -------------------
+  function configurarChips() {
+    const chips = document.querySelectorAll(".chip");
+
+    chips.forEach(chip => {
+      chip.addEventListener("click", () => {
+        chips.forEach(c => c.classList.remove("active"));
+        chip.classList.add("active");
+
+        STATUS_ATUAL = chip.getAttribute("data-status") || "";
+        carregarNotificacoes();
+      });
+    });
+  }
+
+  // ---------------------- INICIALIZAÇÃO ------------------------------
+  window.addEventListener("DOMContentLoaded", () => {
+    configurarChips();
+    carregarNotificacoes();
+  });
+</script>
 
 </body>
 </html>
