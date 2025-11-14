@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel do Gestor</title>
+  <title>Painel do Gestor - Notificações e Interdições</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
 
   <style>
@@ -23,10 +23,11 @@
       position: fixed;
       left: 0;
       top: 0;
-      background: linear-gradient(180deg, #0d1117, #0a0d12, #050608);
+      background: linear-gradient(180deg, #0d1117, #050608);
       color: white;
       padding: 25px 15px;
       box-shadow: 4px 0 10px rgba(0, 0, 0, 0.4);
+      z-index: 1000;
     }
 
     .sidebar .logo {
@@ -49,6 +50,7 @@
       margin-bottom: 6px;
       text-decoration: none;
       transition: 0.2s;
+      font-size: 14px;
     }
 
     .sidebar a:hover,
@@ -66,7 +68,7 @@
     }
 
     .page-title {
-      font-size: 28px;
+      font-size: 26px;
       font-weight: bold;
     }
 
@@ -84,7 +86,7 @@
       box-shadow: 0 5px 12px rgba(0,0,0,0.15);
     }
 
-    .chip {
+    .chip-status {
       padding: 7px 16px;
       border-radius: 25px;
       background: #e9ecef;
@@ -94,15 +96,18 @@
       margin-right: 8px;
     }
 
-    .chip.active {
+    .chip-status.active {
       background: #00cc66;
       color: #fff;
       box-shadow: 0 0 10px #00ff8850;
     }
 
-    /* TABELA -------------------------------------------------------- */
     table thead {
-      background: #dfe3ea;
+      background: #e2e6ef;
+    }
+
+    .table-placeholder {
+      height: 80px;
     }
   </style>
 </head>
@@ -119,16 +124,17 @@
 
   <div class="sidebar-menu-title">NOTIFICAÇÕES</div>
   <a class="active" href="#">Todas</a>
-  <a href="#">Abertas</a>
-  <a href="#">Pendentes</a>
-  <a href="#">Aprovadas</a>
-  <a href="#">Rejeitadas</a>
+  <a href="#" onclick="selecionarChipStatus('', 'Aberta'); return false;">Abertas</a>
+  <a href="#" onclick="selecionarChipStatus('', 'Pendente de aprovação'); return false;">Pendentes</a>
+  <a href="#" onclick="selecionarChipStatus('', 'Aprovada'); return false;">Aprovadas</a>
+  <a href="#" onclick="selecionarChipStatus('', 'Rejeitada'); return false;">Rejeitadas</a>
 </div>
 
 <!-- CONTEÚDO ----------------------------------------------------------- -->
 <div class="content">
 
-  <div class="d-flex justify-content-between align-items-center mb-4">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
       <div class="page-title">Painel do Gestor</div>
       <small class="text-muted">Gerencie notificações, interdições e prazos</small>
@@ -139,105 +145,196 @@
     </button>
   </div>
 
-  <!-- CARDS KPI ---------------------------------------------------- -->
+  <!-- KPIs -->
   <div class="row g-3 mb-4">
     <div class="col-md-3">
       <div class="card-kpi">
-        <h5>Total Exibido</h5>
+        <h6 class="mb-1">Total Exibido</h6>
         <h3 id="kpiTotal">0</h3>
       </div>
     </div>
-
     <div class="col-md-3">
       <div class="card-kpi">
-        <h5>Abertas</h5>
+        <h6 class="mb-1">Abertas</h6>
         <h3 id="kpiAbertas">0</h3>
       </div>
     </div>
-
     <div class="col-md-3">
       <div class="card-kpi">
-        <h5>Pendentes</h5>
+        <h6 class="mb-1">Pendentes</h6>
         <h3 id="kpiPendentes">0</h3>
       </div>
     </div>
-
     <div class="col-md-3">
       <div class="card-kpi">
-        <h5>Interdições</h5>
+        <h6 class="mb-1">Interdições</h6>
         <h3 id="kpiInterdicoes">0</h3>
       </div>
     </div>
   </div>
 
-  <!-- CHIPS DE FILTRO --------------------------------------------- -->
-  <div class="mb-4">
-    <span class="chip active" data-status="">Todas</span>
-    <span class="chip" data-status="Aberta">Abertas</span>
-    <span class="chip" data-status="Pendente de aprovação">Pendentes</span>
-    <span class="chip" data-status="Aprovada">Aprovadas</span>
-    <span class="chip" data-status="Rejeitada">Rejeitadas</span>
+  <!-- Chips de status rápido -->
+  <div class="mb-3">
+    <span class="chip-status active" data-status="">Todas</span>
+    <span class="chip-status" data-status="Aberta">Abertas</span>
+    <span class="chip-status" data-status="Pendente de aprovação">Pendentes</span>
+    <span class="chip-status" data-status="Aprovada">Aprovadas</span>
+    <span class="chip-status" data-status="Rejeitada">Rejeitadas</span>
   </div>
 
-  <!-- TABELA ------------------------------------------------------- -->
-  <div class="table-responsive">
-    <table class="table table-hover table-bordered" id="tabelaRegistros">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Técnico</th>
-          <th>Área</th>
-          <th>Classificação</th>
-          <th>Status</th>
-          <th>Data</th>
-          <th>Prazo</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody id="tbodyRegistros">
-        <tr><td colspan="8" class="text-center py-5">Carregando...</td></tr>
-      </tbody>
-    </table>
+  <!-- Filtros avançados -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <form id="filtroForm" class="row g-2 align-items-end">
+        <div class="col-md-2">
+          <label for="status" class="form-label">Status</label>
+          <select id="status" class="form-select">
+            <option value="">Todos</option>
+            <option value="Aberta">Aberta</option>
+            <option value="Pendente de aprovação">Pendente de aprovação</option>
+            <option value="Aprovada">Aprovada</option>
+            <option value="Rejeitada">Rejeitada</option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label for="filtroMes" class="form-label">Mês</label>
+          <select id="filtroMes" class="form-select">
+            <option value="">Todos</option>
+            <option value="0">Janeiro</option>
+            <option value="1">Fevereiro</option>
+            <option value="2">Março</option>
+            <option value="3">Abril</option>
+            <option value="4">Maio</option>
+            <option value="5">Junho</option>
+            <option value="6">Julho</option>
+            <option value="7">Agosto</option>
+            <option value="8">Setembro</option>
+            <option value="9">Outubro</option>
+            <option value="10">Novembro</option>
+            <option value="11">Dezembro</option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label for="filtroPrazo" class="form-label">Prazo</label>
+          <select id="filtroPrazo" class="form-select">
+            <option value="">Todos</option>
+            <option value="noprazo">No prazo</option>
+            <option value="vencidas">Vencidas</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label for="filtroArea" class="form-label">Área</label>
+          <select id="filtroArea" class="form-select">
+            <option value="">Todas</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label for="filtroTecnico" class="form-label">Técnico</label>
+          <select id="filtroTecnico" class="form-select">
+            <option value="">Todos</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label for="idBusca" class="form-label">Buscar por ID</label>
+          <input type="text" id="idBusca" class="form-control" placeholder="Digite o ID" />
+        </div>
+
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+        </div>
+
+        <div class="col-md-3 ms-auto text-end">
+          <button id="btnExcluirSelecionadas" type="button" class="btn btn-outline-danger" disabled>
+            Excluir Selecionadas
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 
+  <!-- Tabela -->
+  <div class="card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle" id="tabelaNotificacoes">
+          <thead>
+            <tr>
+              <th style="width:36px;">
+                <input type="checkbox" id="selectAll">
+              </th>
+              <th>ID</th>
+              <th>Técnico</th>
+              <th>Área</th>
+              <th>Classificação</th>
+              <th>Status</th>
+              <th>Data</th>
+              <th>Prazo</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyNotificacoes">
+            <tr><td colspan="9" class="text-center py-4">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
 
-<!-- MODAL DE DETALHES ----------------------------------------------- -->
+<!-- MODAL DETALHES -------------------------------------------------- -->
 <div class="modal fade" id="modalDetalhes" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-scrollable">
     <div class="modal-content">
-      <div class="modal-header">
+      <div class="modal-header d-flex align-items-center">
         <h5 class="modal-title">Detalhes da Notificação</h5>
+        <div class="ms-auto">
+          <button id="btnExcluir" class="btn btn-outline-danger btn-sm me-2">Excluir</button>
+          <button id="btnRejeitar" class="btn btn-danger btn-sm me-2" data-bs-toggle="modal" data-bs-target="#modalRejeicao">Rejeitar</button>
+          <button id="btnAprovar" class="btn btn-success btn-sm">Aprovar</button>
+        </div>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
+
       <div class="modal-body">
-        <div class="mb-2"><strong>ID:</strong> <span id="detId"></span></div>
-        <div class="mb-2"><strong>Técnico:</strong> <span id="detTecnico"></span></div>
-        <div class="mb-2"><strong>Encarregado:</strong> <span id="detEncarregado"></span></div>
-        <div class="mb-2"><strong>Supervisor da Obra:</strong> <span id="detSupervisor"></span></div>
-        <div class="mb-2"><strong>Descrição da Atividade:</strong> <span id="detDescAtividade"></span></div>
-        <div class="mb-2"><strong>NR Relacionada:</strong> <span id="detNR"></span></div>
-        <div class="mb-2"><strong>Ações Recomendadas:</strong> <span id="detAcoes"></span></div>
+        <div class="mb-2"><strong>ID:</strong> <span id="detalheId"></span></div>
+        <div class="mb-2"><strong>Técnico:</strong> <span id="detalheTecnico"></span></div>
+        <div class="mb-2"><strong>Encarregado:</strong> <span id="detalheEncarregado"></span></div>
+        <div class="mb-2"><strong>Supervisor da Obra:</strong> <span id="detalheSupervisor"></span></div>
+        <div class="mb-2"><strong>Descrição da Atividade:</strong> <span id="detalheDescricaoAtividade"></span></div>
+        <div class="mb-2"><strong>NR Relacionada:</strong> <span id="detalheNR"></span></div>
+        <div class="mb-2"><strong>Ações Recomendadas:</strong> <span id="detalheAcoesRecomendadas"></span></div>
 
-        <div class="mb-2"><strong>Área:</strong> <span id="detArea"></span></div>
-        <div class="mb-2"><strong>Classificação:</strong> <span id="detClassificacao"></span></div>
-        <div class="mb-2"><strong>Descrição:</strong> <span id="detDescricao"></span></div>
-        <div class="mb-2"><strong>Data de Registro:</strong> <span id="detDataRegistro"></span></div>
-        <div class="mb-2"><strong>Status:</strong> <span id="detStatus"></span></div>
-        <div class="mb-2"><strong>Prazo:</strong> <span id="detPrazo"></span></div>
+        <div class="mb-2"><strong>Área:</strong> <span id="detalheArea"></span></div>
+        <div class="mb-2"><strong>Classificação:</strong> <span id="detalheClassificacao"></span></div>
+        <div class="mb-2"><strong>Descrição:</strong> <span id="detalheDescricao"></span></div>
+        <div class="mb-2"><strong>Data de Registro:</strong> <span id="detalheDataRegistro"></span></div>
+        <div class="mb-2"><strong>Status:</strong> <span id="detalheStatus"></span></div>
+        <div class="mb-2"><strong>Prazo:</strong> <span id="detalhePrazo"></span></div>
 
-        <hr>
+        <hr />
+        <div class="mb-2">
+          <strong>Justificativa do Gestor:</strong>
+          <p id="detalheJustificativa" class="mb-0">—</p>
+        </div>
+
+        <hr />
         <h6>Fotos da Notificação</h6>
-        <div id="detFotosNotif" class="d-flex flex-wrap gap-2 mb-3"></div>
+        <div id="detalheFotosNotificacao" class="d-flex flex-wrap gap-2 mb-3"></div>
 
-        <hr>
+        <hr />
         <h6>Baixa (Resolução)</h6>
-        <div class="mb-2"><strong>Resolvido Por:</strong> <span id="detResolvidoPor"></span></div>
-        <div class="mb-2"><strong>Data da Baixa:</strong> <span id="detDataBaixa"></span></div>
-        <div class="mb-2"><strong>Comentário da Baixa:</strong> <span id="detComentario"></span></div>
+        <div class="mb-2"><strong>Resolvido Por:</strong> <span id="detalheResolvidoPor"></span></div>
+        <div class="mb-2"><strong>Data da Baixa:</strong> <span id="detalheDataBaixa"></span></div>
+        <div class="mb-2"><strong>Comentário da Baixa:</strong> <span id="detalheComentario"></span></div>
         <div class="mb-2"><strong>Fotos da Baixa:</strong></div>
-        <div id="detFotosBaixa" class="d-flex flex-wrap gap-2"></div>
+        <div id="detalheFotos" class="d-flex flex-wrap gap-2"></div>
       </div>
+
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
       </div>
@@ -245,275 +342,465 @@
   </div>
 </div>
 
+<!-- MODAL REJEIÇÃO -------------------------------------------------- -->
+<div class="modal fade" id="modalRejeicao" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="formRejeicao" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Justificativa de Rejeição</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" name="id" id="rejeicaoId">
+        <div class="mb-3">
+          <label for="justificativa" class="form-label">Motivo da Rejeição</label>
+          <textarea name="justificativa" id="justificativa" class="form-control" rows="3" required></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-danger">Confirmar Rejeição</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-  // ---------------------- AUXILIARES DE PRAZO ------------------------
-  const DAY_MS = 24 * 60 * 60 * 1000;
+  // ---------- Datas / prazo ----------
+  const DAY = 24 * 60 * 60 * 1000;
 
   function prazoDiffDays(prazoISO) {
     if (!prazoISO) return null;
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-    const prazo = new Date(prazoISO);
-    prazo.setHours(0, 0, 0, 0);
-    return Math.round((prazo - hoje) / DAY_MS);
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+    const prazo = new Date(prazoISO); prazo.setHours(0,0,0,0);
+    return Math.round((prazo - hoje)/DAY);
   }
 
   function prazoTexto(prazoISO, status) {
-    if (!prazoISO) return "-";
+    if (!prazoISO) return '-';
+    const d = new Date(prazoISO);
 
-    // Para notificações aprovadas, não mostrar "vence hoje / vencido / em x dias"
-    if (status === "Aprovada") {
-      const d = new Date(prazoISO);
+    // Para notificações aprovadas, apenas a data, sem "vence / vencido"
+    if (status === 'Aprovada') {
       return d.toLocaleDateString();
     }
 
-    const d = new Date(prazoISO);
     const diff = prazoDiffDays(prazoISO);
     const base = d.toLocaleDateString();
-
-    if (diff > 0)  return base + ` (em ${diff} dia${diff > 1 ? "s" : ""})`;
-    if (diff === 0) return base + " (vence hoje)";
+    if (diff > 0)  return `${base} (em ${diff} dia${diff>1?'s':''})`;
+    if (diff === 0) return `${base} (vence hoje)`;
     const atras = Math.abs(diff);
-    return base + ` (vencido há ${atras} dia${atras > 1 ? "s" : ""})`;
+    return `${base} (vencido há ${atras} dia${atras>1?'s':''})`;
   }
 
   function prazoClasse(diff, status) {
-    if (diff === null) return "";
-    if (status === "Aprovada") return ""; // sem cor especial para aprovadas
-
-    if (diff < 0)  return "text-danger fw-semibold";
-    if (diff === 0) return "text-warning fw-semibold";
-    if (diff <= 3) return "text-warning";
-    return "text-success";
+    if (diff === null) return '';
+    if (status === 'Aprovada') return ''; // aprovado = sem cor especial
+    if (diff < 0)  return 'text-danger fw-semibold';
+    if (diff === 0) return 'text-warning fw-semibold';
+    if (diff <= 3) return 'text-warning';
+    return 'text-success';
   }
 
-  // ---------------------- AUXILIAR DE IMAGEM -------------------------
+  // ---------- Imagens ----------
   function resolveImgSrc(f) {
     if (!f) return null;
-    if (typeof f === "object" && f.url) return f.url;
-    if (typeof f === "string" && f.startsWith("http")) return f;
-    return "/uploads/" + f; // compatibilidade com imagens antigas
+    if (typeof f === 'object' && f.url) return f.url;
+    if (typeof f === 'string' && f.startsWith('http')) return f;
+    return '/uploads/' + f; // compatibilidade com imagens antigas
   }
 
-  // ---------------------- ESTADO EM MEMÓRIA -------------------------
-  let LISTA_ATUAL = [];
-  let STATUS_ATUAL = ""; // '', 'Aberta', 'Pendente de aprovação', ...
+  let ULTIMA_LISTA = [];
 
-  // ---------------------- CARREGAR NOTIFICAÇÕES ----------------------
+  // ---------- Carregar notificações do backend ----------
   async function carregarNotificacoes() {
-    try {
-      const url = new URL("/api/notificacoes", window.location.origin);
-      if (STATUS_ATUAL) {
-        url.searchParams.append("status", STATUS_ATUAL);
+    const url = new URL('/api/notificacoes', window.location.origin);
+
+    const status = document.getElementById('status').value;
+    const id     = document.getElementById('idBusca').value.trim();
+
+    if (status) url.searchParams.append('status', status);
+    if (id)     url.searchParams.append('id', id);
+
+    const res   = await fetch(url);
+    const lista = await res.json();
+
+    ULTIMA_LISTA = lista;
+
+    popularFiltrosDinamicos(lista);
+    const filtrada = aplicarFiltrosCliente(lista);
+    renderTabela(filtrada);
+    atualizarKPIs(filtrada);
+  }
+
+  // ---------- Aplicar filtros cliente (mês, prazo, área, técnico) ----------
+  function aplicarFiltrosCliente(listaBase) {
+    const mesSel   = document.getElementById('filtroMes').value;
+    const prazoSel = document.getElementById('filtroPrazo').value;
+    const areaSel  = document.getElementById('filtroArea').value;
+    const tecSel   = document.getElementById('filtroTecnico').value;
+
+    return listaBase.filter(n => {
+      if (mesSel !== '') {
+        if (!n.dataRegistro) return false;
+        const m = new Date(n.dataRegistro).getMonth();
+        if (String(m) !== mesSel) return false;
       }
 
-      const res = await fetch(url);
-      const lista = await res.json();
+      if (prazoSel) {
+        const diff = prazoDiffDays(n.prazo);
+        if (prazoSel === 'noprazo' && !(diff === 0 || diff > 0)) return false;
+        if (prazoSel === 'vencidas' && !(diff < 0)) return false;
+      }
 
-      LISTA_ATUAL = lista;
-      atualizarKPIs(lista);
-      renderTabela(lista);
-    } catch (err) {
-      console.error("Erro ao carregar notificações:", err);
-      const tbody = document.getElementById("tbodyRegistros");
-      tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">Erro ao carregar notificações.</td></tr>';
-    }
+      if (areaSel && (n.area || '') !== areaSel) return false;
+      if (tecSel && (n.tecnico || '') !== tecSel) return false;
+
+      return true;
+    });
   }
 
-  // ---------------------- KPI CARDS ---------------------------------
+  // ---------- Popular filtros dinâmicos (Área e Técnico) ----------
+  function popularFiltrosDinamicos(lista) {
+    const areaSel = document.getElementById('filtroArea');
+    const tecSel  = document.getElementById('filtroTecnico');
+
+    const areas = Array.from(new Set(lista.map(n => n.area).filter(Boolean))).sort();
+    const tecs  = Array.from(new Set(lista.map(n => n.tecnico).filter(Boolean))).sort();
+
+    const areaVal = areaSel.value;
+    const tecVal  = tecSel.value;
+
+    areaSel.innerHTML = '<option value="">Todas</option>' +
+      areas.map(a => `<option value="${a}">${a}</option>`).join('');
+    tecSel.innerHTML  = '<option value="">Todos</option>' +
+      tecs.map(t => `<option value="${t}">${t}</option>`).join('');
+
+    if (areas.includes(areaVal)) areaSel.value = areaVal;
+    if (tecs.includes(tecVal))   tecSel.value  = tecVal;
+  }
+
+  // ---------- Atualizar KPIs ----------
   function atualizarKPIs(lista) {
-    const total = lista.length;
-    const abertas = lista.filter(n => n.status === "Aberta").length;
-    const pendentes = lista.filter(n => n.status === "Pendente de aprovação").length;
-    const interds = lista.filter(n => (n.classificacao || "").toLowerCase().includes("interdição")).length;
+    const total      = lista.length;
+    const abertas    = lista.filter(n => n.status === 'Aberta').length;
+    const pendentes  = lista.filter(n => n.status === 'Pendente de aprovação').length;
+    const interds    = lista.filter(n => (n.classificacao || '').toLowerCase().includes('interdição')).length;
 
-    document.getElementById("kpiTotal").textContent = total;
-    document.getElementById("kpiAbertas").textContent = abertas;
-    document.getElementById("kpiPendentes").textContent = pendentes;
-    document.getElementById("kpiInterdicoes").textContent = interds;
+    document.getElementById('kpiTotal').textContent       = total;
+    document.getElementById('kpiAbertas').textContent     = abertas;
+    document.getElementById('kpiPendentes').textContent   = pendentes;
+    document.getElementById('kpiInterdicoes').textContent = interds;
   }
 
-  // ---------------------- TABELA ------------------------------------
+  // ---------- Tabela + seleção múltipla ----------
   function renderTabela(lista) {
-    const tbody = document.getElementById("tbodyRegistros");
-    tbody.innerHTML = "";
+    const tbody = document.getElementById('tbodyNotificacoes');
+    tbody.innerHTML = '';
+
+    const btnBulk = document.getElementById('btnExcluirSelecionadas');
+    btnBulk.disabled = true;
 
     if (!lista.length) {
-      tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4">Nenhuma notificação encontrada.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4">Nenhuma notificação encontrada.</td></tr>';
       return;
     }
 
     lista.forEach(n => {
-      const tr = document.createElement("tr");
+      const tr = document.createElement('tr');
 
-      // ID
-      const tdId = document.createElement("td");
-      tdId.textContent = n._id || "-";
+      // checkbox
+      const tdChk = document.createElement('td');
+      tdChk.innerHTML = `<input type="checkbox" class="row-check" value="${n._id}">`;
+      tr.appendChild(tdChk);
+
+      // ID, Técnico, Área
+      const tdId  = document.createElement('td'); tdId.textContent  = n._id || '-';
+      const tdTec = document.createElement('td'); tdTec.textContent = n.tecnico || '-';
+      const tdAr  = document.createElement('td'); tdAr.textContent  = n.area || '-';
+
       tr.appendChild(tdId);
-
-      // Técnico
-      const tdTec = document.createElement("td");
-      tdTec.textContent = n.tecnico || "-";
       tr.appendChild(tdTec);
-
-      // Área
-      const tdArea = document.createElement("td");
-      tdArea.textContent = n.area || "-";
-      tr.appendChild(tdArea);
+      tr.appendChild(tdAr);
 
       // Classificação
-      const tdClass = document.createElement("td");
-      tdClass.textContent = n.classificacao || "-";
+      const tdClass = document.createElement('td');
+      tdClass.textContent = n.classificacao || '-';
       tr.appendChild(tdClass);
 
-      // Status
-      const tdStatus = document.createElement("td");
-      tdStatus.textContent = n.status || "-";
+      // Status (com comentário se rejeitada)
+      const tdStatus = document.createElement('td');
+      let statusText = n.status || '-';
+      if (n.status === 'Rejeitada' && n.comentarioAprovacao) {
+        statusText += `: ${n.comentarioAprovacao}`;
+      }
+      tdStatus.textContent = statusText;
       tr.appendChild(tdStatus);
 
       // Data
-      const tdData = document.createElement("td");
-      const dataRef = n.dataRegistro || n.data;
-      tdData.textContent = dataRef ? new Date(dataRef).toLocaleString() : "-";
+      const tdData = document.createElement('td');
+      tdData.textContent = n.dataRegistro ? new Date(n.dataRegistro).toLocaleString() : '-';
       tr.appendChild(tdData);
 
       // Prazo
-      const tdPrazo = document.createElement("td");
+      const tdPrazo = document.createElement('td');
       if (n.prazo) {
         const diff = prazoDiffDays(n.prazo);
-        const cls = prazoClasse(diff, n.status);
-        tdPrazo.innerHTML = `<span class="${cls}">${prazoTexto(n.prazo, n.status)}</span>`;
+        tdPrazo.innerHTML = `<span class="${prazoClasse(diff, n.status)}">${prazoTexto(n.prazo, n.status)}</span>`;
       } else {
-        tdPrazo.textContent = "-";
+        tdPrazo.textContent = '-';
       }
       tr.appendChild(tdPrazo);
 
       // Ações
-      const tdAcoes = document.createElement("td");
+      const tdAcoes = document.createElement('td');
       tdAcoes.innerHTML =
-        `<button class="btn btn-sm btn-outline-primary" onclick="abrirDetalhes('${n._id}')">
-          Detalhes
-        </button>`;
+        `<button class="btn btn-secondary btn-sm"
+            onclick="visualizarDetalhes('${n._id}')"
+            data-bs-toggle="modal" data-bs-target="#modalDetalhes">
+           Detalhes
+         </button>`;
       tr.appendChild(tdAcoes);
 
       tbody.appendChild(tr);
     });
+
+    syncSelectionUI();
   }
 
-  // ---------------------- MODAL DE DETALHES -------------------------
-  async function abrirDetalhes(id) {
-    try {
-      const res = await fetch(`/api/notificacoes/${id}`);
-      const d = await res.json();
+  function getSelectedIds() {
+    return Array.from(document.querySelectorAll('.row-check:checked')).map(i => i.value);
+  }
 
-      document.getElementById("detId").textContent = d._id || "-";
-      document.getElementById("detTecnico").textContent = d.tecnico || "-";
-      document.getElementById("detEncarregado").textContent = d.encarregado || "-";
+  function syncSelectionUI() {
+    const selectAll = document.getElementById('selectAll');
+    const checks    = document.querySelectorAll('.row-check');
+    const btnBulk   = document.getElementById('btnExcluirSelecionadas');
 
-      const supervisor = d.supervisorObra || d.supervisor || d.supervisorDaObra || "-";
-      const descAtiv = d.descricaoAtividade || d.atividade || d.descricao_atividade || "-";
+    btnBulk.disabled = getSelectedIds().length === 0;
 
-      document.getElementById("detSupervisor").textContent = supervisor || "-";
-      document.getElementById("detDescAtividade").textContent = descAtiv || "-";
-      document.getElementById("detNR").textContent = d.nr || "-";
-      document.getElementById("detAcoes").textContent = d.acao || "-";
+    selectAll.onchange = () => {
+      checks.forEach(c => { c.checked = selectAll.checked; });
+      btnBulk.disabled = getSelectedIds().length === 0;
+    };
 
-      document.getElementById("detArea").textContent = d.area || "-";
-      document.getElementById("detClassificacao").textContent = d.classificacao || "-";
-      document.getElementById("detDescricao").textContent = d.descricao || "-";
-      document.getElementById("detDataRegistro").textContent =
-        d.dataRegistro ? new Date(d.dataRegistro).toLocaleString() : "-";
-      document.getElementById("detStatus").textContent = d.status || "-";
+    checks.forEach(c => {
+      c.onchange = () => {
+        const total    = checks.length;
+        const marcados = getSelectedIds().length;
+        selectAll.checked       = marcados === total;
+        selectAll.indeterminate = marcados > 0 && marcados < total;
+        btnBulk.disabled        = marcados === 0;
+      };
+    });
 
-      const spPrazo = document.getElementById("detPrazo");
-      if (d.prazo) {
-        const diff = prazoDiffDays(d.prazo);
-        spPrazo.className = prazoClasse(diff, d.status);
-        spPrazo.textContent = prazoTexto(d.prazo, d.status);
-      } else {
-        spPrazo.className = "";
-        spPrazo.textContent = "-";
+    document.getElementById('btnExcluirSelecionadas').onclick = async () => {
+      const ids = getSelectedIds();
+      if (!ids.length) return;
+      if (!confirm(`Confirmar exclusão de ${ids.length} notificação(ões)?`)) return;
+
+      for (const id of ids) {
+        try {
+          await fetch(`/excluir/${id}`, { method: 'DELETE' });
+        } catch (e) {
+          console.error('Erro ao excluir', id, e);
+        }
       }
+      await carregarNotificacoes();
+      alert('Exclusão concluída!');
+    };
+  }
 
-      // Fotos da notificação
-      const notifDiv = document.getElementById("detFotosNotif");
-      notifDiv.innerHTML = "";
-      if (d.notificacaoFotos && d.notificacaoFotos.length) {
-        d.notificacaoFotos.forEach(f => {
-          const src = resolveImgSrc(f);
-          if (!src) return;
-          const a = document.createElement("a");
-          a.href = src;
-          a.className = "glightbox";
-          a.setAttribute("data-gallery", "notif");
-          const img = document.createElement("img");
-          img.src = src;
-          img.width = 120;
-          img.className = "border rounded me-2 mb-2";
-          a.appendChild(img);
-          notifDiv.appendChild(a);
+  // ---------- Modal: configurar ações (aprovar / rejeitar / excluir) ----------
+  function configurarAcoes(d) {
+    const btnA = document.getElementById('btnAprovar');
+    const btnR = document.getElementById('btnRejeitar');
+
+    if (d.status === 'Aprovada' || d.status === 'Rejeitada') {
+      btnA.style.display = 'none';
+      btnR.style.display = 'none';
+    } else {
+      btnA.style.display = d.dataBaixa ? 'inline-block' : 'none';
+      btnR.style.display = 'inline-block';
+    }
+
+    // Aprovar
+    btnA.onclick = async () => {
+      try {
+        const res = await fetch('/aprovar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ id: d._id })
         });
-      } else {
-        notifDiv.textContent = "Sem fotos da notificação.";
+        if (!res.ok) throw new Error(await res.text());
+        alert('Notificação aprovada com sucesso!');
+        location.reload();
+      } catch (err) {
+        alert('Erro ao aprovar: ' + err.message);
       }
+    };
 
-      // Baixa
-      document.getElementById("detResolvidoPor").textContent = d.resolvidoPor || "—";
-      document.getElementById("detDataBaixa").textContent =
-        d.dataBaixa ? new Date(d.dataBaixa).toLocaleString() : "—";
-      document.getElementById("detComentario").textContent =
-        d.resolucaoComentario || "Sem comentário";
+    // Rejeitar
+    btnR.onclick = () => {
+      document.getElementById('rejeicaoId').value = d._id;
+    };
 
-      const baixaDiv = document.getElementById("detFotosBaixa");
-      baixaDiv.innerHTML = "";
-      if (d.resolucaoFotos && d.resolucaoFotos.length) {
-        d.resolucaoFotos.forEach(f => {
-          const src = resolveImgSrc(f);
-          if (!src) return;
-          const a = document.createElement("a");
-          a.href = src;
-          a.className = "glightbox";
-          a.setAttribute("data-gallery", "baixa");
-          const img = document.createElement("img");
-          img.src = src;
-          img.width = 120;
-          img.className = "border rounded me-2 mb-2";
-          a.appendChild(img);
-          baixaDiv.appendChild(a);
-        });
-      } else {
-        baixaDiv.textContent = "Sem fotos da baixa.";
+    // Excluir única
+    document.getElementById('btnExcluir').onclick = async () => {
+      if (confirm('Tem certeza que deseja excluir esta notificação?')) {
+        await fetch(`/excluir/${d._id}`, { method: 'DELETE' });
+        location.reload();
       }
+    };
 
-      GLightbox({ selector: ".glightbox" });
-
-      const modal = new bootstrap.Modal(document.getElementById("modalDetalhes"));
-      modal.show();
-    } catch (err) {
-      console.error("Erro ao carregar detalhes:", err);
-      alert("Erro ao carregar detalhes da notificação.");
+    // Justificativa do gestor
+    const justifEl = document.getElementById('detalheJustificativa');
+    if (d.status === 'Rejeitada') {
+      justifEl.textContent = d.comentarioAprovacao || '—';
+    } else if (d.status === 'Aprovada') {
+      justifEl.textContent = `Aprovado por ${d.aprovadoPor || '—'} em ${d.dataAprovacao ? new Date(d.dataAprovacao).toLocaleString() : '—'}`;
+    } else {
+      justifEl.textContent = '—';
     }
   }
 
-  // ---------------------- CHIPS (FILTRO DE STATUS) -------------------
+  // ---------- Visualizar detalhes ----------
+  async function visualizarDetalhes(id) {
+    const res = await fetch(`/api/notificacoes/${id}`);
+    const d   = await res.json();
+
+    document.getElementById('detalheId').textContent          = d._id;
+    document.getElementById('detalheTecnico').textContent     = d.tecnico || '-';
+    document.getElementById('detalheEncarregado').textContent = d.encarregado || '-';
+
+    const supervisor = d.supervisorObra ?? d.supervisor ?? d.supervisorDaObra ?? '-';
+    const descAtiv   = d.descricaoAtividade ?? d.atividade ?? d.descricao_atividade ?? '-';
+    document.getElementById('detalheSupervisor').textContent         = supervisor || '-';
+    document.getElementById('detalheDescricaoAtividade').textContent = descAtiv || '-';
+    document.getElementById('detalheNR').textContent                 = d.nr || '-';
+    document.getElementById('detalheAcoesRecomendadas').textContent  = d.acao || '-';
+
+    document.getElementById('detalheArea').textContent          = d.area || '-';
+    document.getElementById('detalheClassificacao').textContent = d.classificacao || '-';
+    document.getElementById('detalheDescricao').textContent     = d.descricao || '-';
+    document.getElementById('detalheDataRegistro').textContent  = d.dataRegistro ? new Date(d.dataRegistro).toLocaleString() : '-';
+    document.getElementById('detalheStatus').textContent        = d.status || '-';
+
+    const spPrazo = document.getElementById('detalhePrazo');
+    if (d.prazo) {
+      const diff = prazoDiffDays(d.prazo);
+      spPrazo.className   = prazoClasse(diff, d.status);
+      spPrazo.textContent = prazoTexto(d.prazo, d.status);
+    } else {
+      spPrazo.className = '';
+      spPrazo.textContent = '-';
+    }
+
+    // Fotos da Notificação
+    const notifFotosDiv = document.getElementById('detalheFotosNotificacao');
+    notifFotosDiv.innerHTML = '';
+    if (d.notificacaoFotos?.length) {
+      d.notificacaoFotos.forEach(f => {
+        const src = resolveImgSrc(f); if (!src) return;
+        const link = document.createElement('a');
+        link.href = src;
+        link.className = 'glightbox';
+        link.setAttribute('data-gallery', 'notificacao');
+        const img = document.createElement('img');
+        img.src = src;
+        img.width = 120;
+        img.className = 'border rounded me-2 mb-2';
+        link.appendChild(img);
+        notifFotosDiv.appendChild(link);
+      });
+      GLightbox({ selector: '.glightbox' });
+    } else {
+      notifFotosDiv.textContent = 'Sem fotos da notificação.';
+    }
+
+    // Baixa (Resolução)
+    document.getElementById('detalheResolvidoPor').textContent = d.resolvidoPor || '—';
+    document.getElementById('detalheDataBaixa').textContent   = d.dataBaixa ? new Date(d.dataBaixa).toLocaleString() : '—';
+    document.getElementById('detalheComentario').textContent  = d.resolucaoComentario || 'Sem comentário';
+
+    const fotosDiv = document.getElementById('detalheFotos');
+    fotosDiv.innerHTML = '';
+    if (d.resolucaoFotos?.length) {
+      d.resolucaoFotos.forEach(f => {
+        const src = resolveImgSrc(f); if (!src) return;
+        const link = document.createElement('a');
+        link.href = src;
+        link.className = 'glightbox';
+        link.setAttribute('data-gallery', 'baixa');
+        const img = document.createElement('img');
+        img.src = src;
+        img.width = 120;
+        img.className = 'border rounded me-2 mb-2';
+        link.appendChild(img);
+        fotosDiv.appendChild(link);
+      });
+      GLightbox({ selector: '.glightbox' });
+    } else {
+      fotosDiv.textContent = 'Sem fotos da baixa.';
+    }
+
+    configurarAcoes(d);
+  }
+
+  // ---------- Rejeição ----------
+  document.getElementById('formRejeicao').addEventListener('submit', async e => {
+    e.preventDefault();
+    const data = new URLSearchParams(new FormData(e.target));
+    try {
+      const res = await fetch('/rejeitar', { method: 'POST', body: data });
+      if (!res.ok) throw new Error(await res.text());
+      alert('Notificação rejeitada com sucesso!');
+      bootstrap.Modal.getInstance(document.getElementById('modalRejeicao')).hide();
+      visualizarDetalhes(e.target.rejeicaoId.value);
+    } catch (err) {
+      alert('Erro ao rejeitar: ' + err.message);
+    }
+  });
+
+  // ---------- Submeter filtros ----------
+  document.getElementById('filtroForm').addEventListener('submit', e => {
+    e.preventDefault();
+    carregarNotificacoes();
+  });
+
+  // ---------- Chips de status ----------
   function configurarChips() {
-    const chips = document.querySelectorAll(".chip");
-
+    const chips = document.querySelectorAll('.chip-status');
     chips.forEach(chip => {
-      chip.addEventListener("click", () => {
-        chips.forEach(c => c.classList.remove("active"));
-        chip.classList.add("active");
+      chip.addEventListener('click', () => {
+        chips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
 
-        STATUS_ATUAL = chip.getAttribute("data-status") || "";
+        const status = chip.getAttribute('data-status') || '';
+        document.getElementById('status').value = status;
         carregarNotificacoes();
       });
     });
   }
 
-  // ---------------------- INICIALIZAÇÃO ------------------------------
-  window.addEventListener("DOMContentLoaded", () => {
+  // Função chamada pela sidebar (links de status)
+  function selecionarChipStatus(_, status) {
+    const chips = document.querySelectorAll('.chip-status');
+    chips.forEach(c => {
+      if (c.getAttribute('data-status') === status || (status === '' && c.getAttribute('data-status') === '')) {
+        c.classList.add('active');
+      } else {
+        c.classList.remove('active');
+      }
+    });
+    document.getElementById('status').value = status;
+    carregarNotificacoes();
+  }
+
+  // ---------- Inicialização ----------
+  window.addEventListener('DOMContentLoaded', () => {
     configurarChips();
     carregarNotificacoes();
   });
