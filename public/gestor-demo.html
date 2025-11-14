@@ -14,7 +14,7 @@
       margin: 0;
       background: #f4f4f7;
       font-family: "Arial", sans-serif;
-      transition: margin-left 0.25s ease;
+      transition: margin-left 0.3s ease;
     }
 
     /* SIDEBAR ------------------------------------------------------ */
@@ -29,14 +29,13 @@
       padding: 25px 15px;
       box-shadow: 4px 0 10px rgba(0, 0, 0, 0.4);
       z-index: 1000;
-      transition: transform 0.25s ease, width 0.25s ease;
+      transition: transform 0.3s ease;
     }
 
     .sidebar .logo {
       font-size: 20px;
       font-weight: bold;
       margin-bottom: 30px;
-      white-space: nowrap;
     }
 
     .sidebar-menu-title {
@@ -54,7 +53,6 @@
       text-decoration: none;
       transition: 0.2s;
       font-size: 14px;
-      white-space: nowrap;
     }
 
     .sidebar a:hover,
@@ -65,11 +63,19 @@
       box-shadow: 0 0 15px #00ff8855;
     }
 
-    /* CONTEÚDO ------------------------------------------------------ */
+    /* CONTENT ------------------------------------------------------ */
     .content {
       margin-left: 260px;
       padding: 25px;
-      transition: margin-left 0.25s ease;
+      transition: margin-left 0.3s ease;
+    }
+
+    /* Quando a sidebar estiver fechada */
+    body.sidebar-closed .sidebar {
+      transform: translateX(-260px);
+    }
+    body.sidebar-closed .content {
+      margin-left: 20px;
     }
 
     .page-title {
@@ -114,35 +120,6 @@
     .table-placeholder {
       height: 80px;
     }
-
-    /* BOTÃO TOGGLE SIDEBAR ------------------------------------------ */
-    #btnToggleSidebar {
-      border-radius: 50%;
-      width: 38px;
-      height: 38px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin-right: 10px;
-    }
-
-    /* ESTADO COLAPSADO ---------------------------------------------- */
-    body.sidebar-closed .sidebar {
-      transform: translateX(-260px);
-    }
-
-    body.sidebar-closed .content {
-      margin-left: 0;
-    }
-
-    @media (max-width: 768px) {
-      .content {
-        margin-left: 0;
-      }
-      body.sidebar-open-mobile .sidebar {
-        transform: translateX(0);
-      }
-    }
   </style>
 </head>
 
@@ -152,15 +129,14 @@
 <div class="sidebar">
   <div class="logo">🛡️ Painel SESMT</div>
 
-  <div class="sidebar-menu-title">VISÃO GERAL</div>
+  <div class="sidebar-menu-title">NAVEGAÇÃO</div>
   <a href="/dashboard.html">Dashboard</a>
-  <a href="/dashboard.html">Página Inicial</a>
-
-  <div class="sidebar-menu-title">NOTIFICAÇÕES</div>
-  <a href="/index.html">Nova Notificação</a>
+  <a href="/index.html">Formulário Notificação</a>
   <a href="/status.html">Status das Notificações</a>
-  <a href="/baixa.html">Baixa de Notificações</a>
-  <a href="/gestor.html" class="active">Painel do Gestor</a>
+  <a href="/baixa.html">Baixa de Notificação</a>
+
+  <div class="sidebar-menu-title">PAINÉIS</div>
+  <a class="active" href="#">Painel do Gestor</a>
 </div>
 
 <!-- CONTEÚDO ----------------------------------------------------------- -->
@@ -169,7 +145,7 @@
   <!-- Header -->
   <div class="d-flex justify-content-between align-items-center mb-3">
     <div class="d-flex align-items-center">
-      <button class="btn btn-outline-secondary btn-sm" id="btnToggleSidebar" type="button">
+      <button id="btnToggleSidebar" class="btn btn-outline-secondary me-3">
         ☰
       </button>
       <div>
@@ -185,25 +161,31 @@
 
   <!-- KPIs -->
   <div class="row g-3 mb-4">
-    <div class="col-md-3">
+    <div class="col-md-3 col-xl-2">
       <div class="card-kpi">
         <h6 class="mb-1">Total Exibido</h6>
         <h3 id="kpiTotal">0</h3>
       </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-3 col-xl-2">
       <div class="card-kpi">
         <h6 class="mb-1">Abertas</h6>
         <h3 id="kpiAbertas">0</h3>
       </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-3 col-xl-2">
       <div class="card-kpi">
         <h6 class="mb-1">Pendentes</h6>
         <h3 id="kpiPendentes">0</h3>
       </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-3 col-xl-2">
+      <div class="card-kpi">
+        <h6 class="mb-1">Notificações</h6>
+        <h3 id="kpiNotificacoes">0</h3>
+      </div>
+    </div>
+    <div class="col-md-3 col-xl-2">
       <div class="card-kpi">
         <h6 class="mb-1">Interdições</h6>
         <h3 id="kpiInterdicoes">0</h3>
@@ -260,6 +242,16 @@
             <option value="">Todos</option>
             <option value="noprazo">No prazo</option>
             <option value="vencidas">Vencidas</option>
+          </select>
+        </div>
+
+        <!-- NOVO: Filtro de Classificação -->
+        <div class="col-md-2">
+          <label for="filtroClassificacao" class="form-label">Classificação</label>
+          <select id="filtroClassificacao" class="form-select">
+            <option value="">Todas</option>
+            <option value="Notificação">Notificação</option>
+            <option value="Interdição">Interdição</option>
           </select>
         </div>
 
@@ -420,7 +412,7 @@
     if (!prazoISO) return '-';
     const d = new Date(prazoISO);
 
-    // Para notificações aprovadas, apenas a data, sem "vence / vencido"
+    // Para notificações aprovadas, apenas a data
     if (status === 'Aprovada') {
       return d.toLocaleDateString();
     }
@@ -473,12 +465,13 @@
     atualizarKPIs(filtrada);
   }
 
-  // ---------- Aplicar filtros cliente (mês, prazo, área, técnico) ----------
+  // ---------- Aplicar filtros cliente (mês, prazo, área, técnico, classificação) ----------
   function aplicarFiltrosCliente(listaBase) {
-    const mesSel   = document.getElementById('filtroMes').value;
-    const prazoSel = document.getElementById('filtroPrazo').value;
-    const areaSel  = document.getElementById('filtroArea').value;
-    const tecSel   = document.getElementById('filtroTecnico').value;
+    const mesSel    = document.getElementById('filtroMes').value;
+    const prazoSel  = document.getElementById('filtroPrazo').value;
+    const areaSel   = document.getElementById('filtroArea').value;
+    const tecSel    = document.getElementById('filtroTecnico').value;
+    const classSel  = document.getElementById('filtroClassificacao').value;
 
     return listaBase.filter(n => {
       if (mesSel !== '') {
@@ -495,6 +488,10 @@
 
       if (areaSel && (n.area || '') !== areaSel) return false;
       if (tecSel && (n.tecnico || '') !== tecSel) return false;
+
+      if (classSel) {
+        if ((n.classificacao || '') !== classSel) return false;
+      }
 
       return true;
     });
@@ -525,12 +522,20 @@
     const total      = lista.length;
     const abertas    = lista.filter(n => n.status === 'Aberta').length;
     const pendentes  = lista.filter(n => n.status === 'Pendente de aprovação').length;
-    const interds    = lista.filter(n => (n.classificacao || '').toLowerCase().includes('interdição')).length;
 
-    document.getElementById('kpiTotal').textContent       = total;
-    document.getElementById('kpiAbertas').textContent     = abertas;
-    document.getElementById('kpiPendentes').textContent   = pendentes;
-    document.getElementById('kpiInterdicoes').textContent = interds;
+    const notificacoes = lista.filter(n =>
+      (n.classificacao || '').toLowerCase().includes('notificação')
+    ).length;
+
+    const interds = lista.filter(n =>
+      (n.classificacao || '').toLowerCase().includes('interdição')
+    ).length;
+
+    document.getElementById('kpiTotal').textContent          = total;
+    document.getElementById('kpiAbertas').textContent        = abertas;
+    document.getElementById('kpiPendentes').textContent      = pendentes;
+    document.getElementById('kpiNotificacoes').textContent   = notificacoes;
+    document.getElementById('kpiInterdicoes').textContent    = interds;
   }
 
   // ---------- Tabela + seleção múltipla ----------
@@ -586,7 +591,8 @@
       const tdPrazo = document.createElement('td');
       if (n.prazo) {
         const diff = prazoDiffDays(n.prazo);
-        tdPrazo.innerHTML = `<span class="${prazoClasse(diff, n.status)}">${prazoTexto(n.prazo, n.status)}</span>`;
+        tdPrazo.innerHTML =
+          `<span class="${prazoClasse(diff, n.status)}">${prazoTexto(n.prazo, n.status)}</span>`;
       } else {
         tdPrazo.textContent = '-';
       }
@@ -651,7 +657,7 @@
     };
   }
 
-  // ---------- Modal: configurar ações (aprovar / rejeitar / excluir) ----------
+  // ---------- Modal: configurar ações ----------
   function configurarAcoes(d) {
     const btnA = document.getElementById('btnAprovar');
     const btnR = document.getElementById('btnRejeitar');
@@ -698,7 +704,8 @@
     if (d.status === 'Rejeitada') {
       justifEl.textContent = d.comentarioAprovacao || '—';
     } else if (d.status === 'Aprovada') {
-      justifEl.textContent = `Aprovado por ${d.aprovadoPor || '—'} em ${d.dataAprovacao ? new Date(d.dataAprovacao).toLocaleString() : '—'}`;
+      justifEl.textContent =
+        `Aprovado por ${d.aprovadoPor || '—'} em ${d.dataAprovacao ? new Date(d.dataAprovacao).toLocaleString() : '—'}`;
     } else {
       justifEl.textContent = '—';
     }
@@ -723,7 +730,8 @@
     document.getElementById('detalheArea').textContent          = d.area || '-';
     document.getElementById('detalheClassificacao').textContent = d.classificacao || '-';
     document.getElementById('detalheDescricao').textContent     = d.descricao || '-';
-    document.getElementById('detalheDataRegistro').textContent  = d.dataRegistro ? new Date(d.dataRegistro).toLocaleString() : '-';
+    document.getElementById('detalheDataRegistro').textContent  =
+      d.dataRegistro ? new Date(d.dataRegistro).toLocaleString() : '-';
     document.getElementById('detalheStatus').textContent        = d.status || '-';
 
     const spPrazo = document.getElementById('detalhePrazo');
@@ -760,7 +768,8 @@
 
     // Baixa (Resolução)
     document.getElementById('detalheResolvidoPor').textContent = d.resolvidoPor || '—';
-    document.getElementById('detalheDataBaixa').textContent   = d.dataBaixa ? new Date(d.dataBaixa).toLocaleString() : '—';
+    document.getElementById('detalheDataBaixa').textContent   =
+      d.dataBaixa ? new Date(d.dataBaixa).toLocaleString() : '—';
     document.getElementById('detalheComentario').textContent  = d.resolucaoComentario || 'Sem comentário';
 
     const fotosDiv = document.getElementById('detalheFotos');
@@ -823,22 +832,8 @@
     });
   }
 
-  // Mantido por compatibilidade (não é mais usado diretamente)
-  function selecionarChipStatus(_, status) {
-    const chips = document.querySelectorAll('.chip-status');
-    chips.forEach(c => {
-      if (c.getAttribute('data-status') === status || (status === '' && c.getAttribute('data-status') === '')) {
-        c.classList.add('active');
-      } else {
-        c.classList.remove('active');
-      }
-    });
-    document.getElementById('status').value = status;
-    carregarNotificacoes();
-  }
-
-  // ---------- Toggle Sidebar ----------
-  function configurarSidebarToggle() {
+  // ---------- Toggle da sidebar ----------
+  function configurarToggleSidebar() {
     const btn = document.getElementById('btnToggleSidebar');
     btn.addEventListener('click', () => {
       document.body.classList.toggle('sidebar-closed');
@@ -848,7 +843,7 @@
   // ---------- Inicialização ----------
   window.addEventListener('DOMContentLoaded', () => {
     configurarChips();
-    configurarSidebarToggle();
+    configurarToggleSidebar();
     carregarNotificacoes();
   });
 </script>
