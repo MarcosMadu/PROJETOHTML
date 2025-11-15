@@ -9,7 +9,7 @@ const mongoose   = require('mongoose');
 const dotenv     = require('dotenv');
 const multer     = require('multer');
 const ejs        = require('ejs');
-const puppeteer  = require('puppeteer');
+const html_to_pdf = require('html-pdf-node');   // 🔹 SUBSTITUI PUPPETEER
 const Notificacao = require('./models/Notificacao');
 
 // 🔹 Cloudinary
@@ -42,7 +42,7 @@ const upload = multer({ storage });
 const uploadNotificacaoFotos = upload.array('notificacaoFotos');
 const uploadResolucaoFotos   = upload.array('resolucaoFotos');
 
-// 🔹 Buscar imagem via URL (para gerar PDF)
+// 🔹 Buscar imagem via URL (para gerar PDF) – (hoje não usado, mas mantido)
 function fetchImageBuffer(url) {
   return new Promise((resolve, reject) => {
     const client = url.startsWith('https') ? https : http;
@@ -279,7 +279,7 @@ app.delete('/excluir/:id', async (req, res) => {
 });
 
 // ============================ PDF NOTIFICAÇÃO ========================
-// ============================ PDF NOTIFICAÇÃO (HTML + PUPPETEER) =====
+// Agora usando HTML + EJS + html-pdf-node (compatível com Render)
 app.get('/notificacoes/:id/pdf', async (req, res) => {
   try {
     const n = await Notificacao.findById(req.params.id);
@@ -354,16 +354,9 @@ app.get('/notificacoes/:id/pdf', async (req, res) => {
     const templatePath = path.join(__dirname, 'views', 'notificacao-pdf.ejs');
     const html = await ejs.renderFile(templatePath, { notif: viewData });
 
-    // 🔹 Gera PDF com Puppeteer
-    const browser = await puppeteer.launch({
-      headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
-
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0' });
-
-    const pdfBuffer = await page.pdf({
+    // 🔹 Gera PDF com html-pdf-node (sem Chrome / Puppeteer)
+    const file = { content: html };
+    const options = {
       format: 'A4',
       printBackground: true,
       margin: {
@@ -372,9 +365,9 @@ app.get('/notificacoes/:id/pdf', async (req, res) => {
         bottom: '15mm',
         left: '15mm'
       }
-    });
+    };
 
-    await browser.close();
+    const pdfBuffer = await html_to_pdf.generatePdf(file, options);
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader(
@@ -383,7 +376,7 @@ app.get('/notificacoes/:id/pdf', async (req, res) => {
     );
     return res.end(pdfBuffer);
   } catch (err) {
-    console.error('Erro ao gerar PDF via Puppeteer:', err);
+    console.error('Erro ao gerar PDF via html-pdf-node:', err);
     res.status(500).send('Erro ao gerar PDF.');
   }
 });
@@ -450,5 +443,3 @@ app.post(
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });
-
-
