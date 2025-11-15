@@ -279,200 +279,111 @@ app.delete('/excluir/:id', async (req, res) => {
 });
 
 // ============================ PDF NOTIFICAÇÃO ========================
+// ============================ PDF NOTIFICAÇÃO (HTML + PUPPETEER) =====
 app.get('/notificacoes/:id/pdf', async (req, res) => {
   try {
     const n = await Notificacao.findById(req.params.id);
     if (!n) return res.status(404).send('Notificação não encontrada.');
 
-    // 🔹 Campos normalizados para o PDF
-    const tecnicoResp   = n.tecnico || '—';
-    const encarregado   = n.encarregado || '—';
-    const supervisor    =
+    // 🔹 Normalização de campos
+    const tecnicoResp = n.tecnico || '—';
+    const encarregado = n.encarregado || '—';
+    const supervisor =
       n.supervisorObra ||
       n.supervisor ||
       n.supervisor_da_obra ||
       n.supervisor_obra ||
       '—';
-    const squadArea     = n.area || n.Squad || n.squad || '—';
-    const dataNotifStr  = n.dataRegistro
-      ? new Date(n.dataRegistro).toLocaleDateString('pt-BR')
+
+    const squadArea = n.area || n.Squad || n.squad || '—';
+
+    const dataNotificacao = n.dataRegistro
+      ? new Date(n.dataRegistro).toLocaleString('pt-BR')
       : '—';
-    const prazoStr      = n.prazo
+
+    const prazoResolucao = n.prazo
       ? new Date(n.prazo).toLocaleDateString('pt-BR')
       : '—';
-    const nrRel         = n.nr || '—';
-    const descAtv       =
+
+    const nrRel = n.nr || '—';
+
+    const descricaoAtividade =
       n.descricaoAtividade ||
       n.descricao_atividade ||
       n.atividade ||
       '—';
-    const descRisco     =
+
+    const descricaoRisco =
       n.descricao ||
       n.condicaoRisco ||
       n.descricaoRisco ||
       '—';
-    const acoesRec      =
+
+    const acoesRecomendadas =
       n.acoesRecomendadas ||
       n.acaoRecomendada ||
       n.acoes ||
       n.acao ||
       '—';
 
-    const fotosNot      = Array.isArray(n.notificacaoFotos) ? n.notificacaoFotos : [];
-    const fotosRes      = Array.isArray(n.resolucaoFotos)   ? n.resolucaoFotos   : [];
-    const todasFotos    = [...fotosNot, ...fotosRes];
+    const fotosNotificacao = Array.isArray(n.notificacaoFotos)
+      ? n.notificacaoFotos
+      : [];
+    const fotosResolucao = Array.isArray(n.resolucaoFotos)
+      ? n.resolucaoFotos
+      : [];
+
+    const viewData = {
+      id: n.idSequencial != null ? n.idSequencial : n._id,
+      classificacao: n.classificacao || '—',
+      tecnicoResp,
+      encarregado,
+      supervisor,
+      dataNotificacao,
+      squadArea,
+      descricaoAtividade,
+      descricaoRisco,
+      nrRel,
+      acoesRecomendadas,
+      prazoResolucao,
+      fotosNotificacao,
+      fotosResolucao
+    };
+
+    // 🔹 Renderiza HTML a partir do EJS
+    const templatePath = path.join(__dirname, 'views', 'notificacao-pdf.ejs');
+    const html = await ejs.renderFile(templatePath, { notif: viewData });
+
+    // 🔹 Gera PDF com Puppeteer
+    const browser = await puppeteer.launch({
+      headless: 'new',
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: {
+        top: '15mm',
+        right: '15mm',
+        bottom: '15mm',
+        left: '15mm'
+      }
+    });
+
+    await browser.close();
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=notificacao_${n._id}.pdf`);
-
-    const doc    = new PDFDocument({ margin: 40 });
-    const left   = doc.page.margins.left;
-    const totalW = doc.page.width - left - doc.page.margins.right;
-    const colW   = totalW / 2;
-
-    doc.pipe(res);
-
-    const headerColor = '#2E7D32';
-    const dataColor   = '#EFEFEF';
-    const borderColor = '#2E7D32';
-
-    // 🔹 Cabeçalho principal
-    doc.save()
-      .rect(left, 40, totalW, 50).fill(headerColor).restore();
-    doc.fillColor('#fff').fontSize(22)
-      .text('REGISTO DE NOTIFICAÇÕES', left, 52, { width: totalW, align: 'center' });
-
-    let y = 100;
-    const fieldH = 25, fieldW = colW - 10;
-
-    // 🔹 ID + Classificação
-    doc.save().rect(left, y, fieldW, fieldH).fill(dataColor).stroke(borderColor,1).restore();
-    const idLabel = (n.idSequencial != null) ? `ID: ${n.idSequencial}` : `ID Mongo: ${n._id}`;
-    doc.fillColor('#000').fontSize(12).text(idLabel, left+5, y+7);
-
-    doc.save().rect(left+fieldW+20, y, fieldW, fieldH).fill(dataColor).stroke(borderColor,1).restore();
-    doc.fillColor('#000').fontSize(12)
-      .text(`Classificação: ${n.classificacao || '—'}`, left+fieldW+25, y+7);
-    y += fieldH + 20;
-
-    // Funções auxiliares para células 2 colunas
-    function headerCell(text, x) {
-      doc.save().rect(x, y, colW, 25).fill(headerColor).stroke(borderColor,1).restore();
-      doc.fillColor('#fff').fontSize(12).text(text, x, y+7, { width: colW, align: 'center' });
-    }
-    function dataCell(text, x) {
-      doc.save().rect(x, y+25, colW, 40).fill(dataColor).stroke(borderColor,1).restore();
-      doc.fillColor('#000').fontSize(12)
-        .text(text, x, y+25+12, { width: colW-10, align: 'center' });
-    }
-
-    // 🔹 Técnico responsável / Prazo para resolução
-    headerCell('TÉCNICO RESPONSÁVEL', left);
-    headerCell('PRAZO PARA RESOLUÇÃO', left+colW);
-    dataCell(tecnicoResp, left);
-    dataCell(prazoStr, left+colW);
-    y += 25 + 40 + 20;
-
-    // 🔹 Data da notificação / NR relacionada
-    headerCell('DATA DA NOTIFICAÇÃO', left);
-    headerCell('NR RELACIONADA', left+colW);
-    dataCell(dataNotifStr, left);
-    dataCell(nrRel, left+colW);
-    y += 25 + 40 + 20;
-
-    // 🔹 Encarregado / Supervisor da obra
-    headerCell('ENCARREGADO RESPONSÁVEL', left);
-    headerCell('SUPERVISOR DA OBRA', left+colW);
-    dataCell(encarregado, left);
-    dataCell(supervisor, left+colW);
-    y += 25 + 40 + 20;
-
-    // 🔹 Squad (área) – linha inteira
-    doc.save().rect(left, y, totalW, 25).fill(headerColor).stroke(borderColor,1).restore();
-    doc.fillColor('#fff').fontSize(12)
-      .text('SQUAD (ÁREA)', left, y+7, { width: totalW, align: 'center' });
-    doc.save().rect(left, y+25, totalW, 40).fill(dataColor).stroke(borderColor,1).restore();
-    doc.fillColor('#000').fontSize(12)
-      .text(squadArea, left+5, y+25+12, { width: totalW-10, align: 'left' });
-    y += 25 + 40 + 20;
-
-    // 🔹 Descrição da atividade
-    doc.save().rect(left, y, totalW, 25).fill(headerColor).stroke(borderColor,1).restore();
-    doc.fillColor('#fff').fontSize(12)
-      .text('DESCRIÇÃO DA ATIVIDADE', left, y+7, { width: totalW, align: 'center' });
-    doc.save().rect(left, y+25, totalW, 80).fill(dataColor).stroke(borderColor,1).restore();
-    doc.fillColor('#000').fontSize(12)
-      .text(descAtv, left+5, y+30, { width: totalW-10, align: 'left' });
-    y += 25 + 80 + 20;
-
-    // 🔹 Descrição da condição de risco
-    doc.save().rect(left, y, totalW, 25).fill(headerColor).stroke(borderColor,1).restore();
-    doc.fillColor('#fff').fontSize(12)
-      .text('DESCRIÇÃO DA CONDIÇÃO DE RISCO', left, y+7, { width: totalW, align: 'center' });
-    doc.save().rect(left, y+25, totalW, 80).fill(dataColor).stroke(borderColor,1).restore();
-    doc.fillColor('#000').fontSize(12)
-      .text(descRisco, left+5, y+30, { width: totalW-10, align: 'left' });
-    y += 25 + 80 + 20;
-
-    // 🔹 Ações recomendadas
-    doc.save().rect(left, y, totalW, 25).fill(headerColor).stroke(borderColor,1).restore();
-    doc.fillColor('#fff').fontSize(12)
-      .text('AÇÕES RECOMENDADAS', left, y+7, { width: totalW, align: 'center' });
-    doc.save().rect(left, y+25, totalW, 80).fill(dataColor).stroke(borderColor,1).restore();
-    doc.fillColor('#000').fontSize(12)
-      .text(acoesRec, left+5, y+30, { width: totalW-10, align: 'left' });
-
-    // =================== NOVA PÁGINA COM FOTOS =======================
-    doc.addPage();
-    const pageW2 = doc.page.width  - doc.page.margins.left - doc.page.margins.right;
-    const pageH2 = doc.page.height - doc.page.margins.top  - doc.page.margins.bottom;
-    const top2   = doc.page.margins.top;
-
-    doc.save().rect(left, top2, pageW2, 30).fill('#EFEFEF').stroke('#2E7D32',1).restore();
-    doc.fillColor('#000').fontSize(14)
-      .text('EVIDÊNCIAS FOTOGRÁFICAS', left, top2+8, { width: pageW2, align: 'center' });
-
-    console.log('Fotos no documento (notificação + resolução):', todasFotos);
-
-    const gap   = 10;
-    const cw    = (pageW2 - gap) / 2;
-    const ch    = (pageH2 - 30 - gap) / 2;
-    const startY2 = top2 + 30 + gap;
-
-    if (todasFotos.length) {
-      for (let row = 0; row < 2; row++) {
-        for (let col = 0; col < 2; col++) {
-          const x2 = left + col*(cw+gap);
-          const y2 = startY2 + row*(ch+gap);
-
-          doc.save().rect(x2, y2, cw, ch).stroke('#2E7D32',1).restore();
-
-          const idx = row*2 + col;
-          const fn  = todasFotos[idx];
-          if (!fn) continue;
-
-          try {
-            if (typeof fn === 'string' && fn.startsWith('http')) {
-              const buffer = await fetchImageBuffer(fn);
-              doc.image(buffer, x2+2, y2+2, { fit: [cw-4, ch-4] });
-            } else {
-              const imgPath = path.join(__dirname, 'uploads', fn);
-              if (fs.existsSync(imgPath)) {
-                doc.image(imgPath, x2+2, y2+2, { fit: [cw-4, ch-4] });
-              } else {
-                console.error('❌ Arquivo não encontrado:', imgPath);
-              }
-            }
-          } catch (errImg) {
-            console.error('Erro ao carregar imagem no PDF:', errImg);
-          }
-        }
-      }
-    }
-
-    doc.end();
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename=notificacao_${viewData.id}.pdf`
+    );
+    return res.end(pdfBuffer);
   } catch (err) {
-    console.error(err);
+    console.error('Erro ao gerar PDF via Puppeteer:', err);
     res.status(500).send('Erro ao gerar PDF.');
   }
 });
@@ -539,4 +450,5 @@ app.post(
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });
+
 
