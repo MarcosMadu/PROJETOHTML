@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Notificação <%= notif.id %></title>
+  <style>
+    @page {
+      size: A4;
+      margin: 15mm;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      color: #222;
+      font-size: 12px;
+    }
+
+    .header {
+      background: #2e7d32;
+      color: #fff;
+      padding: 10px 16px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 18px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+    }
+
+    .subheader {
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 13px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+      background: #e8f5e9;
+      border: 1px solid #2e7d32;
+      margin-top: 4px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .card {
+      border: 1px solid #c8e6c9;
+      border-radius: 4px;
+      padding: 6px 8px;
+      background: #f9fdf9;
+    }
+
+    .card h4 {
+      margin: 0 0 4px;
+      font-size: 11px;
+      color: #2e7d32;
+    }
+
+    .card p {
+      margin: 0;
+      font-size: 12px;
+    }
+
+    .full-card {
+      border: 1px solid #c8e6c9;
+      border-radius: 4px;
+      padding: 8px 10px;
+      background: #ffffff;
+      margin-top: 8px;
+      page-break-inside: avoid;
+    }
+
+    .full-card h3 {
+      margin: 0 0 6px;
+      font-size: 12px;
+      color: #2e7d32;
+      text-transform: uppercase;
+    }
+
+    .full-card p {
+      margin: 0;
+      font-size: 12px;
+      text-align: justify;
+      line-height: 1.4;
+      white-space: pre-wrap;
+    }
+
+    .label {
+      font-weight: bold;
+    }
+
+    .page-break {
+      page-break-before: always;
+    }
+
+    .photos-title {
+      text-align: center;
+      font-size: 14px;
+      font-weight: bold;
+      color: #2e7d32;
+      margin-bottom: 12px;
+    }
+
+    .photos-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .photo-box {
+      border: 1px solid #c8e6c9;
+      border-radius: 4px;
+      padding: 4px;
+      height: 230px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .photo-box img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 4px;
+      color: #1b5e20;
+    }
+
+    .small {
+      font-size: 11px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <!-- PRIMEIRA PÁGINA - DADOS GERAIS -->
+  <div class="header">
+    REGISTRO DE NOTIFICAÇÃO
+  </div>
+
+  <div class="subheader">
+    ID: <strong><%= notif.id %></strong>
+    <br />
+    <span class="tag">Classificação: <%= notif.classificacao %></span>
+  </div>
+
+  <!-- LINHA 1: Técnico / Prazo -->
+  <div class="grid-2">
+    <div class="card">
+      <h4>TÉCNICO RESPONSÁVEL</h4>
+      <p><%= notif.tecnicoResp %></p>
+    </div>
+    <div class="card">
+      <h4>PRAZO PARA RESOLUÇÃO</h4>
+      <p><%= notif.prazoResolucao %></p>
+    </div>
+  </div>
+
+  <!-- LINHA 2: Data / NR -->
+  <div class="grid-2">
+    <div class="card">
+      <h4>DATA DA NOTIFICAÇÃO</h4>
+      <p><%= notif.dataNotificacao %></p>
+    </div>
+    <div class="card">
+      <h4>NR RELACIONADA</h4>
+      <p><%= notif.nrRel %></p>
+    </div>
+  </div>
+
+  <!-- LINHA 3: Encarregado / Supervisor -->
+  <div class="grid-2">
+    <div class="card">
+      <h4>ENCARREGADO RESPONSÁVEL</h4>
+      <p><%= notif.encarregado %></p>
+    </div>
+    <div class="card">
+      <h4>SUPERVISOR DA OBRA</h4>
+      <p><%= notif.supervisor %></p>
+    </div>
+  </div>
+
+  <!-- SQUAD / ÁREA -->
+  <div class="full-card">
+    <h3>Squad (Área)</h3>
+    <p><%= notif.squadArea %></p>
+  </div>
+
+  <!-- DESCRIÇÃO DA ATIVIDADE -->
+  <div class="full-card">
+    <h3>Descrição da Atividade</h3>
+    <p><%= notif.descricaoAtividade %></p>
+  </div>
+
+  <!-- DESCRIÇÃO DA CONDIÇÃO DE RISCO -->
+  <div class="full-card">
+    <h3>Descrição da Condição de Risco</h3>
+    <p><%= notif.descricaoRisco %></p>
+  </div>
+
+  <!-- AÇÕES RECOMENDADAS -->
+  <div class="full-card">
+    <h3>Ações Recomendadas</h3>
+    <p><%= notif.acoesRecomendadas %></p>
+  </div>
+
+  <!-- SEGUNDA PÁGINA - FOTOS -->
+  <div class="page-break"></div>
+
+  <div class="photos-title">
+    EVIDÊNCIAS FOTOGRÁFICAS
+  </div>
+
+  <% if ((notif.fotosNotificacao && notif.fotosNotificacao.length) || (notif.fotosResolucao && notif.fotosResolucao.length)) { %>
+    <p class="small">
+      Abaixo estão as fotos registradas na notificação (antes) e, se houver, na resolução (depois).
+    </p>
+
+    <div class="photos-grid">
+      <% (notif.fotosNotificacao || []).forEach(function(foto) { %>
+        <div class="photo-box">
+          <img src="<%= foto %>" alt="Foto da notificação" />
+        </div>
+      <% }); %>
+
+      <% (notif.fotosResolucao || []).forEach(function(foto) { %>
+        <div class="photo-box">
+          <img src="<%= foto %>" alt="Foto da resolução" />
+        </div>
+      <% }); %>
+    </div>
+  <% } else { %>
+    <p class="small">
+      Não há evidências fotográficas vinculadas a esta notificação.
+    </p>
+  <% } %>
+</body>
+</html>
