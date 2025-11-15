@@ -98,20 +98,12 @@
       white-space: pre-wrap;
     }
 
-    .label {
-      font-weight: bold;
-    }
-
-    .page-break {
-      page-break-before: always;
-    }
-
     .photos-title {
       text-align: center;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: bold;
       color: #2e7d32;
-      margin-bottom: 12px;
+      margin: 14px 0 8px;
     }
 
     .photos-grid {
@@ -124,11 +116,12 @@
       border: 1px solid #c8e6c9;
       border-radius: 4px;
       padding: 4px;
-      height: 230px;
+      height: 180px;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      page-break-inside: avoid;
     }
 
     .photo-box img {
@@ -137,21 +130,16 @@
       object-fit: contain;
     }
 
-    .section-title {
-      font-size: 13px;
-      font-weight: bold;
-      margin-bottom: 4px;
-      color: #1b5e20;
-    }
-
     .small {
       font-size: 11px;
       color: #555;
+      margin-bottom: 6px;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <!-- PRIMEIRA PÁGINA - DADOS GERAIS -->
+  <!-- CABEÇALHO -->
   <div class="header">
     REGISTRO DE NOTIFICAÇÃO
   </div>
@@ -222,35 +210,22 @@
     <p><%= notif.acoesRecomendadas %></p>
   </div>
 
-  <!-- SEGUNDA PÁGINA - FOTOS -->
-  <div class="page-break"></div>
-
-  <div class="photos-title">
-    EVIDÊNCIAS FOTOGRÁFICAS
-  </div>
-
-  <% if ((notif.fotosNotificacao && notif.fotosNotificacao.length) || (notif.fotosResolucao && notif.fotosResolucao.length)) { %>
+  <!-- FOTOS DA NOTIFICAÇÃO (DESVIO) -->
+  <% if (notif.fotosNotificacao && notif.fotosNotificacao.length) { %>
+    <div class="photos-title">
+      EVIDÊNCIAS FOTOGRÁFICAS DO DESVIO
+    </div>
     <p class="small">
-      Abaixo estão as fotos registradas na notificação (antes) e, se houver, na resolução (depois).
+      Fotos registradas no momento da notificação (situação encontrada em campo).
     </p>
 
     <div class="photos-grid">
-      <% (notif.fotosNotificacao || []).forEach(function(foto) { %>
+      <% notif.fotosNotificacao.forEach(function(foto) { %>
         <div class="photo-box">
           <img src="<%= foto %>" alt="Foto da notificação" />
         </div>
       <% }); %>
-
-      <% (notif.fotosResolucao || []).forEach(function(foto) { %>
-        <div class="photo-box">
-          <img src="<%= foto %>" alt="Foto da resolução" />
-        </div>
-      <% }); %>
     </div>
-  <% } else { %>
-    <p class="small">
-      Não há evidências fotográficas vinculadas a esta notificação.
-    </p>
   <% } %>
 </body>
 </html>
