@@ -5,11 +5,10 @@ const path       = require('path');
 const fs         = require('fs');
 const express    = require('express');
 const mongoose   = require('mongoose');
-// const nodemailer = require('nodemailer');  // 🔴 REMOVIDO TEMPORARIAMENTE
+// const nodemailer = require('nodemailer');
 const dotenv     = require('dotenv');
 const multer     = require('multer');
 const ejs        = require('ejs');
-const html_to_pdf = require('html-pdf-node');   // 🔹 SUBSTITUI PUPPETEER
 const Notificacao = require('./models/Notificacao');
 
 // 🔹 Cloudinary
@@ -22,14 +21,14 @@ dotenv.config();
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
-// 🔹 Configuração Cloudinary
+// Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key:    process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// 🔹 Storage Multer -> Cloudinary
+// Storage (Multer + Cloudinary)
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
@@ -42,7 +41,7 @@ const upload = multer({ storage });
 const uploadNotificacaoFotos = upload.array('notificacaoFotos');
 const uploadResolucaoFotos   = upload.array('resolucaoFotos');
 
-// 🔹 Buscar imagem via URL (para gerar PDF) – (hoje não usado, mas mantido)
+// Buscar imagem via URL
 function fetchImageBuffer(url) {
   return new Promise((resolve, reject) => {
     const client = url.startsWith('https') ? https : http;
@@ -57,7 +56,7 @@ function fetchImageBuffer(url) {
   });
 }
 
-// Rotas de arquivos HTML principais
+// Rotas HTML
 app.get('/inspecao.html', (req, res) =>
   res.sendFile(path.join(__dirname, 'public', 'inspecao.html'))
 );
@@ -74,7 +73,7 @@ app.get('/status.html', (req, res) =>
   res.sendFile(path.join(__dirname, 'public', 'status.html'))
 );
 
-// Configurações de template
+// EJS
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
@@ -82,9 +81,9 @@ app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // compatibilidade
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Conexão MongoDB
+// MongoDB
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -92,7 +91,6 @@ mongoose.connect(process.env.MONGO_URI, {
 .then(() => console.log('✅ Conectado ao MongoDB'))
 .catch(err => console.error('❌ Erro ao conectar no MongoDB:', err));
 
-// Rota inicial
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -102,7 +100,6 @@ app.post('/enviar', uploadNotificacaoFotos, async (req, res) => {
   try {
     const dados = req.body;
 
-    // Normalização supervisor
     dados.supervisorObra =
       req.body.supervisorObra ??
       req.body.supervisor ??
@@ -112,7 +109,6 @@ app.post('/enviar', uploadNotificacaoFotos, async (req, res) => {
       req.body.nomeSupervisor ??
       '-';
 
-    // Normalização descrição atividade
     dados.descricaoAtividade =
       req.body.descricaoAtividade ??
       req.body.descricao_atividade ??
@@ -122,7 +118,6 @@ app.post('/enviar', uploadNotificacaoFotos, async (req, res) => {
       req.body.atividade ??
       '-';
 
-    // Normalização área / Squad
     dados.area = (
       req.body.area ||
       req.body.squad ||
@@ -135,7 +130,6 @@ app.post('/enviar', uploadNotificacaoFotos, async (req, res) => {
       ''
     ).toString().trim() || '-';
 
-    // Fotos da notificação (Cloudinary)
     if (req.files && req.files.length) {
       dados.notificacaoFotos = req.files.map(f => f.path || f.filename);
     }
@@ -143,7 +137,6 @@ app.post('/enviar', uploadNotificacaoFotos, async (req, res) => {
     dados.status       = 'Aberta';
     dados.dataRegistro = new Date();
 
-    // 🔢 ID SEQUENCIAL (1, 2, 3...)
     const ultima = await Notificacao
       .findOne({ idSequencial: { $ne: null } })
       .sort({ idSequencial: -1 })
@@ -195,11 +188,11 @@ app.get('/api/notificacoes', async (req, res) => {
   try {
     const { id, status, encarregado, tecnico, area } = req.query;
     const filtro = {};
-    if (id)          filtro._id         = id; // busca pelo _id padrão
+    if (id) filtro._id = id;
     if (status && status !== 'Todos') filtro.status = status;
     if (encarregado) filtro.encarregado = new RegExp(encarregado, 'i');
-    if (tecnico)     filtro.tecnico     = new RegExp(tecnico, 'i');
-    if (area)        filtro.area        = new RegExp(area, 'i');
+    if (tecnico) filtro.tecnico = new RegExp(tecnico, 'i');
+    if (area) filtro.area = new RegExp(area, 'i');
 
     const arr = await Notificacao.find(filtro).sort({ dataRegistro: -1 });
     res.json(arr.map(n => ({ ...n.toObject(), data: n.dataRegistro })));
@@ -220,8 +213,6 @@ app.get('/api/notificacoes/:id', async (req, res) => {
   }
 });
 
-// 🔹 LISTA APENAS NOTIFICAÇÕES EM ABERTO (PARA A BAIXA)
-//    Já envia também o idSequencial, técnico, área e classificação
 app.get('/api/notificacoes-abertas', async (req, res) => {
   try {
     const abertas = await Notificacao
@@ -236,7 +227,7 @@ app.get('/api/notificacoes-abertas', async (req, res) => {
   }
 });
 
-// Aprovar / Rejeitar / Excluir
+// APROVAR / REJEITAR / EXCLUIR
 app.post('/aprovar', express.urlencoded({ extended: true }), async (req, res) => {
   try {
     await Notificacao.findByIdAndUpdate(req.body.id, {
@@ -278,14 +269,13 @@ app.delete('/excluir/:id', async (req, res) => {
   }
 });
 
-// ============================ PDF NOTIFICAÇÃO ========================
-// Agora usando HTML + EJS + html-pdf-node (compatível com Render)
+// =========================== PDF (PDFKIT) ============================
 app.get('/notificacoes/:id/pdf', async (req, res) => {
   try {
     const n = await Notificacao.findById(req.params.id);
     if (!n) return res.status(404).send('Notificação não encontrada.');
 
-    // 🔹 Normalização de campos
+    // Normalização:
     const tecnicoResp = n.tecnico || '—';
     const encarregado = n.encarregado || '—';
     const supervisor =
@@ -329,9 +319,6 @@ app.get('/notificacoes/:id/pdf', async (req, res) => {
     const fotosNotificacao = Array.isArray(n.notificacaoFotos)
       ? n.notificacaoFotos
       : [];
-    const fotosResolucao = Array.isArray(n.resolucaoFotos)
-      ? n.resolucaoFotos
-      : [];
 
     const viewData = {
       id: n.idSequencial != null ? n.idSequencial : n._id,
@@ -346,38 +333,251 @@ app.get('/notificacoes/:id/pdf', async (req, res) => {
       nrRel,
       acoesRecomendadas,
       prazoResolucao,
-      fotosNotificacao,
-      fotosResolucao
+      fotosNotificacao
     };
 
-    // 🔹 Renderiza HTML a partir do EJS
-    const templatePath = path.join(__dirname, 'views', 'notificacao-pdf.ejs');
-    const html = await ejs.renderFile(templatePath, { notif: viewData });
-
-    // 🔹 Gera PDF com html-pdf-node (sem Chrome / Puppeteer)
-    const file = { content: html };
-    const options = {
-      format: 'A4',
-      printBackground: true,
-      margin: {
-        top: '15mm',
-        right: '15mm',
-        bottom: '15mm',
-        left: '15mm'
-      }
-    };
-
-    const pdfBuffer = await html_to_pdf.generatePdf(file, options);
-
+    // PDF headers
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader(
       'Content-Disposition',
       `attachment; filename=notificacao_${viewData.id}.pdf`
     );
-    return res.end(pdfBuffer);
+
+    const doc = new PDFDocument({ size: 'A4', margin: 40 });
+    doc.pipe(res);
+
+    const pageWidth  = doc.page.width;
+    const left       = doc.page.margins.left;
+    const right      = pageWidth - doc.page.margins.right;
+    const contentW   = right - left;
+    const bottomLimit = doc.page.height - doc.page.margins.bottom;
+
+    let y = doc.page.margins.top;
+
+    // LOGO
+    try {
+      const logoPath = path.join(__dirname, 'public', 'img', 'logo.jpg');
+      if (fs.existsSync(logoPath)) {
+        doc.image(logoPath, left, y, { width: 100 });
+      }
+    } catch (eLogo) {}
+
+    // Título
+    doc
+      .fontSize(18)
+      .fillColor('#000')
+      .text('REGISTRO DE NOTIFICAÇÃO', left, y, {
+        width: contentW,
+        align: 'center'
+      });
+
+    y += 35;
+
+    // Linha
+    doc
+      .moveTo(left, y)
+      .lineTo(right, y)
+      .stroke('#2E7D32');
+
+    y += 12;
+
+    doc
+      .fontSize(12)
+      .fillColor('#000')
+      .text(`ID: ${viewData.id}`, left, y, {
+        width: contentW,
+        align: 'center'
+      });
+
+    y += 18;
+
+    doc
+      .fontSize(10)
+      .fillColor('#2E7D32')
+      .text(`Classificação: ${viewData.classificacao}`, left, y, {
+        width: contentW,
+        align: 'center'
+      });
+
+    y += 20;
+
+    // Helper
+    function drawInfoBox(x, y, width, label, value) {
+      const boxHeight = 40;
+
+      doc
+        .fillColor('#FAFAFA')
+        .rect(x, y, width, boxHeight)
+        .fill();
+
+      doc
+        .fillColor('#2E7D32')
+        .rect(x, y, 3, boxHeight)
+        .fill();
+
+      doc
+        .strokeColor('#C8E6C9')
+        .rect(x, y, width, boxHeight)
+        .stroke();
+
+      doc
+        .fillColor('#2E7D32')
+        .fontSize(9)
+        .text(label.toUpperCase(), x + 8, y + 4);
+
+      doc
+        .fillColor('#000')
+        .fontSize(11)
+        .text(value || '—', x + 8, y + 18);
+
+      return y + boxHeight;
+    }
+
+    function drawFullBlock(title, textVal) {
+      doc
+        .fillColor('#2E7D32')
+        .fontSize(11)
+        .text(title.toUpperCase(), left, y);
+
+      y = doc.y + 2;
+
+      const boxTop = y;
+      const padding = 8;
+      const maxWidth = contentW - padding * 2 - 3;
+
+      doc
+        .fillColor('#000')
+        .fontSize(11)
+        .text(textVal || '—', left + padding + 3, boxTop + padding, {
+          width: maxWidth,
+          align: 'justify'
+        });
+
+      const boxBottom = doc.y + padding;
+      const boxHeight = boxBottom - boxTop;
+
+      doc
+        .fillColor('#FFF')
+        .rect(left, boxTop, contentW, boxHeight)
+        .fill();
+
+      doc
+        .fillColor('#2E7D32')
+        .rect(left, boxTop, 3, boxHeight)
+        .fill();
+
+      doc
+        .strokeColor('#C8E6C9')
+        .rect(left, boxTop, contentW, boxHeight)
+        .stroke();
+
+      doc
+        .fillColor('#000')
+        .fontSize(11)
+        .text(textVal || '—', left + padding + 3, boxTop + padding, {
+          width: maxWidth,
+          align: 'justify'
+        });
+
+      y = boxBottom + 8;
+    }
+
+    const gap = 8;
+    const colW = (contentW - gap) / 2;
+
+    // Blocos
+    let rowY = y;
+    rowY = drawInfoBox(left, rowY, colW, 'Técnico Responsável', viewData.tecnicoResp);
+    drawInfoBox(left + colW + gap, y, colW, 'Prazo para Resolução', viewData.prazoResolucao);
+    y = rowY + 10;
+
+    rowY = y;
+    rowY = drawInfoBox(left, rowY, colW, 'Data da Notificação', viewData.dataNotificacao);
+    drawInfoBox(left + colW + gap, y, colW, 'NR Relacionada', viewData.nrRel);
+    y = rowY + 10;
+
+    rowY = y;
+    rowY = drawInfoBox(left, rowY, colW, 'Encarregado Responsável', viewData.encarregado);
+    drawInfoBox(left + colW + gap, y, colW, 'Supervisor da Obra', viewData.supervisor);
+    y = rowY + 10;
+
+    drawFullBlock('Squad (Área)', viewData.squadArea);
+    drawFullBlock('Descrição da Atividade', viewData.descricaoAtividade);
+    drawFullBlock('Descrição da Condição de Risco', viewData.descricaoRisco);
+    drawFullBlock('Ações Recomendadas', viewData.acoesRecomendadas);
+
+    // Fotos 2 por linha
+    if (viewData.fotosNotificacao && viewData.fotosNotificacao.length) {
+
+      if (y + 60 > bottomLimit) {
+        doc.addPage();
+        y = doc.page.margins.top;
+      }
+
+      doc
+        .fillColor('#2E7D32')
+        .fontSize(13)
+        .text('EVIDÊNCIAS FOTOGRÁFICAS DO DESVIO', left, y, {
+          width: contentW,
+          align: 'center'
+        });
+
+      y += 20;
+
+      const photoGap = 10;
+      let photoColW = (contentW - photoGap) / 2;
+      const photoH = 170;
+
+      let x = left;
+      let currentY = y;
+      let colIndex = 0;
+
+      for (const foto of viewData.fotosNotificacao) {
+        if (currentY + photoH > bottomLimit) {
+          doc.addPage();
+          x = left;
+          currentY = doc.page.margins.top;
+          colIndex = 0;
+        }
+
+        doc
+          .strokeColor('#D0D0D0')
+          .rect(x, currentY, photoColW, photoH)
+          .stroke();
+
+        try {
+          if (foto.startsWith('http')) {
+            const buffer = await fetchImageBuffer(foto);
+            doc.image(buffer, x + 2, currentY + 2, {
+              fit: [photoColW - 4, photoH - 4]
+            });
+          } else {
+            const imgPath = path.join(__dirname, 'uploads', foto);
+            if (fs.existsSync(imgPath)) {
+              doc.image(imgPath, x + 2, currentY + 2, {
+                fit: [photoColW - 4, photoH - 4]
+              });
+            }
+          }
+        } catch {}
+
+        if (colIndex === 0) {
+          x += photoColW + photoGap;
+          colIndex = 1;
+        } else {
+          x = left;
+          currentY += photoH + photoGap;
+          colIndex = 0;
+        }
+      }
+    }
+
+    doc.end();
   } catch (err) {
-    console.error('Erro ao gerar PDF via html-pdf-node:', err);
-    res.status(500).send('Erro ao gerar PDF.');
+    console.error('Erro ao gerar PDF:', err);
+    if (!res.headersSent) {
+      res.status(500).send('Erro ao gerar PDF.');
+    }
   }
 });
 
@@ -417,8 +617,7 @@ app.post(
       const fotos = {};
       (req.files || []).forEach(f => {
         if (!fotos[f.fieldname]) fotos[f.fieldname] = [];
-        const valor = f.path || f.filename;
-        fotos[f.fieldname].push(valor);
+        fotos[f.fieldname].push(f.path || f.filename);
       });
 
       const novaInspecao = await Inspecao.create({
@@ -430,16 +629,15 @@ app.post(
         desvioExtra:  req.body.desvioExtra || ''
       });
 
-      console.log('Inspeção salva:', novaInspecao._id);
-      return res.send('Inspeção registrada com sucesso!');
+      res.send('Inspeção registrada com sucesso!');
     } catch (err) {
       console.error('Erro ao processar inspeção:', err);
-      return res.status(500).send('Erro ao registrar inspeção.');
+      res.status(500).send('Erro ao registrar inspeção.');
     }
   }
 );
 
-// ============================ START SERVER ===========================
+// ============================ START ================================
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });
