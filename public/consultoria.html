@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MA Consultoria em SST | Treinamentos & Consultoria</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    :root {
+      --bg-main: #050816;
+      --bg-card: rgba(15, 23, 42, 0.9);
+      --bg-card-soft: rgba(15, 23, 42, 0.7);
+      --primary: #22c55e;
+      --primary-soft: rgba(34, 197, 94, 0.15);
+      --text-main: #f9fafb;
+      --text-soft: #9ca3af;
+      --border-soft: rgba(148, 163, 184, 0.25);
+      --danger: #f97373;
+      --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.9);
+      --radius-xl: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background:
+        radial-gradient(circle at top left, #1f2937 0, transparent 45%),
+        radial-gradient(circle at top right, #16a34a 0, transparent 50%),
+        radial-gradient(circle at bottom, #0f172a 0, #020617 60%);
+      color: var(--text-main);
+      min-height: 100vh;
+    }
+
+    /* Navbar */
+    .navbar {
+      background: rgba(15, 23, 42, 0.92) !important;
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .navbar-brand {
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .brand-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      background: radial-gradient(circle at 30% 0%, #4ade80, #166534);
+      box-shadow: 0 0 18px rgba(34, 197, 94, 0.65);
+    }
+
+    .nav-link {
+      color: var(--text-soft) !important;
+      font-size: 0.9rem;
+      font-weight: 400;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      color: var(--primary) !important;
+    }
+
+    .nav-cta {
+      border-radius: 999px;
+      padding: 0.45rem 1.1rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      background: linear-gradient(135deg, #22c55e, #4ade80);
+      color: #022c22 !important;
+      box-shadow: 0 15px 35px rgba(34, 197, 94, 0.35);
+      border: none;
+    }
+
+    /* Hero */
+    .hero {
+      padding-top: 6rem;
+      padding-bottom: 4rem;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.3rem 0.9rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--border-soft);
+      font-size: 0.75rem;
+      color: var(--text-soft);
+      margin-bottom: 1rem;
+    }
+
+    .hero-badge i {
+      color: var(--primary);
+    }
+
+    .hero-title {
+      font-size: clamp(2.3rem, 4vw, 3.2rem);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.04em;
+      margin-bottom: 1rem;
+    }
+
+    .hero-title span {
+      background: linear-gradient(135deg, #22c55e, #4ade80);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .hero-subtitle {
+      color: var(--text-soft);
+      font-size: 0.95rem;
+      max-width: 520px;
+      margin-bottom: 1.4rem;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      margin-bottom: 1.8rem;
+      font-size: 0.8rem;
+      color: var(--text-soft);
+    }
+
+    .hero-meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid var(--border-soft);
+    }
+
+    .hero-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.8rem;
+    }
+
+    .btn-primary-hero {
+      border-radius: 999px;
+      padding: 0.7rem 1.5rem;
+      font-size: 0.9rem;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 500;
+      background: linear-gradient(135deg, #22c55e, #4ade80);
+      color: #022c22;
+      box-shadow: 0 18px 40px rgba(34, 197, 94, 0.35);
+    }
+
+    .btn-outline-hero {
+      border-radius: 999px;
+      padding: 0.7rem 1.5rem;
+      font-size: 0.9rem;
+      border: 1px solid var(--border-soft);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 500;
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text-soft);
+    }
+
+    .hero-trust {
+      font-size: 0.75rem;
+      color: var(--text-soft);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      align-items: center;
+    }
+
+    .hero-trust strong {
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    .hero-card {
+      border-radius: var(--radius-xl);
+      background: radial-gradient(circle at top left, rgba(34, 197, 94, 0.1), transparent 55%),
+                  var(--bg-card);
+      padding: 1.6rem 1.4rem;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--border-soft);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0.4;
+      background-image: radial-gradient(circle at 1px 1px, rgba(148, 163, 184, 0.18) 1px, transparent 0);
+      background-size: 18px 18px;
+      pointer-events: none;
+    }
+
+    .hero-card-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-badge-right {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border-soft);
+      font-size: 0.7rem;
+      color: var(--text-soft);
+      margin-bottom: 0.8rem;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.75rem;
+      margin-top: 0.6rem;
+      margin-bottom: 1rem;
+    }
+
+    .hero-stat {
+      border-radius: 16px;
+      padding: 0.7rem;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(51, 65, 85, 0.9);
+      font-size: 0.75rem;
+    }
+
+    .hero-stat strong {
+      display: block;
+      font-size: 1rem;
+      color: var(--primary);
+    }
+
+    .hero-footer-note {
+      font-size: 0.72rem;
+      color: var(--text-soft);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .hero-footer-note i {
+      color: var(--primary);
+    }
+
+    /* Sections */
+    section {
+      padding-top: 4rem;
+      padding-bottom: 3rem;
+    }
+
+    .section-title {
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+    }
+
+    .section-subtitle {
+      color: var(--text-soft);
+      font-size: 0.9rem;
+      max-width: 520px;
+    }
+
+    /* Cards */
+    .glass-card {
+      border-radius: var(--radius-xl);
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
+      padding: 1.4rem 1.3rem;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.85);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glass-card-sm {
+      border-radius: 18px;
+      background: var(--bg-card-soft);
+      border: 1px solid var(--border-soft);
+      padding: 1rem 1rem;
+      font-size: 0.85rem;
+    }
+
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--primary-soft);
+      margin-bottom: 0.75rem;
+      font-size: 1rem;
+      color: var(--primary);
+    }
+
+    .tag-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.75rem;
+      padding: 0.3rem 0.7rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border-soft);
+      color: var(--text-soft);
+      margin-right: 0.4rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .tag-pill i {
+      color: var(--primary);
+    }
+
+    .pill-danger {
+      background: rgba(248, 113, 113, 0.12);
+      border-color: rgba(248, 113, 113, 0.5);
+      color: #fecaca;
+    }
+
+    .pill-danger i {
+      color: var(--danger);
+    }
+
+    /* List highlights */
+    .check-list {
+      list-style: none;
+      padding-left: 0;
+      margin-bottom: 0;
+      font-size: 0.85rem;
+      color: var(--text-soft);
+    }
+
+    .check-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .check-list i {
+      margin-top: 0.1rem;
+      color: var(--primary);
+      font-size: 0.75rem;
+    }
+
+    /* Treinamentos cards */
+    .course-card {
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(15,23,42,0.95));
+      border: 1px solid var(--border-soft);
+      padding: 1.1rem 1rem;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      font-size: 0.85rem;
+    }
+
+    .badge-modality {
+      font-size: 0.7rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--border-soft);
+      color: var(--text-soft);
+    }
+
+    /* Depoimentos */
+    .testimonial-card {
+      border-radius: 18px;
+      padding: 1.1rem 1rem;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid var(--border-soft);
+      font-size: 0.85rem;
+    }
+
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      margin-top: 0.9rem;
+      font-size: 0.8rem;
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 0%, #4ade80, #166534);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      color: #ecfdf5;
+    }
+
+    /* Contato */
+    .contact-card {
+      border-radius: var(--radius-xl);
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
+      padding: 1.4rem 1.3rem;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .form-control,
+    .form-select {
+      background: rgba(15, 23, 42, 0.95);
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      font-size: 0.85rem;
+      color: var(--text-main);
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.5);
+      background: rgba(15, 23, 42, 0.98);
+      color: var(--text-main);
+    }
+
+    textarea.form-control {
+      border-radius: 18px;
+    }
+
+    .btn-contact {
+      border-radius: 999px;
+      padding: 0.65rem 1.4rem;
+      font-size: 0.9rem;
+      border: none;
+      background: linear-gradient(135deg, #22c55e, #4ade80);
+      color: #022c22;
+      font-weight: 500;
+      box-shadow: 0 16px 36px rgba(34, 197, 94, 0.35);
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border-soft);
+      padding: 1.5rem 0;
+      font-size: 0.8rem;
+      color: var(--text-soft);
+      background: rgba(2, 6, 23, 0.98);
+    }
+
+    .footer-social a {
+      color: var(--text-soft);
+      margin-left: 0.75rem;
+      font-size: 1rem;
+    }
+
+    .footer-social a:hover {
+      color: var(--primary);
+    }
+
+    /* Responsive */
+    @media (max-width: 991.98px) {
+      .hero {
+        padding-top: 5.5rem;
+      }
+    }
+
+    @media (max-width: 767.98px) {
+      .hero-title {
+        font-size: 2.1rem;
+      }
+      .hero-card {
+        margin-top: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="#">
+        <span class="brand-badge">lg</span>
+        <span>PREVENÇA - CONSULTORIA</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNav">
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+          <li class="nav-item">
+            <a class="nav-link active" href="#sobre">Sobre</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#servicos">Serviços</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#treinamentos">Treinamentos</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#certificados">Certificados</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#contato">Contato</a>
+          </li>
+          <li class="nav-item ms-lg-2">
+            <a class="btn nav-cta" href="#treinamentos">
+              Área EAD em breve
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="row align-items-center">
+        <!-- Left -->
+        <div class="col-lg-6">
+          <div class="hero-badge">
+            <i class="fa-solid fa-shield-heart"></i>
+            Consultoria especializada em Saúde e Segurança do Trabalho
+          </div>
+          <h1 class="hero-title">
+            Plataforma completa de <span>treinamentos, certificados</span> e gestão em SST.
+          </h1>
+          <p class="hero-subtitle">
+            Ajude sua empresa a manter 100% da equipe em conformidade com as NRs, com treinamentos presenciais, EAD, emissão de certificados e controle de vencimentos em um único lugar.
+          </p>
+
+          <div class="hero-meta">
+            <span><i class="fa-solid fa-circle-check"></i> Adequação às NRs e legislação</span>
+            <span><i class="fa-solid fa-graduation-cap"></i> Treinamentos com emissão de certificado</span>
+            <span><i class="fa-solid fa-building"></i> Foco em obras, mineração e indústria</span>
+          </div>
+
+          <div class="hero-buttons">
+            <a href="#contato" class="btn-primary-hero">
+              <i class="fa-brands fa-whatsapp"></i>
+              Falar com a consultoria
+            </a>
+            <a href="#treinamentos" class="btn-outline-hero">
+              <i class="fa-solid fa-play-circle"></i>
+              Ver treinamentos disponíveis
+            </a>
+          </div>
+
+          <div class="hero-trust">
+            <strong>+X empresas atendidas</strong> · Mineração · Construção civil · Montagem eletromecânica
+          </div>
+        </div>
+
+        <!-- Right -->
+        <div class="col-lg-6 mt-4 mt-lg-0">
+          <div class="hero-card">
+            <div class="hero-card-inner">
+              <div class="hero-badge-right">
+                <i class="fa-solid fa-layer-group"></i>
+                Visão geral da plataforma
+              </div>
+
+              <div class="hero-grid">
+                <div class="hero-stat">
+                  <span>Sistema de Certificados</span>
+                  <strong>Consulta online</strong>
+                  <small>Validação de autenticidade por QR Code e código único.</small>
+                </div>
+                <div class="hero-stat">
+                  <span>Controle de Treinados</span>
+                  <strong>Por empresa</strong>
+                  <small>Histórico de treinamentos, vencimentos e cargos.</small>
+                </div>
+                <div class="hero-stat">
+                  <span>Treinamentos EAD</span>
+                  <strong>Aulas gravadas</strong>
+                  <small>Plataforma EAD com provas e emissão automática de certificados.</small>
+                </div>
+                <div class="hero-stat">
+                  <span>Relatórios</span>
+                  <strong>Gestão SST</strong>
+                  <small>Visão clara dos riscos legais por vencimento de treinamentos.</small>
+                </div>
+              </div>
+
+              <div class="hero-footer-note">
+                <i class="fa-solid fa-circle-info"></i>
+                Em breve: acesso exclusivo para gestores de RH acompanharem toda a equipe em tempo real.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sobre -->
+  <section id="sobre">
+    <div class="container">
+      <div class="row align-items-start g-4">
+        <div class="col-lg-7">
+          <div class="glass-card">
+            <h2 class="section-title">Sobre a consultoria</h2>
+            <p class="section-subtitle mb-3">
+              Somos uma consultoria focada em Saúde e Segurança do Trabalho, com experiência em obras, mineração, montagem eletromecânica e serviços industriais.
+            </p>
+
+            <p style="font-size:0.9rem; color:var(--text-soft);">
+              Atuamos desde o planejamento dos treinamentos, organização de turmas e emissão de certificados, até a gestão completa dos vencimentos das NRs, integrando consultoria técnica, treinamento e tecnologia em uma única plataforma.
+            </p>
+
+            <div class="mt-3">
+              <span class="tag-pill">
+                <i class="fa-solid fa-helmet-safety"></i>
+                Treinamentos regulamentadores (NR)
+              </span>
+              <span class="tag-pill">
+                <i class="fa-solid fa-clipboard-check"></i>
+                Auditorias, inspeções e planos de ação
+              </span>
+              <span class="tag-pill">
+                <i class="fa-solid fa-circle-nodes"></i>
+                Plataforma digital de certificados
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="glass-card-sm mb-3">
+            <strong style="font-size:0.9rem;">Por que digitalizar a gestão de treinamentos?</strong>
+            <ul class="check-list mt-2">
+              <li>
+                <i class="fa-solid fa-check"></i>
+                Reduz risco de multas, bloqueios e interdições por treinamentos vencidos.
+              </li>
+              <li>
+                <i class="fa-solid fa-check"></i>
+                Facilidade para comprovar atendimento às NRs junto a clientes e auditorias.
+              </li>
+              <li>
+                <i class="fa-solid fa-check"></i>
+                Histórico centralizado de todos os treinados, por obra e por função.
+              </li>
+            </ul>
+          </div>
+          <div class="glass-card-sm">
+            <span class="pill-danger">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              Foco na redução de riscos legais
+            </span>
+            <p class="mt-2" style="font-size:0.82rem; color:var(--text-soft);">
+              Nossa atuação é guiada por um princípio simples: nenhuma atividade merece ser feita às pressas ou “no improviso” quando o assunto é segurança. Ajudamos sua empresa a estar sempre um passo à frente dos riscos.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Serviços -->
+  <section id="servicos">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-end mb-3">
+        <div>
+          <h2 class="section-title">Serviços de consultoria</h2>
+          <p class="section-subtitle">
+            Atuamos de ponta a ponta na gestão de Saúde e Segurança do Trabalho, unindo campo, documentação e tecnologia.
+          </p>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-md-6 col-lg-3">
+          <div class="glass-card h-100">
+            <div class="card-icon">
+              <i class="fa-solid fa-person-chalkboard"></i>
+            </div>
+            <h6>Treinamentos presenciais e in company</h6>
+            <p style="font-size:0.82rem; color:var(--text-soft);">
+              Treinamentos normativos (NRs) e específicos da atividade, personalizados para a realidade da sua obra ou operação.
+            </p>
+            <ul class="check-list mt-2">
+              <li><i class="fa-solid fa-check"></i> NR 10, NR 12, NR 18, NR 33, NR 35, entre outras</li>
+              <li><i class="fa-solid fa-check"></i> Treinamentos de integração e específicos do cliente</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+          <div class="glass-card h-100">
+            <div class="card-icon">
+              <i class="fa-solid fa-file-shield"></i>
+            </div>
+            <h6>Gestão de documentos e programas</h6>
+            <p style="font-size:0.82rem; color:var(--text-soft);">
+              Suporte à implantação e atualização de documentação de SST, integrando exigências internas e de contratantes.
+            </p>
+            <ul class="check-list mt-2">
+              <li><i class="fa-solid fa-check"></i> PGR, PCMSO, procedimentos internos</li>
+              <li><i class="fa-solid fa-check"></i> Interface com requisitos de grandes contratantes</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+          <div class="glass-card h-100">
+            <div class="card-icon">
+              <i class="fa-solid fa-magnifying-glass-chart"></i>
+            </div>
+            <h6>Auditorias, inspeções e planos de ação</h6>
+            <p style="font-size:0.82rem; color:var(--text-soft);">
+              Inspeções em campo com foco em RAC, identificação de desvios e construção de planos de ação objetivos.
+            </p>
+            <ul class="check-list mt-2">
+              <li><i class="fa-solid fa-check"></i> Relatórios claros e com registro fotográfico</li>
+              <li><i class="fa-solid fa-check"></i> Priorização de riscos e prazos</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+          <div class="glass-card h-100">
+            <div class="card-icon">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+            </div>
+            <h6>Plataforma digital de treinamentos e certificados</h6>
+            <p style="font-size:0.82rem; color:var(--text-soft);">
+              Sistema exclusivo para armazenar, consultar e validar certificados, além de acompanhar vencimentos de treinamentos.
+            </p>
+            <ul class="check-list mt-2">
+              <li><i class="fa-solid fa-check"></i> Acesso por CPF, nome ou empresa</li>
+              <li><i class="fa-solid fa-check"></i> Validação online e por QR Code</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Treinamentos & EAD -->
+  <section id="treinamentos">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-end mb-3">
+        <div>
+          <h2 class="section-title">Treinamentos & EAD</h2>
+          <p class="section-subtitle">
+            Combine turmas presenciais com aulas gravadas e avaliações online, de acordo com a necessidade da sua equipe.
+          </p>
+        </div>
+        <span class="badge-modality d-none d-md-inline-flex">
+          <i class="fa-solid fa-circle-dot me-1"></i> Plataforma EAD em implantação
+        </span>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="course-card">
+            <div>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge-modality">
+                  <i class="fa-solid fa-laptop-file me-1"></i> EAD + Prova online
+                </span>
+              </div>
+              <h6>Treinamento NR 35 - Trabalho em Altura</h6>
+              <p style="font-size:0.8rem; color:var(--text-soft);">
+                Conteúdo teórico com aulas gravadas, avaliação online e possibilidade de complementação prática em campo.
+              </p>
+              <ul class="check-list mt-2">
+                <li><i class="fa-solid fa-check"></i> Carga horária conforme legislação</li>
+                <li><i class="fa-solid fa-check"></i> Emissão de certificado com validade definida</li>
+              </ul>
+            </div>
+            <div class="mt-3 d-flex justify-content-between align-items-center">
+              <small style="color:var(--text-soft);">Disponível em breve na modalidade EAD.</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="course-card">
+            <div>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge-modality">
+                  <i class="fa-solid fa-users-gear me-1"></i> In company
+                </span>
+              </div>
+              <h6>Treinamentos sob medida por função e risco</h6>
+              <p style="font-size:0.8rem; color:var(--text-soft);">
+                Estruturamos conteúdo alinhado às atividades reais da sua equipe, aos riscos do contrato e às exigências do contratante.
+              </p>
+              <ul class="check-list mt-2">
+                <li><i class="fa-solid fa-check"></i> Análise prévia de riscos e atividades</li>
+                <li><i class="fa-solid fa-check"></i> Foco em exemplos práticos e casos reais</li>
+              </ul>
+            </div>
+            <div class="mt-3 d-flex justify-content-between align-items-center">
+              <small style="color:var(--text-soft);">Ideal para equipes em obras e plantas industriais.</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="course-card">
+            <div>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge-modality">
+                  <i class="fa-solid fa-id-card-clip me-1"></i> Gestão contínua
+                </span>
+              </div>
+              <h6>Plano anual de treinamentos</h6>
+              <p style="font-size:0.8rem; color:var(--text-soft);">
+                Montamos e acompanhamos o plano anual de treinamentos da sua empresa, com foco em não deixar nenhum colaborador vencer.
+              </p>
+              <ul class="check-list mt-2">
+                <li><i class="fa-solid fa-check"></i> Cronograma por função, risco e contrato</li>
+                <li><i class="fa-solid fa-check"></i> Alertas de vencimento e relatórios gerenciais</li>
+              </ul>
+            </div>
+            <div class="mt-3 d-flex justify-content-between align-items-center">
+              <small style="color:var(--text-soft);">Perfeito para contratos de longa duração.</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Certificados -->
+  <section id="certificados">
+    <div class="container">
+      <div class="row g-4 align-items-start">
+        <div class="col-lg-6">
+          <div class="glass-card">
+            <h2 class="section-title">Gestão de certificados</h2>
+            <p class="section-subtitle mb-3">
+              Certificados armazenados em nuvem, com validação online e histórico de treinados por empresa, CPF ou função.
+            </p>
+
+            <ul class="check-list mt-1">
+              <li>
+                <i class="fa-solid fa-check"></i>
+                Emissão de certificados em PDF, com código único de validação e QR Code.
+              </li>
+              <li>
+                <i class="fa-solid fa-check"></i>
+                Consulta rápida por nome, CPF, empresa ou curso realizado.
+              </li>
+              <li>
+                <i class="fa-solid fa-check"></i>
+                Visão de vencidos, válidos e a vencer, facilitando as tomadas de decisão.
+              </li>
+            </ul>
+
+            <div class="mt-3">
+              <span class="tag-pill">
+                <i class="fa-solid fa-qrcode"></i>
+                Validação por QR Code
+              </span>
+              <span class="tag-pill">
+                <i class="fa-solid fa-database"></i>
+                Histórico centralizado de treinados
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <div class="testimonial-card">
+                <i class="fa-solid fa-quote-left mb-2" style="color:var(--primary);"></i>
+                <p style="font-size:0.8rem; color:var(--text-soft);">
+                  “Com a plataforma, conseguimos localizar qualquer certificado em segundos. Isso fez total diferença nas auditorias e fiscalizações.”
+                </p>
+                <div class="testimonial-author">
+                  <div class="avatar">
+                    <span>RH</span>
+                  </div>
+                  <div>
+                    <strong>Gestor de RH</strong><br>
+                    <small>Construção civil</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-sm-6">
+              <div class="testimonial-card">
+                <i class="fa-solid fa-quote-left mb-2" style="color:var(--primary);"></i>
+                <p style="font-size:0.8rem; color:var(--text-soft);">
+                  “Antes a equipe gastava horas procurando certificados em pastas. Hoje, a consulta online resolveu isso por completo.”
+                </p>
+                <div class="testimonial-author">
+                  <div class="avatar">
+                    <span>SS</span>
+                  </div>
+                  <div>
+                    <strong>Coordenador de SST</strong><br>
+                    <small>Indústria & montagem</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <div class="glass-card-sm">
+                <strong style="font-size:0.85rem;">Em breve, portal exclusivo para empresas.</strong>
+                <p style="font-size:0.8rem; color:var(--text-soft);" class="mt-1 mb-2">
+                  As empresas poderão acessar diretamente a plataforma para acompanhar seus treinados, baixar certificados e visualizar vencimentos.
+                </p>
+                <small style="font-size:0.75rem; color:var(--text-soft);">
+                  Fale conosco para estruturar a plataforma da sua empresa desde o início.
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contato -->
+  <section id="contato">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-lg-5">
+          <h2 class="section-title">Fale com a consultoria</h2>
+          <p class="section-subtitle mb-3">
+            Envie uma mensagem com a necessidade da sua empresa e retornaremos com uma proposta alinhada à realidade do seu contrato.
+          </p>
+
+          <div class="glass-card-sm mb-3">
+            <ul class="check-list">
+              <li><i class="fa-solid fa-check"></i> Treinamentos pontuais ou plano anual</li>
+              <li><i class="fa-solid fa-check"></i> Implementação da plataforma
