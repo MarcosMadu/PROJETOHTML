@@ -44,9 +44,6 @@ const upload = multer({ storage });
 const uploadNotificacaoFotos = upload.array('notificacaoFotos');
 const uploadResolucaoFotos   = upload.array('resolucaoFotos');
 
-// ✅ 5S: upload genérico (vamos usar fieldnames dinâmicos no FormData)
-const upload5s = upload.any();
-
 // Buscar imagem via URL
 function fetchImageBuffer(url) {
   return new Promise((resolve, reject) => {
@@ -185,7 +182,7 @@ const storage5S = new CloudinaryStorage({
 
 const upload5S = multer({ storage: storage5S });
 
-// POST salvar auditoria 5S (AGORA: multipart/form-data + fotos no Cloudinary)
+// POST salvar auditoria 5S (multipart/form-data + fotos no Cloudinary)
 app.post('/api/5s/auditorias', upload5S.any(), async (req, res) => {
   try {
     // O avaliacao.html manda FormData com:
@@ -222,10 +219,6 @@ app.post('/api/5s/auditorias', upload5S.any(), async (req, res) => {
     }
 
     // Indexar arquivos recebidos (Cloudinary URL vem em file.path)
-    // multer-storage-cloudinary coloca:
-    // - file.path  => URL (https://res.cloudinary.com/...)
-    // - file.filename => public_id (geralmente)
-    // - file.originalname => nome original
     const fileIndex = new Map();
     (req.files || []).forEach((f) => {
       fileIndex.set(f.fieldname, {
@@ -237,16 +230,15 @@ app.post('/api/5s/auditorias', upload5S.any(), async (req, res) => {
       });
     });
 
-    // Montar payload final com URLs
+    // Montar itens com URLs
     const itensOut = payload.itens.map((it) => {
       const out = { ...it };
 
-      // Conforme: conformeFotos: [{ field, name, size, type }]
+      // Conforme
       if (Array.isArray(it.conformeFotos)) {
         out.conformeFotos = it.conformeFotos.map((meta) => {
           const found = meta?.field ? fileIndex.get(meta.field) : null;
           if (!found) {
-            // se não veio arquivo, guarda só metadados (não quebra)
             return {
               url: null,
               public_id: null,
@@ -267,7 +259,7 @@ app.post('/api/5s/auditorias', upload5S.any(), async (req, res) => {
         out.conformeFotos = [];
       }
 
-      // NC: desvios: [{ responsavel, foto: { field, name, size, type } }]
+      // NC
       if (Array.isArray(it.desvios)) {
         out.desvios = it.desvios.map((d) => {
           const outD = { ...d };
@@ -329,6 +321,31 @@ app.post('/api/5s/auditorias', upload5S.any(), async (req, res) => {
   }
 });
 
+// GET listar auditorias 5S (pode filtrar por semanaId)
+app.get('/api/5s/auditorias', async (req, res) => {
+  try {
+    const { semanaId } = req.query;
+    const filtro = semanaId ? { semanaId } : {};
+    const list = await Auditoria5S.find(filtro).sort({ createdAt: -1 }).lean();
+    return res.json(list);
+  } catch (err) {
+    console.error('Erro ao listar auditorias 5S:', err);
+    return res.status(500).json({ error: 'Erro ao listar auditorias 5S.' });
+  }
+});
+
+// GET detalhes de 1 auditoria 5S
+app.get('/api/5s/auditorias/:id', async (req, res) => {
+  try {
+    const doc = await Auditoria5S.findById(req.params.id).lean();
+    if (!doc) return res.status(404).json({ error: 'Registro não encontrado.' });
+    return res.json(doc);
+  } catch (err) {
+    console.error('Erro ao buscar auditoria 5S:', err);
+    return res.status(500).json({ error: 'Erro ao buscar auditoria 5S.' });
+  }
+});
+
 // DELETE individual (para o fallback do seu gestao.html)
 app.delete('/api/5s/auditorias/:id', async (req, res) => {
   try {
@@ -354,51 +371,6 @@ app.post('/api/5s/auditorias/bulk-delete', async (req, res) => {
   } catch (err) {
     console.error('Erro ao excluir auditorias 5S (bulk):', err);
     return res.status(500).json({ error: 'Erro ao excluir auditorias 5S (bulk).' });
-  }
-});
-
-    // Salva no MongoDB
-    const doc = await Auditoria5S.create(payload);
-
-    return res.status(201).json({
-      ok: true,
-      auditoriaId: String(doc._id),
-    });
-
-  } catch (err) {
-    console.error('❌ ERRO AO SALVAR AUDITORIA 5S');
-    console.error('Mensagem:', err.message);
-    console.error(err);
-
-    return res.status(500).json({
-      error: 'Erro ao salvar auditoria 5S.',
-      detalhe: err.message,
-    });
-  }
-});
-
-// GET listar auditorias 5S (pode filtrar por semanaId)
-app.get('/api/5s/auditorias', async (req, res) => {
-  try {
-    const { semanaId } = req.query;
-    const filtro = semanaId ? { semanaId } : {};
-    const list = await Auditoria5S.find(filtro).sort({ createdAt: -1 }).lean();
-    return res.json(list);
-  } catch (err) {
-    console.error('Erro ao listar auditorias 5S:', err);
-    return res.status(500).json({ error: 'Erro ao listar auditorias 5S.' });
-  }
-});
-
-// GET detalhes de 1 auditoria 5S
-app.get('/api/5s/auditorias/:id', async (req, res) => {
-  try {
-    const doc = await Auditoria5S.findById(req.params.id).lean();
-    if (!doc) return res.status(404).json({ error: 'Registro não encontrado.' });
-    return res.json(doc);
-  } catch (err) {
-    console.error('Erro ao buscar auditoria 5S:', err);
-    return res.status(500).json({ error: 'Erro ao buscar auditoria 5S.' });
   }
 });
 
@@ -950,4 +922,3 @@ app.post(
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });
-
