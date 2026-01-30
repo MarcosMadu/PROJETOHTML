@@ -169,19 +169,47 @@ app.get('/api/5s/semana-atual', (req, res) => {
 // POST salvar auditoria 5S (DEMO: recebe JSON com metadados)
 app.post('/api/5s/auditorias', async (req, res) => {
   try {
+    console.log("📥 Payload recebido 5S:");
+    console.log(JSON.stringify(req.body, null, 2));
+
     const payload = req.body;
 
-    if (!payload?.semanaId || !payload?.auditorSemana || !payload?.dataHora || !Array.isArray(payload?.itens)) {
-      return res.status(400).json({ error: 'Payload inválido.' });
+    // Validação mínima clara
+    if (
+      !payload ||
+      typeof payload !== 'object' ||
+      !payload.semanaId ||
+      !payload.auditorSemana ||
+      !payload.dataHora ||
+      !Array.isArray(payload.itens) ||
+      payload.itens.length === 0
+    ) {
+      return res.status(400).json({
+        error: 'Payload inválido.',
+        detalhe: 'Campos obrigatórios ausentes ou itens vazio.'
+      });
     }
 
+    // Criação no MongoDB
     const doc = await Auditoria5S.create(payload);
-    return res.status(201).json({ auditoriaId: String(doc._id) });
+
+    return res.status(201).json({
+      ok: true,
+      auditoriaId: String(doc._id),
+    });
+
   } catch (err) {
-    console.error('Erro ao salvar auditoria 5S:', err);
-    return res.status(500).json({ error: 'Erro ao salvar auditoria 5S.' });
+    console.error('❌ ERRO AO SALVAR AUDITORIA 5S');
+    console.error('Mensagem:', err.message);
+    console.error(err);
+
+    return res.status(500).json({
+      error: 'Erro ao salvar auditoria 5S.',
+      detalhe: err.message,
+    });
   }
 });
+
 
 // GET listar auditorias 5S (pode filtrar por semanaId)
 app.get('/api/5s/auditorias', async (req, res) => {
@@ -756,3 +784,4 @@ app.post(
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });
+
