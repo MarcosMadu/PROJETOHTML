@@ -1,12 +1,28 @@
 const mongoose = require("mongoose");
 
+/**
+ * Foto padrão (metadados do arquivo)
+ * OBS: por enquanto você está salvando só {name,size,type}.
+ * Quando evoluirmos, dá pra trocar para URL (Cloudinary) + public_id.
+ */
+const FotoSchema = new mongoose.Schema(
+  {
+    name: { type: String, default: null },
+    size: { type: Number, default: null },
+    type: { type: String, default: null },
+  },
+  { _id: false }
+);
+
 const DesvioSchema = new mongoose.Schema(
   {
     responsavel: { type: String, required: true },
+
+    // ✅ IMPORTANTE: deve ser OBJETO tipado (não “subdocumento solto”)
+    // Isso evita CastError quando chega {name,size,type}
     foto: {
-      name: String,
-      size: Number,
-      type: String,
+      type: FotoSchema,
+      required: true,
     },
 
     status: {
@@ -16,7 +32,11 @@ const DesvioSchema = new mongoose.Schema(
     },
 
     baixa: {
-      fotosResolucao: [{ name: String, size: Number, type: String }],
+      // ✅ Array de objetos tipados
+      fotosResolucao: {
+        type: [FotoSchema],
+        default: [],
+      },
       dataHora: { type: String, default: null },
     },
   },
@@ -33,9 +53,17 @@ const ItemSchema = new mongoose.Schema(
 
     naJustificativa: { type: String, default: null },
 
-    conformeFotos: [{ name: String, size: Number, type: String }],
+    // ✅ Array de objetos tipados (evita CastError)
+    conformeFotos: {
+      type: [FotoSchema],
+      default: [],
+    },
 
-    desvios: { type: [DesvioSchema], default: [] },
+    // NC: vários desvios
+    desvios: {
+      type: [DesvioSchema],
+      default: [],
+    },
   },
   { _id: false }
 );
@@ -52,7 +80,7 @@ const Auditoria5SSchema = new mongoose.Schema(
   },
   {
     collection: "auditorias_5s",
-    timestamps: true, // cria createdAt e updatedAt automaticamente
+    timestamps: true, // createdAt e updatedAt
   }
 );
 
