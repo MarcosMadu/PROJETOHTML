@@ -1,4 +1,3 @@
-{
 <!doctype html>
 <html lang="pt-BR">
 <head>
@@ -140,7 +139,7 @@
       white-space:nowrap;
     }
     .badge.ok{border-color: rgba(22,163,74,.35); color: var(--ok); background: rgba(22,163,74,.06)}
-    .badge.warn{border-color: rgba(245,158,11,.35); color: var(--warn); background: rgba(245,158,11,.08)}
+    .badge.warn{border-color: rgba(245,158,11,.35); color:var(--warn); background: rgba(245,158,11,.08)}
     .badge.danger{border-color: rgba(220,38,38,.35); color: var(--danger); background: rgba(220,38,38,.06)}
 
     .table-wrap{
@@ -152,7 +151,7 @@
     table{
       border-collapse:collapse;
       width:100%;
-      min-width:980px;
+      min-width:1080px;
       font-size:13px;
     }
     th, td{
@@ -247,7 +246,9 @@
     .item-top{
       padding:12px;
       display:flex; gap:10px; align-items:flex-start; justify-content:space-between;
+      cursor:pointer;
     }
+    .item-top:hover{ background:#fbfdff; }
     .item-left{display:flex; gap:10px; align-items:flex-start}
     .num{
       width:28px;height:28px;border-radius:10px;
@@ -276,6 +277,66 @@
     .deviation .head{
       display:flex; align-items:center; justify-content:space-between; gap:10px;
       margin-bottom:8px;
+    }
+
+    /* ====== ADICIONADO: seleção + evidências ====== */
+    .checkcell{ width:42px; }
+    .check{
+      width:18px;height:18px;
+      accent-color: var(--primary);
+      cursor:pointer;
+    }
+    .bulkbar{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      margin-top:12px;
+      padding:10px;
+      border:1px solid var(--border);
+      background:#fff;
+      border-radius:14px;
+    }
+    .bulkbar .muted{ color:var(--muted); font-size:12px; }
+
+    .evid-wrap{
+      margin-top:10px;
+      border-top:1px dashed var(--border);
+      padding-top:10px;
+      display:none;
+    }
+    .evid-wrap.on{ display:block; }
+    .evid-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap:10px;
+      margin-top:8px;
+    }
+    .thumb{
+      border:1px solid var(--border);
+      border-radius:14px;
+      overflow:hidden;
+      background:#fff;
+      box-shadow: 0 6px 16px rgba(16,24,40,.06);
+    }
+    .thumb img{
+      width:100%;
+      height:120px;
+      object-fit:cover;
+      display:block;
+    }
+    .thumb .cap{
+      padding:8px 10px;
+      font-size:12px;
+      color:var(--muted);
+      border-top:1px solid var(--border);
+      word-break:break-word;
+    }
+    .pill2{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:4px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#fff;
+      font-size:12px;
+      color:var(--muted);
     }
   </style>
 </head>
@@ -390,10 +451,23 @@
               </div>
             </div>
 
+            <!-- ====== ADICIONADO: barra de seleção/exclusão ====== -->
+            <div class="bulkbar">
+              <label class="pill2" style="cursor:pointer;">
+                <input type="checkbox" id="chkAll" class="check" />
+                Selecionar todos
+              </label>
+              <button class="btn danger mini" id="btnExcluirSelecionados" disabled>Excluir selecionados</button>
+              <span class="muted" id="bulkInfo">0 selecionado(s)</span>
+            </div>
+
             <div class="table-wrap" style="margin-top:12px">
               <table>
                 <thead>
                   <tr>
+                    <!-- ADICIONADO -->
+                    <th class="checkcell">Sel.</th>
+
                     <th style="width:120px">ID</th>
                     <th style="width:160px">Data/Hora</th>
                     <th style="width:180px">Auditor</th>
@@ -510,29 +584,38 @@
 
     let semanaAtual = null;
     let auditorAuto = null;
-    let registros = []; // lista carregada (semana selecionada)
-    let registrosAll = []; // cache geral (todas as semanas, se buscarmos)
+    let registros = []; // (mantido)
+    let registrosAll = []; // cache geral
     let selectedDocId = null;
+
+    // ====== ADICIONADO: seleção ======
+    const selectedIds = new Set();
+
+    function updateBulkUI(){
+      const n = selectedIds.size;
+      $("bulkInfo").textContent = `${n} selecionado(s)`;
+      $("btnExcluirSelecionados").disabled = n === 0;
+
+      const visibleIds = Array.from($("tbody").querySelectorAll("input[data-sel]")).map(i => i.getAttribute("data-sel"));
+      const allVisibleChecked = visibleIds.length > 0 && visibleIds.every(id => selectedIds.has(id));
+      $("chkAll").checked = allVisibleChecked;
+      $("chkAll").indeterminate = !allVisibleChecked && n > 0 && visibleIds.some(id => selectedIds.has(id));
+    }
 
     // ====== Datas / Semana ISO ======
     function parseSemanaId(semanaId){
-      // Ex.: "2026-W05"
-      const [y, w] = semanaId.split("-W");
+      const [y, w] = String(semanaId).split("-W");
       return { year: Number(y), week: Number(w) };
     }
-
     function startOfISOWeek(year, week){
-      // Segunda-feira 00:00
-      // Algoritmo: pegue 4/jan do ano, determine semana 1, etc.
       const simple = new Date(Date.UTC(year, 0, 4));
-      const dow = simple.getUTCDay() || 7; // 1..7
+      const dow = simple.getUTCDay() || 7;
       const week1Monday = new Date(simple);
       week1Monday.setUTCDate(simple.getUTCDate() - (dow - 1));
       const monday = new Date(week1Monday);
       monday.setUTCDate(week1Monday.getUTCDate() + (week - 1) * 7);
       return monday;
     }
-
     function endOfISOWeek(year, week){
       const monday = startOfISOWeek(year, week);
       const end = new Date(monday);
@@ -540,16 +623,14 @@
       end.setUTCHours(23,59,59,999);
       return end;
     }
-
     function daysToEndOfWeek(semanaId){
+      if(!semanaId) return 0;
       const { year, week } = parseSemanaId(semanaId);
       const end = endOfISOWeek(year, week);
       const now = new Date();
       const ms = end.getTime() - now.getTime();
-      // arredonda pra cima quando ainda tem tempo, pra ficar mais “operacional”
       return Math.ceil(ms / 86400000);
     }
-
     function prazoBadge(semanaId){
       const d = daysToEndOfWeek(semanaId);
       if (d < 0) return { label: "Vencido — realizar tratativa", cls: "danger", dias: d };
@@ -577,6 +658,19 @@
         .replaceAll("'","&#039;");
     }
 
+    // ====== ADICIONADO: URL de imagem ======
+    function getImageUrl(file){
+      // Ajuste aqui se você usa Cloudinary (ex.: file.url) ou outra rota
+      if(!file) return null;
+      if(typeof file === "string"){
+        if(file.startsWith("http")) return file;
+        return `/uploads/${encodeURIComponent(file)}`;
+      }
+      if(file.url && typeof file.url === "string") return file.url;
+      if(file.name) return `/uploads/${encodeURIComponent(file.name)}`;
+      return null;
+    }
+
     // ====== KPIs ======
     function calcKPIs(list){
       let totalItens = 0;
@@ -598,7 +692,6 @@
             const desvios = Array.isArray(it.desvios) ? it.desvios : [];
             for(const d of desvios){
               desviosTotal++;
-              // Se existir "baixa.dataHora" ou fotosResolucao, consideramos baixado
               const baixado = !!(d?.baixa?.dataHora || (Array.isArray(d?.baixa?.fotosResolucao) && d.baixa.fotosResolucao.length));
               if(baixado) desviosBaixados++;
               else desviosAbertos++;
@@ -669,7 +762,6 @@
         const id = String(doc._id || "").toLowerCase();
         const data = String(doc.dataHora || "").toLowerCase();
 
-        // busca por texto nos itens / responsáveis
         let found = false;
         const itens = Array.isArray(doc.itens) ? doc.itens : [];
         for(const it of itens){
@@ -701,12 +793,12 @@
       const list = registrosAll.filter(matchesFilter);
 
       if(!list.length){
-        tbody.innerHTML = `<tr><td colspan="8" style="color:var(--muted)">Nenhum registro encontrado com os filtros atuais.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="color:var(--muted)">Nenhum registro encontrado com os filtros atuais.</td></tr>`;
         setKPIs(list, $("fSemana").value === "Todas" ? null : $("fSemana").value);
+        updateBulkUI();
         return;
       }
 
-      // KPIs por filtro (para bater com o que aparece na tabela)
       setKPIs(list, $("fSemana").value === "Todas" ? null : $("fSemana").value);
 
       for(const doc of list){
@@ -719,6 +811,10 @@
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
+          <td class="checkcell">
+            <input class="check" type="checkbox" data-sel="${escapeHtml(doc._id)}" ${selectedIds.has(String(doc._id)) ? "checked" : ""} />
+          </td>
+
           <td><span class="link" data-open="${escapeHtml(doc._id)}">${escapeHtml(String(doc._id).slice(0,8))}...</span></td>
           <td>${escapeHtml(doc.dataHora || "—")}</td>
           <td>${escapeHtml(auditor || "—")}</td>
@@ -736,9 +832,22 @@
         tbody.appendChild(tr);
       }
 
+      // abrir detalhes
       tbody.querySelectorAll("[data-open]").forEach(el=>{
         el.addEventListener("click", ()=> openDetails(el.getAttribute("data-open")));
       });
+
+      // seleção
+      tbody.querySelectorAll("input[data-sel]").forEach(chk=>{
+        chk.addEventListener("change", ()=>{
+          const id = chk.getAttribute("data-sel");
+          if(chk.checked) selectedIds.add(String(id));
+          else selectedIds.delete(String(id));
+          updateBulkUI();
+        });
+      });
+
+      updateBulkUI();
     }
 
     // ====== Modal detalhes ======
@@ -750,6 +859,33 @@
       openBackdrop(false);
       $("modalBody").innerHTML = "";
       $("modalSub").textContent = "—";
+    }
+
+    function renderThumbs(title, files){
+      const arr = Array.isArray(files) ? files : [];
+      if(!arr.length){
+        return `<p class="miniLine"><strong>${escapeHtml(title)}:</strong> —</p>`;
+      }
+      const thumbs = arr.map((f) => {
+        const url = getImageUrl(f);
+        const name = (typeof f === "string") ? f : (f?.name || "imagem");
+        if(!url){
+          return `<div class="thumb"><div class="cap">${escapeHtml(name)} (sem URL)</div></div>`;
+        }
+        return `
+          <div class="thumb">
+            <a href="${escapeHtml(url)}" target="_blank" rel="noopener">
+              <img src="${escapeHtml(url)}" alt="${escapeHtml(name)}"/>
+            </a>
+            <div class="cap">${escapeHtml(name)}</div>
+          </div>
+        `;
+      }).join("");
+
+      return `
+        <div class="miniLine"><strong>${escapeHtml(title)}:</strong> ${arr.length} foto(s)</div>
+        <div class="evid-grid">${thumbs}</div>
+      `;
     }
 
     async function openDetails(id){
@@ -806,15 +942,29 @@
             `<span class="badge">—</span>`;
 
           const conformeFotos = Array.isArray(it.conformeFotos) ? it.conformeFotos : [];
+
+          // ADICIONADO: se existir naoConformeFotos, usa
+          const naoConformeFotos = Array.isArray(it.naoConformeFotos) ? it.naoConformeFotos : [];
+
+          // fallback: fotos do desvio (it.desvios[].foto)
           const desvios = Array.isArray(it.desvios) ? it.desvios : [];
+          const fotosDesvios = desvios.map(d => d?.foto).filter(Boolean);
 
           let extra = "";
+
           if(st === "NA"){
             extra = `<p class="miniLine"><strong>Justificativa:</strong> ${escapeHtml(it.naJustificativa || "—")}</p>`;
           }
+
           if(st === "C"){
-            extra = `<p class="miniLine"><strong>Evidência:</strong> ${conformeFotos.length ? `${conformeFotos.length} foto(s) (metadados)` : "—"}</p>`;
+            extra = `
+              <p class="miniLine"><strong>Evidências (Conforme):</strong> clique no item para ver</p>
+              <div class="evid-wrap" data-ev="c_${idx}">
+                ${renderThumbs("Conforme", conformeFotos)}
+              </div>
+            `;
           }
+
           if(st === "NC"){
             let dhtml = "";
             if(!desvios.length){
@@ -830,21 +980,29 @@
                       ${b}
                     </div>
                     <p class="miniLine"><strong>Responsável:</strong> ${escapeHtml(d.responsavel || "—")}</p>
-                    <p class="miniLine"><strong>Foto (metadados):</strong> ${escapeHtml(d?.foto?.name || "—")}</p>
+                    <p class="miniLine"><strong>Foto (desvio):</strong> ${escapeHtml(d?.foto?.name || "—")}</p>
                     ${baixado ? `<p class="miniLine"><strong>Baixa em:</strong> ${escapeHtml(d?.baixa?.dataHora || "—")}</p>` : ``}
                   </div>
                 `;
               }).join("");
             }
+
+            const blocoNC = (naoConformeFotos.length > 0)
+              ? renderThumbs("Não Conforme", naoConformeFotos)
+              : renderThumbs("Não Conforme (via desvios)", fotosDesvios);
+
             extra = `
-              <p class="miniLine"><strong>Desvios:</strong> ${desvios.length}</p>
-              ${dhtml}
+              <p class="miniLine"><strong>Evidências (NC):</strong> clique no item para ver</p>
+              <div class="evid-wrap" data-ev="nc_${idx}">
+                ${blocoNC}
+                <div style="margin-top:10px">${dhtml}</div>
+              </div>
             `;
           }
 
           html += `
             <div class="item">
-              <div class="item-top">
+              <div class="item-top" data-toggle="${idx}">
                 <div class="item-left">
                   <div class="num">${idx+1}</div>
                   <div class="txt">
@@ -861,6 +1019,23 @@
 
         html += `</div>`;
         $("modalBody").innerHTML = html;
+
+        // ADICIONADO: clique no item abre/fecha evidências
+        $("modalBody").querySelectorAll("[data-toggle]").forEach(el=>{
+          el.addEventListener("click", (e)=>{
+            // evita conflito quando clicar num link/imagem
+            if(e.target && (e.target.tagName === "A" || e.target.tagName === "IMG")) return;
+
+            const idx = el.getAttribute("data-toggle");
+            const stText = el.querySelector(".badge.ok, .badge.danger, .badge.warn")?.textContent || "";
+            // tenta abrir tanto conforme quanto nc (só o que existir)
+            const c = $("modalBody").querySelector(`[data-ev="c_${idx}"]`);
+            const nc = $("modalBody").querySelector(`[data-ev="nc_${idx}"]`);
+            if(c) c.classList.toggle("on");
+            if(nc) nc.classList.toggle("on");
+          });
+        });
+
       }catch(err){
         $("modalBody").innerHTML = `<div class="alert"><strong>Erro:</strong> ${escapeHtml(err?.message || err)}</div>`;
       }
@@ -878,7 +1053,6 @@
         $("semanaAtual").textContent = semanaAtual || "—";
         $("auditorAuto").textContent = getAuditorSemana(semanaAtual, auditorAuto);
 
-        // prepara modal mudar auditor
         $("audSemana").value = semanaAtual || "";
         $("audAutoInput").value = auditorAuto || "";
         fillSelectNomes($("audNovo"), getAuditorSemana(semanaAtual, auditorAuto));
@@ -893,7 +1067,6 @@
       const current = sel.value;
       const opts = ["Todas", ...weeks];
       sel.innerHTML = opts.map(w => `<option value="${escapeHtml(w)}">${escapeHtml(w)}</option>`).join("");
-      // default: semana atual
       sel.value = current && opts.includes(current) ? current : (semanaAtual || "Todas");
     }
 
@@ -902,19 +1075,17 @@
       $("loadingKpi").classList.add("on");
 
       try{
-        // puxa tudo para poder filtrar por semana sem ficar refazendo chamadas
         const res = await fetch("/api/5s/auditorias");
         if(!res.ok) throw new Error("Falha ao carregar auditorias.");
         const list = await res.json();
         registrosAll = Array.isArray(list) ? list : [];
 
-        // semanas disponíveis (desc)
         const weeks = Array.from(new Set(registrosAll.map(d => d.semanaId).filter(Boolean))).sort().reverse();
         fillSemanaOptions(weeks);
 
         renderTable();
       }catch(err){
-        $("tbody").innerHTML = `<tr><td colspan="8" style="color:var(--muted)">Erro ao carregar: ${escapeHtml(err?.message || err)}</td></tr>`;
+        $("tbody").innerHTML = `<tr><td colspan="9" style="color:var(--muted)">Erro ao carregar: ${escapeHtml(err?.message || err)}</td></tr>`;
       }finally{
         $("loadingTabela").classList.remove("on");
         $("loadingKpi").classList.remove("on");
@@ -928,9 +1099,47 @@
     function closeAuditorModal(){
       openAuditorModal(false);
     }
-
     function refreshAuditorPills(){
       $("auditorAuto").textContent = getAuditorSemana(semanaAtual, auditorAuto);
+    }
+
+    // ====== ADICIONADO: excluir selecionados ======
+    async function excluirSelecionados(){
+      const ids = Array.from(selectedIds);
+      if(!ids.length) return;
+
+      const ok = confirm(`Tem certeza que deseja excluir ${ids.length} registro(s)?\nEssa ação NÃO pode ser desfeita.`);
+      if(!ok) return;
+
+      try{
+        // rota em lote (se você tiver). Se não tiver, cai no fallback (um por um)
+        let batchOk = false;
+        try{
+          const r = await fetch("/api/5s/auditorias/bulk-delete", {
+            method:"POST",
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify({ ids })
+          });
+          if(r.ok) batchOk = true;
+        }catch{}
+
+        if(!batchOk){
+          // fallback: delete individual
+          for(const id of ids){
+            const r = await fetch(`/api/5s/auditorias/${encodeURIComponent(id)}`, { method:"DELETE" });
+            if(!r.ok){
+              throw new Error(`Falha ao excluir ID ${id}`);
+            }
+          }
+        }
+
+        ids.forEach(id => selectedIds.delete(id));
+        alert("Exclusão concluída.");
+        await loadRegistros();
+        updateBulkUI();
+      }catch(err){
+        alert(`Erro ao excluir: ${err?.message || err}`);
+      }
     }
 
     // ====== Eventos ======
@@ -978,12 +1187,25 @@
       alert("Troca removida. Voltou para o auditor automático.");
     });
 
+    // ADICIONADO: selecionar todos visíveis
+    $("chkAll").addEventListener("change", ()=>{
+      const visibleChecks = Array.from($("tbody").querySelectorAll("input[data-sel]"));
+      if($("chkAll").checked){
+        visibleChecks.forEach(c => selectedIds.add(String(c.getAttribute("data-sel"))));
+      }else{
+        visibleChecks.forEach(c => selectedIds.delete(String(c.getAttribute("data-sel"))));
+      }
+      renderTable(); // mantém consistente
+    });
+
+    $("btnExcluirSelecionados").addEventListener("click", excluirSelecionados);
+
     // ====== Init ======
     (async function init(){
       await loadSemanaAtual();
       await loadRegistros();
+      updateBulkUI();
     })();
   </script>
 </body>
 </html>
-}
