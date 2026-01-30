@@ -887,37 +887,89 @@
         <div class="evid-grid">${thumbs}</div>
       `;
     }
+async function openDetails(id){
+  selectedDocId = id;
+  openBackdrop(true);
+  $("modalBody").innerHTML = `<span class="loading on"><span class="dot"></span>Carregando detalhes...</span>`;
 
-    async function openDetails(id){
-      selectedDocId = id;
-      openBackdrop(true);
-      $("modalBody").innerHTML = `<span class="loading on"><span class="dot"></span>Carregando detalhes...</span>`;
+  try{
+    const res = await fetch(`/api/5s/auditorias/${encodeURIComponent(id)}`);
+    if(!res.ok) throw new Error("Falha ao buscar detalhes.");
+    const doc = await res.json();
 
-      try{
-        const res = await fetch(`/api/5s/auditorias/${encodeURIComponent(id)}`);
-        if(!res.ok) throw new Error("Falha ao buscar detalhes.");
-        const doc = await res.json();
+    const pr = prazoBadge(doc.semanaId);
+    const auditor = getAuditorSemana(doc.semanaId, doc.auditorSemana);
 
-        const pr = prazoBadge(doc.semanaId);
-        const auditor = getAuditorSemana(doc.semanaId, doc.auditorSemana);
+    $("modalTitle").textContent = `Auditoria 5S — ${String(doc._id).slice(0,8)}...`;
+    $("modalSub").innerHTML = `
+      Semana: <strong>${escapeHtml(doc.semanaId)}</strong> ·
+      Auditor: <strong>${escapeHtml(auditor)}</strong> ·
+      Data/Hora: <strong>${escapeHtml(doc.dataHora || "—")}</strong> ·
+      Setor: <strong>${escapeHtml(doc.setor || "—")}</strong>
+    `;
 
-        $("modalTitle").textContent = `Auditoria 5S — ${String(doc._id).slice(0,8)}...`;
-        $("modalSub").innerHTML = `
-          Semana: <strong>${escapeHtml(doc.semanaId || "—")}</strong> ·
-          Auditor: <strong>${escapeHtml(auditor || "—")}</strong> ·
-          Data/Hora: <strong>${escapeHtml(doc.dataHora || "—")}</strong> ·
-          Setor: <strong>${escapeHtml(doc.setor || "—")}</strong> ·
-          <span class="badge ${pr.cls==="ok"?"ok":pr.cls==="warn"?"warn":"danger"}">${escapeHtml(pr.label)} (dias: ${pr.dias})</span>
-        `;
+    let html = `<div class="items">`;
 
-        $("btnCopiarId").onclick = async () => {
-          try{
-            await navigator.clipboard.writeText(String(doc._id));
-            alert("ID copiado!");
-          }catch{
-            alert("Não foi possível copiar (bloqueio do navegador).");
-          }
-        };
+    (doc.itens || []).forEach((it, idx) => {
+      const statusBadge =
+        it.status === "C"  ? `<span class="badge ok">Conforme</span>` :
+        it.status === "NC" ? `<span class="badge danger">Não Conforme</span>` :
+        it.status === "NA" ? `<span class="badge warn">Não Aplica</span>` :
+        `<span class="badge">—</span>`;
+
+      /* ========= CONFORME ========= */
+      const conformeFotos = Array.isArray(it.conformeFotos)
+        ? it.conformeFotos
+        : [];
+
+      /* ========= NÃO CONFORME ========= */
+      const desvios = Array.isArray(it.desvios) ? it.desvios : [];
+
+      const fotosNC = desvios
+        .map(d => d?.foto)
+        .filter(Boolean);
+
+      const fotosBaixa = desvios
+        .flatMap(d => Array.isArray(d?.baixa?.fotosResolucao) ? d.baixa.fotosResolucao : []);
+
+      html += `
+        <div class="item">
+          <div class="item-top" data-toggle="${idx}">
+            <div class="item-left">
+              <div class="num">${idx + 1}</div>
+              <div class="txt">
+                <div class="tag">${escapeHtml(it.grupo || "—")}</div>
+                <p class="q">${escapeHtml(it.texto || "—")}</p>
+              </div>
+            </div>
+            ${statusBadge}
+          </div>
+
+          <div class="evid-wrap" data-ev="${idx}">
+            ${renderThumbs("Conforme", conformeFotos)}
+            ${renderThumbs("Não Conforme", fotosNC)}
+            ${renderThumbs("Baixa", fotosBaixa)}
+          </div>
+        </div>
+      `;
+    });
+
+    html += `</div>`;
+    $("modalBody").innerHTML = html;
+
+    // Toggle abrir/fechar evidências
+    $("modalBody").querySelectorAll("[data-toggle]").forEach(el => {
+      el.addEventListener("click", () => {
+        const idx = el.getAttribute("data-toggle");
+        const box = $("modalBody").querySelector(`[data-ev="${idx}"]`);
+        if(box) box.classList.toggle("on");
+      });
+    });
+
+  }catch(err){
+    $("modalBody").innerHTML = `<div class="alert"><strong>Erro:</strong> ${escapeHtml(err.message)}</div>`;
+  }
+} ;
 
         const itens = Array.isArray(doc.itens) ? doc.itens : [];
         let html = `
