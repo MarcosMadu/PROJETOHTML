@@ -170,29 +170,42 @@ app.get('/api/5s/semana-atual', (req, res) => {
   return res.json({ semanaId, auditorSemana });
 });
 
-/**
- * ✅ POST salvar auditoria 5S COM CLOUDINARY
- * Aceita:
- *  - application/json (sem fotos)  -> req.body é o payload
- *  - multipart/form-data (com fotos) -> req.body.payload (string JSON) + req.files
- *
- * Fieldnames esperados no FormData:
- *  - conforme: conf_<itemIndex>_<fotoIndex>   (ex: conf_12_0)
- *  - não conforme (foto do desvio): nc_<itemIndex>_<desvioIndex> (ex: nc_12_0)
- */
-app.post('/api/5s/auditorias', upload5s, async (req, res) => {
-  try {
-    let payload = null;
+// ===================================================================
+// ============================ 5S (UPLOAD REAL) =======================
+// ===================================================================
 
-    // multipart: vem como string em req.body.payload
-    if (req.body && req.body.payload) {
-      payload = JSON.parse(req.body.payload);
-    } else {
-      // json puro
-      payload = req.body;
+// 🔹 Multer/Cloudinary específico do 5S (pasta separada)
+const storage5S = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'auditorias_5s',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp']
+  }
+});
+
+const upload5S = multer({ storage: storage5S });
+
+// POST salvar auditoria 5S (AGORA: multipart/form-data + fotos no Cloudinary)
+app.post('/api/5s/auditorias', upload5S.any(), async (req, res) => {
+  try {
+    // O avaliacao.html manda FormData com:
+    // - payload (JSON string)
+    // - conf_<itemId>_<idx> (fotos Conforme)
+    // - nc_<itemId>_<idx>   (fotos dos desvios NC)
+
+    const raw = req.body?.payload;
+    if (!raw) {
+      return res.status(400).json({ error: 'Campo "payload" ausente no form-data.' });
     }
 
-    // Validação mínima clara
+    let payload;
+    try {
+      payload = JSON.parse(raw);
+    } catch {
+      return res.status(400).json({ error: 'Campo "payload" inválido (JSON malformado).' });
+    }
+
+    // Validação mínima
     if (
       !payload ||
       typeof payload !== 'object' ||
@@ -208,49 +221,141 @@ app.post('/api/5s/auditorias', upload5s, async (req, res) => {
       });
     }
 
-    // ✅ Anexa URLs do Cloudinary no payload (se houver arquivos)
-    const files = Array.isArray(req.files) ? req.files : [];
+    // Indexar arquivos recebidos (Cloudinary URL vem em file.path)
+    // multer-storage-cloudinary coloca:
+    // - file.path  => URL (https://res.cloudinary.com/...)
+    // - file.filename => public_id (geralmente)
+    // - file.originalname => nome original
+    const fileIndex = new Map();
+    (req.files || []).forEach((f) => {
+      fileIndex.set(f.fieldname, {
+        url: f.path,
+        public_id: f.filename,
+        originalname: f.originalname,
+        mimetype: f.mimetype,
+        size: f.size
+      });
+    });
 
-    for (const f of files) {
-      const field = f.fieldname || '';
+    // Montar payload final com URLs
+    const itensOut = payload.itens.map((it) => {
+      const out = { ...it };
 
-      // multer-storage-cloudinary normalmente fornece:
-      // f.path -> URL segura
-      // f.filename -> public_id
-      const fotoObj = {
-        url: f.path,                    // ✅ Cloudinary URL
-        public_id: f.filename,          // ✅ Cloudinary public_id
-        name: f.originalname || null,
-        size: Number(f.size) || null,
-        type: f.mimetype || null,
-      };
-
-      // ✅ CONFORME: conf_<itemIndex>_<fotoIndex>
-      if (field.startsWith('conf_')) {
-        const parts = field.split('_'); // ["conf", "12", "0"]
-        const itemIndex = Number(parts[1]);
-        if (!Number.isFinite(itemIndex) || !payload.itens[itemIndex]) continue;
-
-        payload.itens[itemIndex].conformeFotos = payload.itens[itemIndex].conformeFotos || [];
-        payload.itens[itemIndex].conformeFotos.push(fotoObj);
-        continue;
+      // Conforme: conformeFotos: [{ field, name, size, type }]
+      if (Array.isArray(it.conformeFotos)) {
+        out.conformeFotos = it.conformeFotos.map((meta) => {
+          const found = meta?.field ? fileIndex.get(meta.field) : null;
+          if (!found) {
+            // se não veio arquivo, guarda só metadados (não quebra)
+            return {
+              url: null,
+              public_id: null,
+              name: meta?.name || null,
+              type: meta?.type || null,
+              size: meta?.size || null
+            };
+          }
+          return {
+            url: found.url,
+            public_id: found.public_id,
+            name: meta?.name || found.originalname || null,
+            type: meta?.type || found.mimetype || null,
+            size: meta?.size || found.size || null
+          };
+        });
+      } else {
+        out.conformeFotos = [];
       }
 
-      // ✅ NÃO CONFORME (foto do desvio): nc_<itemIndex>_<desvioIndex>
-      if (field.startsWith('nc_')) {
-        const parts = field.split('_'); // ["nc", "12", "0"]
-        const itemIndex = Number(parts[1]);
-        const desvioIndex = Number(parts[2]);
-        if (!Number.isFinite(itemIndex) || !payload.itens[itemIndex]) continue;
-        if (!Number.isFinite(desvioIndex)) continue;
+      // NC: desvios: [{ responsavel, foto: { field, name, size, type } }]
+      if (Array.isArray(it.desvios)) {
+        out.desvios = it.desvios.map((d) => {
+          const outD = { ...d };
 
-        payload.itens[itemIndex].desvios = payload.itens[itemIndex].desvios || [];
-        payload.itens[itemIndex].desvios[desvioIndex] = payload.itens[itemIndex].desvios[desvioIndex] || {};
-        payload.itens[itemIndex].desvios[desvioIndex].foto = fotoObj;
+          if (d?.foto && d.foto.field) {
+            const found = fileIndex.get(d.foto.field);
+            outD.foto = found
+              ? {
+                  url: found.url,
+                  public_id: found.public_id,
+                  name: d.foto?.name || found.originalname || null,
+                  type: d.foto?.type || found.mimetype || null,
+                  size: d.foto?.size || found.size || null
+                }
+              : {
+                  url: null,
+                  public_id: null,
+                  name: d.foto?.name || null,
+                  type: d.foto?.type || null,
+                  size: d.foto?.size || null
+                };
+          } else {
+            outD.foto = null;
+          }
 
-        continue;
+          return outD;
+        });
+      } else {
+        out.desvios = [];
       }
+
+      return out;
+    });
+
+    const docToSave = {
+      semanaId: payload.semanaId,
+      auditorSemana: payload.auditorSemana,
+      dataHora: payload.dataHora,
+      setor: payload.setor || null,
+      itens: itensOut
+    };
+
+    const doc = await Auditoria5S.create(docToSave);
+
+    return res.status(201).json({
+      ok: true,
+      auditoriaId: String(doc._id)
+    });
+
+  } catch (err) {
+    console.error('❌ ERRO AO SALVAR AUDITORIA 5S (UPLOAD)');
+    console.error('Mensagem:', err.message);
+    console.error(err);
+
+    return res.status(500).json({
+      error: 'Erro ao salvar auditoria 5S.',
+      detalhe: err.message
+    });
+  }
+});
+
+// DELETE individual (para o fallback do seu gestao.html)
+app.delete('/api/5s/auditorias/:id', async (req, res) => {
+  try {
+    const del = await Auditoria5S.findByIdAndDelete(req.params.id);
+    if (!del) return res.status(404).json({ error: 'Registro não encontrado.' });
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('Erro ao excluir auditoria 5S:', err);
+    return res.status(500).json({ error: 'Erro ao excluir auditoria 5S.' });
+  }
+});
+
+// POST bulk-delete (o seu gestao.html tenta primeiro essa rota)
+app.post('/api/5s/auditorias/bulk-delete', async (req, res) => {
+  try {
+    const ids = req.body?.ids;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: 'Informe um array "ids" com pelo menos 1 id.' });
     }
+
+    const result = await Auditoria5S.deleteMany({ _id: { $in: ids } });
+    return res.json({ ok: true, deletedCount: result.deletedCount || 0 });
+  } catch (err) {
+    console.error('Erro ao excluir auditorias 5S (bulk):', err);
+    return res.status(500).json({ error: 'Erro ao excluir auditorias 5S (bulk).' });
+  }
+});
 
     // Salva no MongoDB
     const doc = await Auditoria5S.create(payload);
@@ -845,3 +950,4 @@ app.post(
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });
+
