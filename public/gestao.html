@@ -1135,6 +1135,16 @@
     }catch{
       $("semanaAtual").textContent = "erro";
       $("auditorAuto").textContent = "erro";
+
+      // 🔧 GARANTE valor inicial do filtro de semana
+if ($("fSemana")) {
+  $("fSemana").innerHTML = `
+    <option value="Todas">Todas</option>
+    <option value="${semanaAtual}">${semanaAtual}</option>
+  `;
+  $("fSemana").value = "Todas";
+}
+
     }
   }
 
