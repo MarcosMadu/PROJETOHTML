@@ -1,15 +1,18 @@
-const Inspecao   = require('./models/Inspecao');
-const Aptidao    = require('./models/Aptidao');
+const Inspecao    = require('./models/Inspecao');
+const Aptidao     = require('./models/Aptidao');
 const PDFDocument = require('pdfkit');
-const path       = require('path');
-const fs         = require('fs');
-const express    = require('express');
-const mongoose   = require('mongoose');
+const path        = require('path');
+const fs          = require('fs');
+const express     = require('express');
+const mongoose    = require('mongoose');
 // const nodemailer = require('nodemailer');
-const dotenv     = require('dotenv');
-const multer     = require('multer');
-const ejs        = require('ejs');
+const dotenv      = require('dotenv');
+const multer      = require('multer');
+const ejs         = require('ejs');
 const Notificacao = require('./models/Notificacao');
+
+// ✅ 5S (NOVO) — model
+const Auditoria5S = require('./models/avaliacao5s/Auditoria5S');
 
 // 🔹 Cloudinary
 const cloudinary = require('cloudinary').v2;
@@ -56,7 +59,31 @@ function fetchImageBuffer(url) {
   });
 }
 
-// Rotas HTML
+// ========================== EJS ==========================
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+
+// ======================== Middlewares =====================
+// ✅ Aumentei o limite para evitar erro com JSON mais “pesado” (metadados)
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// ========================= MongoDB ========================
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => console.log('✅ Conectado ao MongoDB'))
+.catch(err => console.error('❌ Erro ao conectar no MongoDB:', err));
+
+// ========================= Rotas HTML =====================
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 app.get('/inspecao.html', (req, res) =>
   res.sendFile(path.join(__dirname, 'public', 'inspecao.html'))
 );
@@ -73,29 +100,117 @@ app.get('/status.html', (req, res) =>
   res.sendFile(path.join(__dirname, 'public', 'status.html'))
 );
 
-// EJS
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
+// ✅ 5S (NOVO)
+app.get('/avaliacao.html', (req, res) =>
+  res.sendFile(path.join(__dirname, 'public', 'avaliacao.html'))
+);
 
-// Middlewares
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// ===================================================================
+// ============================ 5S (NOVO) =============================
+// ===================================================================
 
-// MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => console.log('✅ Conectado ao MongoDB'))
-.catch(err => console.error('❌ Erro ao conectar no MongoDB:', err));
+// Lista de nomes (auditor automático e responsáveis por tratativa)
+const NOMES_5S = [
+  "ALLAN DO NASCIMENTO MORAES",
+  "ANDRE DA CONCEICAO ALVES",
+  "ANGLA RAKEL SILVA ALMEIDA",
+  "ANTONY CHE GUEVARA CAVALCANTE DOS SANTOS",
+  "CLEITON DE PAULA BATISTA",
+  "DEIVIANE CONCEICAO PEREIRA",
+  "EDUARDO DE SOUSA",
+  "FERNANDO QUEIROZ DA SILVA",
+  "HELIO BARBOSA DOS SANTOS",
+  "HERACLITO HENRIQUE SANTANA LOPES",
+  "JANAINA KETLEY ANDRADE RIBEIRO",
+  "JEOVANE DOS SANTOS SILVA",
+  "JORGE MOUZINHO CARVALHO",
+  "LUCRECIA SANTOS DO NASCIMENTO",
+  "LUIS ANTONIO FELIX DE VASCONCELLOS",
+  "MARCELO MONTANDON MARCAL JUNIOR",
+  "MARCOS OLIVEIRA MENEZES",
+  "RAFAEL HENRIQUE ALVES RIBEIRO",
+  "RAPHAEL JOSE PEREIRA DA SILVA",
+  "RODRIGO BARBOSA DA SILVA",
+  "MARCOS VINICUS BATISTA RIBEIRO",
+  "TAINARA BERTUNES DOS SANTOS",
+  "VERONICA LUIZA GOMES DE MENEZES",
+  "WILDSON DA SILVA BARROS"
+];
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// Semana ISO (para “2026-W05” etc.)
+function getISOWeek(d = new Date()) {
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  return { year: date.getUTCFullYear(), week: weekNo };
+}
+
+function getSemanaId(d = new Date()) {
+  const { year, week } = getISOWeek(d);
+  return `${year}-W${String(week).padStart(2, "0")}`;
+}
+
+// Auditor automático baseado no número da semana (cíclico)
+function getAuditorAutomatico(semanaId) {
+  const wk = Number(String(semanaId).split("W")[1] || "1");
+  const idx = (wk - 1) % NOMES_5S.length;
+  return NOMES_5S[idx];
+}
+
+// GET semana atual + auditor automático
+app.get('/api/5s/semana-atual', (req, res) => {
+  const semanaId = getSemanaId(new Date());
+  const auditorSemana = getAuditorAutomatico(semanaId);
+  return res.json({ semanaId, auditorSemana });
 });
 
-// ======================= ENVIAR NOTIFICAÇÃO ==========================
+// POST salvar auditoria 5S (DEMO: recebe JSON com metadados)
+app.post('/api/5s/auditorias', async (req, res) => {
+  try {
+    const payload = req.body;
+
+    if (!payload?.semanaId || !payload?.auditorSemana || !payload?.dataHora || !Array.isArray(payload?.itens)) {
+      return res.status(400).json({ error: 'Payload inválido.' });
+    }
+
+    const doc = await Auditoria5S.create(payload);
+    return res.status(201).json({ auditoriaId: String(doc._id) });
+  } catch (err) {
+    console.error('Erro ao salvar auditoria 5S:', err);
+    return res.status(500).json({ error: 'Erro ao salvar auditoria 5S.' });
+  }
+});
+
+// GET listar auditorias 5S (pode filtrar por semanaId)
+app.get('/api/5s/auditorias', async (req, res) => {
+  try {
+    const { semanaId } = req.query;
+    const filtro = semanaId ? { semanaId } : {};
+    const list = await Auditoria5S.find(filtro).sort({ createdAt: -1 }).lean();
+    return res.json(list);
+  } catch (err) {
+    console.error('Erro ao listar auditorias 5S:', err);
+    return res.status(500).json({ error: 'Erro ao listar auditorias 5S.' });
+  }
+});
+
+// GET detalhes de 1 auditoria 5S
+app.get('/api/5s/auditorias/:id', async (req, res) => {
+  try {
+    const doc = await Auditoria5S.findById(req.params.id).lean();
+    if (!doc) return res.status(404).json({ error: 'Registro não encontrado.' });
+    return res.json(doc);
+  } catch (err) {
+    console.error('Erro ao buscar auditoria 5S:', err);
+    return res.status(500).json({ error: 'Erro ao buscar auditoria 5S.' });
+  }
+});
+
+// ===================================================================
+// ======================= ENVIAR NOTIFICAÇÃO =========================
+// ===================================================================
 app.post('/enviar', uploadNotificacaoFotos, async (req, res) => {
   try {
     const dados = req.body;
