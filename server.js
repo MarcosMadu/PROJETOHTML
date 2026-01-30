@@ -31,11 +31,11 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// Storage (Multer + Cloudinary)
+// Storage (Multer + Cloudinary) — ✅ reutiliza a mesma pasta das notificações
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'notificacoes_risco',
+    folder: 'notificacoes_risco', // ✅ mesma pasta
     allowed_formats: ['jpg', 'jpeg', 'png', 'webp']
   }
 });
@@ -43,6 +43,9 @@ const storage = new CloudinaryStorage({
 const upload = multer({ storage });
 const uploadNotificacaoFotos = upload.array('notificacaoFotos');
 const uploadResolucaoFotos   = upload.array('resolucaoFotos');
+
+// ✅ 5S: upload genérico (vamos usar fieldnames dinâmicos no FormData)
+const upload5s = upload.any();
 
 // Buscar imagem via URL
 function fetchImageBuffer(url) {
@@ -64,11 +67,12 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 // ======================== Middlewares =====================
-// ✅ Aumentei o limite para evitar erro com JSON mais “pesado” (metadados)
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json({ limit: '10mb' }));
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Mantém por compatibilidade (se algo antigo ainda usa /uploads local)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ========================= MongoDB ========================
@@ -166,13 +170,27 @@ app.get('/api/5s/semana-atual', (req, res) => {
   return res.json({ semanaId, auditorSemana });
 });
 
-// POST salvar auditoria 5S (DEMO: recebe JSON com metadados)
-app.post('/api/5s/auditorias', async (req, res) => {
+/**
+ * ✅ POST salvar auditoria 5S COM CLOUDINARY
+ * Aceita:
+ *  - application/json (sem fotos)  -> req.body é o payload
+ *  - multipart/form-data (com fotos) -> req.body.payload (string JSON) + req.files
+ *
+ * Fieldnames esperados no FormData:
+ *  - conforme: conf_<itemIndex>_<fotoIndex>   (ex: conf_12_0)
+ *  - não conforme (foto do desvio): nc_<itemIndex>_<desvioIndex> (ex: nc_12_0)
+ */
+app.post('/api/5s/auditorias', upload5s, async (req, res) => {
   try {
-    console.log("📥 Payload recebido 5S:");
-    console.log(JSON.stringify(req.body, null, 2));
+    let payload = null;
 
-    const payload = req.body;
+    // multipart: vem como string em req.body.payload
+    if (req.body && req.body.payload) {
+      payload = JSON.parse(req.body.payload);
+    } else {
+      // json puro
+      payload = req.body;
+    }
 
     // Validação mínima clara
     if (
@@ -190,7 +208,51 @@ app.post('/api/5s/auditorias', async (req, res) => {
       });
     }
 
-    // Criação no MongoDB
+    // ✅ Anexa URLs do Cloudinary no payload (se houver arquivos)
+    const files = Array.isArray(req.files) ? req.files : [];
+
+    for (const f of files) {
+      const field = f.fieldname || '';
+
+      // multer-storage-cloudinary normalmente fornece:
+      // f.path -> URL segura
+      // f.filename -> public_id
+      const fotoObj = {
+        url: f.path,                    // ✅ Cloudinary URL
+        public_id: f.filename,          // ✅ Cloudinary public_id
+        name: f.originalname || null,
+        size: Number(f.size) || null,
+        type: f.mimetype || null,
+      };
+
+      // ✅ CONFORME: conf_<itemIndex>_<fotoIndex>
+      if (field.startsWith('conf_')) {
+        const parts = field.split('_'); // ["conf", "12", "0"]
+        const itemIndex = Number(parts[1]);
+        if (!Number.isFinite(itemIndex) || !payload.itens[itemIndex]) continue;
+
+        payload.itens[itemIndex].conformeFotos = payload.itens[itemIndex].conformeFotos || [];
+        payload.itens[itemIndex].conformeFotos.push(fotoObj);
+        continue;
+      }
+
+      // ✅ NÃO CONFORME (foto do desvio): nc_<itemIndex>_<desvioIndex>
+      if (field.startsWith('nc_')) {
+        const parts = field.split('_'); // ["nc", "12", "0"]
+        const itemIndex = Number(parts[1]);
+        const desvioIndex = Number(parts[2]);
+        if (!Number.isFinite(itemIndex) || !payload.itens[itemIndex]) continue;
+        if (!Number.isFinite(desvioIndex)) continue;
+
+        payload.itens[itemIndex].desvios = payload.itens[itemIndex].desvios || [];
+        payload.itens[itemIndex].desvios[desvioIndex] = payload.itens[itemIndex].desvios[desvioIndex] || {};
+        payload.itens[itemIndex].desvios[desvioIndex].foto = fotoObj;
+
+        continue;
+      }
+    }
+
+    // Salva no MongoDB
     const doc = await Auditoria5S.create(payload);
 
     return res.status(201).json({
@@ -209,7 +271,6 @@ app.post('/api/5s/auditorias', async (req, res) => {
     });
   }
 });
-
 
 // GET listar auditorias 5S (pode filtrar por semanaId)
 app.get('/api/5s/auditorias', async (req, res) => {
@@ -784,4 +845,3 @@ app.post(
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });
-
