@@ -254,7 +254,6 @@
           <div class="subtitle">Painel Inicial</div>
         </div>
       </a>
-      
     </div>
   </header>
 
@@ -307,6 +306,26 @@
         </div>
       </article>
 
+      <!-- ✅ NOVO: Avaliação 5S Tecnosonda -->
+      <article class="card">
+        <div class="card-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+        <h2 class="card-title">Avaliação 5S Tecnosonda</h2>
+        <p class="card-desc">Realize a auditoria 5S semanal com evidências e responsáveis por desvios.</p>
+        <div class="card-actions">
+          <a class="btn" href="/avaliacao.html"><i class="fa-solid fa-arrow-right-to-bracket"></i> Abrir Auditoria</a>
+        </div>
+      </article>
+
+      <!-- ✅ NOVO: Gestão 5S -->
+      <article class="card">
+        <div class="card-icon"><i class="fa-solid fa-chart-line"></i></div>
+        <h2 class="card-title">Gestão 5S</h2>
+        <p class="card-desc">Acompanhe registros, pendências e indicadores do 5S por semana.</p>
+        <div class="card-actions">
+          <a class="btn" href="/gestao.html"><i class="fa-solid fa-arrow-right-to-bracket"></i> Abrir Gestão</a>
+        </div>
+      </article>
+
       <!-- Inspeção em Ativos -->
       <article class="card">
         <div class="card-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
@@ -318,7 +337,6 @@
         </div>
       </article>
 
-         <!-- Formulário de Aptidão -->
     </section> <!-- fecha .cards -->
   </main>
 
@@ -334,7 +352,7 @@
     const yearEl = document.getElementById('year');
     if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-    // Proteção simples do Painel Gestor
+    // Proteção simples do Painel Gestor (Notificações)
     const gestorBtn = document.getElementById('link-gestor');
     if (gestorBtn) {
       const senha = 'AMOARISTIDES';
@@ -342,7 +360,6 @@
         const tentativa = prompt('Informe a senha para acessar o Painel Gestor:');
         if (tentativa === null) return; // cancelado
         if (tentativa === senha) {
-          // Se o site não estiver na raiz do domínio, prefira "gestor.html" sem a barra
           location.href = 'gestor.html';
         } else {
           alert('Senha incorreta.');
@@ -352,5 +369,3 @@
   </script>
 </body>
 </html>
-
-
