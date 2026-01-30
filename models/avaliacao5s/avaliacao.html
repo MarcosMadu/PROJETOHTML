@@ -1,0 +1,730 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Avaliação 5S Tecnosonda — Auditoria</title>
+  <style>
+    :root{
+      --bg:#f2f4f7;          /* cinza gelo */
+      --card:#ffffff;
+      --text:#101828;
+      --muted:#667085;
+      --border:#e4e7ec;
+      --shadow: 0 10px 24px rgba(16,24,40,.08);
+      --primary:#2563eb;
+      --danger:#dc2626;
+      --ok:#16a34a;
+      --warn:#f59e0b;
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    header{
+      position: sticky; top:0; z-index:10;
+      background: rgba(242,244,247,.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .wrap{max-width:1100px;margin:0 auto;padding:18px 18px}
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+    }
+    .brand{
+      display:flex; flex-direction:column; gap:4px;
+    }
+    .brand h1{margin:0;font-size:18px;letter-spacing:.2px}
+    .brand p{margin:0;color:var(--muted);font-size:12px}
+    .pill{
+      display:inline-flex; gap:8px; align-items:center;
+      padding:8px 12px; border:1px solid var(--border); background:#fff;
+      border-radius:999px; box-shadow: 0 4px 12px rgba(16,24,40,.04);
+      font-size:12px; color:var(--muted);
+      white-space:nowrap;
+    }
+
+    main .wrap{padding-top:22px; padding-bottom:40px}
+
+    .grid{
+      display:grid; grid-template-columns: 1.2fr .8fr; gap:14px;
+    }
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr}
+    }
+
+    .card{
+      background: var(--card);
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card-h{
+      padding:16px 16px 10px 16px;
+      border-bottom:1px solid var(--border);
+      display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
+    }
+    .card-h h2{margin:0;font-size:14px}
+    .card-h .sub{margin:4px 0 0 0;font-size:12px;color:var(--muted)}
+    .card-b{padding:16px}
+
+    .meta{
+      display:grid; grid-template-columns: 1fr 1fr; gap:10px;
+    }
+    .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    .field input, .field select{
+      width:100%;
+      padding:10px 12px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      outline:none;
+      background:#fff;
+    }
+    .field input:focus, .field select:focus{
+      border-color: rgba(37,99,235,.5);
+      box-shadow: 0 0 0 4px rgba(37,99,235,.12);
+    }
+
+    .items{
+      display:flex; flex-direction:column; gap:10px;
+    }
+    .item{
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:#fff;
+      overflow:hidden;
+    }
+    .item-top{
+      padding:12px 12px 10px 12px;
+      display:flex; gap:10px; align-items:flex-start; justify-content:space-between;
+      cursor:pointer;
+    }
+    .item-left{display:flex; gap:10px; align-items:flex-start}
+    .num{
+      width:28px;height:28px;border-radius:10px;
+      display:grid; place-items:center;
+      border:1px solid var(--border);
+      color:var(--muted); font-size:12px;
+      background: #f8fafc;
+      flex:0 0 auto;
+    }
+    .txt{min-width:0}
+    .tag{
+      display:inline-flex; padding:4px 8px; border-radius:999px;
+      font-size:11px; border:1px solid var(--border);
+      color:var(--muted); background:#fff;
+      margin-bottom:6px;
+    }
+    .q{
+      margin:0; font-size:13px; line-height:1.35;
+      color: var(--text);
+    }
+    .chev{color:var(--muted); font-size:12px; padding-top:2px; flex:0 0 auto}
+
+    .item-body{
+      display:none;
+      padding:12px;
+      border-top:1px solid var(--border);
+      background:#fbfcfe;
+    }
+    .item.open .item-body{display:block}
+
+    .choices{
+      display:flex; gap:10px; flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+    .radio{
+      display:flex; align-items:center; gap:8px;
+      padding:8px 10px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      background:#fff;
+      font-size:12px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .radio input{margin:0}
+    .note{font-size:12px;color:var(--muted);margin:0 0 10px 0}
+
+    .panel{
+      border:1px dashed rgba(102,112,133,.35);
+      background:#fff;
+      border-radius:14px;
+      padding:12px;
+      margin-top:10px;
+    }
+    .panel h4{margin:0 0 8px 0;font-size:12px;color:var(--text)}
+    .panel .hint{margin:0 0 10px 0;font-size:12px;color:var(--muted)}
+
+    .row{display:flex; gap:10px; flex-wrap:wrap}
+    .row > *{flex: 1 1 220px}
+
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      border:1px solid transparent;
+      padding:10px 12px; border-radius:12px;
+      cursor:pointer; font-weight:600; font-size:13px;
+      background: var(--primary); color:#fff;
+      box-shadow: 0 10px 18px rgba(37,99,235,.18);
+    }
+    .btn:disabled{opacity:.55; cursor:not-allowed}
+    .btn.ghost{
+      background:#fff; color:var(--text);
+      border-color: var(--border);
+      box-shadow:none;
+      font-weight:600;
+    }
+    .btn.danger{
+      background: var(--danger);
+      box-shadow: 0 10px 18px rgba(220,38,38,.18);
+    }
+    .mini{
+      padding:8px 10px; border-radius:10px; font-size:12px;
+    }
+
+    .deviation{
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:#fff;
+      padding:10px;
+      margin-top:10px;
+    }
+    .deviation .head{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      margin-bottom:8px;
+    }
+    .badge{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:4px 8px; border-radius:999px;
+      font-size:11px; border:1px solid var(--border);
+      color: var(--muted); background:#fff;
+    }
+
+    .footer-actions{
+      display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;
+      padding:14px 16px;
+      border-top:1px solid var(--border);
+      background: rgba(255,255,255,.7);
+    }
+
+    .alert{
+      margin-top:10px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:#fff;
+      padding:10px 12px;
+      font-size:12px;
+      color:var(--muted);
+    }
+    .alert strong{color:var(--text)}
+    .loading{
+      display:none; align-items:center; gap:10px;
+      color:var(--muted); font-size:12px;
+    }
+    .loading.on{display:inline-flex}
+    .dot{
+      width:10px;height:10px;border-radius:999px;background:var(--primary);
+      animation:pulse .9s infinite ease-in-out;
+    }
+    @keyframes pulse{
+      0%,100%{transform:scale(.9);opacity:.6}
+      50%{transform:scale(1.2);opacity:1}
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="wrap">
+      <div class="topbar">
+        <div class="brand">
+          <h1>Avaliação 5S Tecnosonda</h1>
+          <p>Auditoria semanal — Conforme / Não Conforme / Não Aplica</p>
+        </div>
+        <div class="pill" id="pillSemana">Semana: <strong id="semanaId">—</strong> · Auditor: <strong id="auditorSemana">—</strong></div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <div class="grid">
+
+        <!-- Checklist -->
+        <section class="card">
+          <div class="card-h">
+            <div>
+              <h2>Checklist</h2>
+              <p class="sub">C e NC exigem foto. NA exige justificativa. NC permite múltiplos desvios (1 foto = 1 desvio com responsável).</p>
+            </div>
+            <button class="btn ghost mini" id="btnExpandir">Expandir tudo</button>
+          </div>
+
+          <div class="card-b">
+            <div class="items" id="listaItens"></div>
+
+            <div class="alert">
+              <strong>Validação:</strong> você só consegue enviar quando todos os itens tiverem status definido e as evidências obrigatórias estiverem anexadas.
+            </div>
+          </div>
+
+          <div class="footer-actions">
+            <span class="loading" id="loadingEnvio"><span class="dot"></span>Enviando inspeção...</span>
+            <button class="btn" id="btnEnviar">Enviar auditoria</button>
+          </div>
+        </section>
+
+        <!-- Metadados -->
+        <aside class="card">
+          <div class="card-h">
+            <div>
+              <h2>Informações do registro</h2>
+              <p class="sub">Semana e auditor são automáticos (alterável no gestor).</p>
+            </div>
+          </div>
+          <div class="card-b">
+            <div class="meta">
+              <div class="field">
+                <label>Data/Hora</label>
+                <input id="dataHora" type="text" readonly />
+              </div>
+              <div class="field">
+                <label>ID (gerado no envio)</label>
+                <input id="auditoriaId" type="text" placeholder="—" readonly />
+              </div>
+              <div class="field" style="grid-column:1 / -1;">
+                <label>Área / Setor (opcional)</label>
+                <input id="setor" type="text" placeholder="Ex.: Pátio / Sonda / Almoxarifado..." />
+              </div>
+            </div>
+
+            <div class="alert" style="margin-top:14px">
+              <strong>Obs.:</strong> Agora está conectado ao backend para buscar semana/auditor e salvar no MongoDB (metadados das fotos).
+            </div>
+          </div>
+        </aside>
+
+      </div>
+    </div>
+  </main>
+
+  <script>
+    /**
+     * ✅ Versão DEMO (para apresentação):
+     * - Semana/auditor vêm do backend: GET /api/5s/semana-atual
+     * - Envio salva no MongoDB: POST /api/5s/auditorias
+     * - As fotos ainda não sobem (por enquanto salvamos apenas os metadados das imagens).
+     */
+
+    // Lista real (auditor automático e responsável da tratativa)
+    const RESPONSAVEIS = [
+      "Selecione...",
+      "ALLAN DO NASCIMENTO MORAES",
+      "ANDRE DA CONCEICAO ALVES",
+      "ANGLA RAKEL SILVA ALMEIDA",
+      "ANTONY CHE GUEVARA CAVALCANTE DOS SANTOS",
+      "CLEITON DE PAULA BATISTA",
+      "DEIVIANE CONCEICAO PEREIRA",
+      "EDUARDO DE SOUSA",
+      "FERNANDO QUEIROZ DA SILVA",
+      "HELIO BARBOSA DOS SANTOS",
+      "HERACLITO HENRIQUE SANTANA LOPES",
+      "JANAINA KETLEY ANDRADE RIBEIRO",
+      "JEOVANE DOS SANTOS SILVA",
+      "JORGE MOUZINHO CARVALHO",
+      "LUCRECIA SANTOS DO NASCIMENTO",
+      "LUIS ANTONIO FELIX DE VASCONCELLOS",
+      "MARCELO MONTANDON MARCAL JUNIOR",
+      "MARCOS OLIVEIRA MENEZES",
+      "RAFAEL HENRIQUE ALVES RIBEIRO",
+      "RAPHAEL JOSE PEREIRA DA SILVA",
+      "RODRIGO BARBOSA DA SILVA",
+      "MARCOS VINICUS BATISTA RIBEIRO",
+      "TAINARA BERTUNES DOS SANTOS",
+      "VERONICA LUIZA GOMES DE MENEZES",
+      "WILDSON DA SILVA BARROS"
+    ];
+
+    // Itens (os 18 que você enviou)
+    const ITENS = [
+      { id: 1,  grupo: "Utilização Organização e Limpeza", texto: "A área está limpa, livre de excesso de vegetação e acúmulo de materiais? (Ex.: resíduos, sucatas, peças, materiais fugitivos, mato alto e andaimes não utilizados). Os materiais estão ordenados de forma a não atrapalhar a passagem e visualização do espaço, com separação para áreas de recebimento e descarte de material e sem risco de queda, em ambiente limpo e seguro de animais peçonhentos?" },
+      { id: 2,  grupo: "Utilização Organização e Limpeza", texto: "A área está isenta de pontos de vazamento/derramamento de material que possam gerar acúmulo de sujeira? (Ex.: água, minério, grãos, acúmulo de resíduos de equipamentos - sondas etc.). Para vazamentos inerentes ao processo (Ex.: vazamentos padrões de equipamento, água do processo de perfuração, água de lubrificação de equipamentos, etc.), é implementada a solução adequada para sua tratativa mantendo o ambiente limpo e seguro?" },
+      { id: 3,  grupo: "Utilização Organização e Limpeza", texto: "Existe sinalização de riscos, acesso e rota de fuga em boas condições e atualizada? (Ex.: sinalização de segurança, riscos, manobra de veículos, estacionamento, trânsito, restrições de acesso, caminho seguro desbloqueado, bem identificado e em boas condições de utilização - sem buracos, poças etc. que gerem risco de acidente." },
+      { id: 4,  grupo: "Utilização Organização e Limpeza", texto: "Banheiros e vestiários disponíveis atendem às necessidades dos empregados? (identidade de gênero, materiais de higiene - papel, sabão, água, iluminação, limpeza, etc.). O banheiro é limpo na frequência adequada e, mesmo que hidráulico, disponibiliza todos os recursos mínimos citados anteriormente?" },
+      { id: 5,  grupo: "Utilização Organização e Limpeza", texto: "As instalações elétricas estão em boas condições? (Ex.: sem fios expostos, improvisos, sinalizadas etc.). Em intervenção temporária (reforma/manutenção/desmobilização/mobilização) as instalações elétricas não representam riscos de acidentes." },
+      { id: 6,  grupo: "Utilização Organização e Limpeza", texto: "A iluminação e ventilação/climatização estão adequadas? Em caso de desconforto na execução das atividades, acionar equipe de SSMAC para avaliar tecnicamente se a iluminação/climatização está adequada. A iluminação poderá ser natural ou artificial e implantada nas instalações físicas ou nos equipamentos de proteção individual e/ou coletiva (EPI/EPC)." },
+      { id: 7,  grupo: "Utilização Organização e Limpeza", texto: "As estruturas estão em condições mínimas adequadas? (Ex.: condições do piso/tendas/andaimes, sem corrosão excessiva, estruturas íntegras, com proteção de partes móveis, etc.). É necessário manter o padrão mínimo, independente do prazo de realização da tarefa, mesmo em intervenções temporárias (mobilização, desmobilização, obras, reformas e manutenção). Verificar a existência da placa de liberação de tendas e andaimes, dentro da validade, pelo time de SSMAC." },
+      { id: 8,  grupo: "Utilização Organização e Limpeza", texto: "Local de trabalho adequado, com mobiliários disponíveis e em condições ergonômicas adequadas? Em locais de intervenções temporárias (mobilização, desmobilização, obras, reformas e manutenção), avaliar se há disponível estrutura de descanso com assentos e cobertura (ex.: tenda de apoio, sombreiro, container etc.). Em caso de dúvidas, acionar a equipe de SSMAC para fazer uma avaliação técnica." },
+      { id: 9,  grupo: "Utilização Organização e Limpeza", texto: "Recursos básicos estão disponíveis? (Ex.: água, papel, lixeiras, copos, banheiro etc.). Os recursos estão disponíveis, próximos e de fácil acesso inclusive para a execução de atividades em locais de intervenções temporárias (mobilização, desmobilização, obras, reformas e manutenção)." },
+      { id: 10, grupo: "Utilização Organização e Limpeza", texto: "EPCs, materiais e ferramentas estão disponíveis com a cor/inspeção do mês e de fácil acesso para sua utilização, inclusive em locais de atividades remotas (mobilização, desmobilização, obras, reformas e manutenção)?" },
+
+      { id: 11, grupo: "Utilização Organização e Limpeza", texto: "Os resíduos perigosos e produtos químicos estão acondicionados, identificados, possuem FISPQ impressa e de fácil acesso no posto de trabalho e estão devidamente segregados (Em locais com acesso à internet é permitida a disponibilização via QR Code). Para os produtos químicos verificar se há identificação do responsável pelo local, e em caso de dúvidas, acionar o time de SSMAC." },
+      { id: 12, grupo: "Padronização", texto: "Os locais de armazenamento de peças, ferramentas, materiais, insumos, matéria-prima e outros, estão definidos, organizados e identificados?" },
+      { id: 13, grupo: "Padronização", texto: "Existem referências visuais e condição normal x anormal definidas na área? (Ex.: estoque mínimo, limite de empilhamento, indicação de nível, gestão visual, organização da área, etc.). No posto, mesmo que seja um local de intervenção temporária (mobilização, desmobilização, obras, reformas e manutenção), há sinalização, ainda que provisória, para identificação de riscos, materiais para descarte, local de armazenagem de peças, equipamentos, itens pessoais, rota de fuga, caminho seguro, etc.? As referências de normal X anormal (placas com fotos do espaço, descrição de equipamentos, demarcação, pintura etc.) são utilizadas de maneira eficaz, garantindo o propósito da gestão visual, sem excessos?" },
+
+      { id: 14, grupo: "Disciplina", texto: "As referências visuais e condições normais estabelecidas estão sendo respeitadas? O atendimento do padrão estabelecido pela área é cumprido com disciplina e sem desvios sistêmicos?" },
+      { id: 15, grupo: "Disciplina", texto: "A disciplina nas rotinas de gestão do 5S demonstra um processo à prova de líder e garante uma maturidade 3, sem oscilação, nos últimos 6 meses?" },
+
+      { id: 16, grupo: "Padronização", texto: "Os processos da atividade fim do posto estão escritos, bem definidos, conhecido pela equipe e inexiste posto com maturidade 0/1 na mesma gerência de área? (Ex.: descrição das atividades, responsáveis, equipamentos, peças e materiais, procedimentos, comportamentos ou ações a serem evitados, etc.)" },
+      { id: 17, grupo: "Padronização", texto: "Foi realizado compartilhamento de kaizens/boas práticas no portal da VP Projetos no ano vigente?" },
+      { id: 18, grupo: "Padronização", texto: "Houve a validação da maturidade 4 por equipe multidisciplinar composta, minimamente, pelo gerente de área responsável pelo posto, SSMA, GER Qualidade e Melhoria Contínua da VP de Projetos?" },
+    ];
+
+    // Estado em memória
+    const state = new Map(); // itemId -> { status, naJustificativa, conformeFotos: File[], desvios: [{foto:File, responsavel}] }
+
+    function nowBR(){
+      const d = new Date();
+      const pad = (n)=> String(n).padStart(2,'0');
+      return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    // Semana/auditor (agora via backend)
+    async function initSemanaMock(){
+      try{
+        const res = await fetch("/api/5s/semana-atual");
+        if(!res.ok) throw new Error("Falha ao buscar semana atual.");
+        const data = await res.json();
+        document.getElementById("semanaId").textContent = data.semanaId || "—";
+        document.getElementById("auditorSemana").textContent = data.auditorSemana || "—";
+      }catch(e){
+        document.getElementById("semanaId").textContent = "erro";
+        document.getElementById("auditorSemana").textContent = "erro";
+      }
+    }
+
+    function buildResponsaveisOptions(selected="Selecione..."){
+      return RESPONSAVEIS.map(n => `<option value="${escapeHtml(n)}" ${n===selected?'selected':''}>${escapeHtml(n)}</option>`).join("");
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function ensureItemState(itemId){
+      if(!state.has(itemId)){
+        state.set(itemId, { status: null, naJustificativa:"", conformeFotos: [], desvios: [] });
+      }
+      return state.get(itemId);
+    }
+
+    function render(){
+      const container = document.getElementById("listaItens");
+      container.innerHTML = "";
+
+      ITENS.forEach((it, idx) => {
+        const st = ensureItemState(it.id);
+
+        const el = document.createElement("div");
+        el.className = "item";
+        el.dataset.itemId = it.id;
+
+        el.innerHTML = `
+          <div class="item-top" role="button" aria-expanded="false">
+            <div class="item-left">
+              <div class="num">${idx+1}</div>
+              <div class="txt">
+                <div class="tag">${escapeHtml(it.grupo)}</div>
+                <p class="q">${escapeHtml(it.texto)}</p>
+              </div>
+            </div>
+            <div class="chev">▼</div>
+          </div>
+
+          <div class="item-body">
+            <div class="choices">
+              <label class="radio">
+                <input type="radio" name="status-${it.id}" value="C" ${st.status==="C"?"checked":""}/>
+                Conforme (C)
+              </label>
+              <label class="radio">
+                <input type="radio" name="status-${it.id}" value="NC" ${st.status==="NC"?"checked":""}/>
+                Não Conforme (NC)
+              </label>
+              <label class="radio">
+                <input type="radio" name="status-${it.id}" value="NA" ${st.status==="NA"?"checked":""}/>
+                Não Aplica (NA)
+              </label>
+            </div>
+
+            <p class="note" id="note-${it.id}">${getNoteText(st.status)}</p>
+
+            <div id="panel-${it.id}"></div>
+          </div>
+        `;
+
+        // toggle
+        el.querySelector(".item-top").addEventListener("click", () => {
+          const open = el.classList.toggle("open");
+          el.querySelector(".item-top").setAttribute("aria-expanded", String(open));
+          el.querySelector(".chev").textContent = open ? "▲" : "▼";
+        });
+
+        // status change
+        el.querySelectorAll(`input[name="status-${it.id}"]`).forEach(r => {
+          r.addEventListener("change", (e) => {
+            st.status = e.target.value;
+            // reset específicos quando troca status
+            if(st.status !== "NA") st.naJustificativa = "";
+            if(st.status !== "C") st.conformeFotos = [];
+            if(st.status !== "NC") st.desvios = [];
+            updateItemPanel(it.id);
+            el.querySelector(`#note-${it.id}`).textContent = getNoteText(st.status);
+          });
+        });
+
+        container.appendChild(el);
+        updateItemPanel(it.id);
+      });
+    }
+
+    function getNoteText(status){
+      if(status==="C") return "Foto obrigatória (evidência do item).";
+      if(status==="NC") return "Foto obrigatória por desvio + responsável obrigatório por cada foto. Você pode adicionar várias NCs (vários desvios) no mesmo item.";
+      if(status==="NA") return "Justificativa obrigatória para 'Não Aplica'.";
+      return "Selecione um status para este item.";
+    }
+
+    function updateItemPanel(itemId){
+      const st = ensureItemState(itemId);
+      const panel = document.querySelector(`#panel-${CSS.escape(itemId)}`);
+      if(!panel) return;
+
+      if(!st.status){
+        panel.innerHTML = "";
+        return;
+      }
+
+      if(st.status === "NA"){
+        panel.innerHTML = `
+          <div class="panel">
+            <h4>Justificativa (obrigatória)</h4>
+            <p class="hint">Explique por que este item não se aplica.</p>
+            <div class="row">
+              <div class="field" style="flex:1 1 100%">
+                <input type="text" id="na-${itemId}" placeholder="Digite a justificativa..." value="${escapeHtml(st.naJustificativa)}"/>
+              </div>
+            </div>
+          </div>
+        `;
+        panel.querySelector(`#na-${CSS.escape(itemId)}`).addEventListener("input", (e)=>{
+          st.naJustificativa = e.target.value;
+        });
+        return;
+      }
+
+      if(st.status === "C"){
+        panel.innerHTML = `
+          <div class="panel">
+            <h4>Evidência do item (foto obrigatória)</h4>
+            <p class="hint">Anexe pelo menos 1 foto do item conforme.</p>
+            <div class="row">
+              <div class="field" style="flex:1 1 100%">
+                <input type="file" id="cf-${itemId}" accept="image/*" />
+              </div>
+            </div>
+            <div class="hint" id="cfcount-${itemId}">${st.conformeFotos.length ? `Fotos anexadas: ${st.conformeFotos.length}` : "Nenhuma foto anexada ainda."}</div>
+          </div>
+        `;
+        panel.querySelector(`#cf-${CSS.escape(itemId)}`).addEventListener("change", (e)=>{
+          const files = Array.from(e.target.files || []);
+          st.conformeFotos = files;
+          updateItemPanel(itemId);
+        });
+        return;
+      }
+
+      // NC
+      const desviosHtml = st.desvios.map((d, i) => `
+        <div class="deviation">
+          <div class="head">
+            <span class="badge">Desvio #${i+1}</span>
+            <button class="btn danger mini" type="button" data-rm="${i}">Remover</button>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label>Foto do desvio (obrigatória)</label>
+              <input type="file" accept="image/*" data-foto="${i}" />
+              <div class="hint">${d.foto ? `Anexada: ${escapeHtml(d.foto.name)}` : "Nenhuma foto anexada."}</div>
+            </div>
+            <div class="field">
+              <label>Responsável pela tratativa (obrigatório)</label>
+              <select data-resp="${i}">
+                ${buildResponsaveisOptions(d.responsavel || "Selecione...")}
+              </select>
+            </div>
+          </div>
+        </div>
+      `).join("");
+
+      panel.innerHTML = `
+        <div class="panel">
+          <h4>Não Conformidade (NC) — Desvios</h4>
+          <p class="hint">Cada foto = 1 desvio. Para cada desvio, selecione um responsável. O mesmo responsável pode aparecer em vários desvios.</p>
+
+          <button class="btn ghost mini" type="button" id="add-${itemId}">+ Adicionar nova NC (novo desvio)</button>
+
+          <div id="desvios-${itemId}">
+            ${desviosHtml || `<div class="alert"><strong>Sem desvios ainda.</strong> Clique em “Adicionar nova NC”.</div>`}
+          </div>
+        </div>
+      `;
+
+      panel.querySelector(`#add-${CSS.escape(itemId)}`).addEventListener("click", ()=>{
+        st.desvios.push({ foto:null, responsavel:"Selecione..." });
+        updateItemPanel(itemId);
+      });
+
+      panel.querySelectorAll("[data-rm]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const idx = Number(btn.getAttribute("data-rm"));
+          st.desvios.splice(idx, 1);
+          updateItemPanel(itemId);
+        });
+      });
+
+      panel.querySelectorAll("[data-foto]").forEach(inp=>{
+        inp.addEventListener("change", (e)=>{
+          const i = Number(inp.getAttribute("data-foto"));
+          const file = (e.target.files || [])[0] || null;
+          st.desvios[i].foto = file;
+          updateItemPanel(itemId);
+        });
+      });
+
+      panel.querySelectorAll("[data-resp]").forEach(sel=>{
+        sel.addEventListener("change", ()=>{
+          const i = Number(sel.getAttribute("data-resp"));
+          st.desvios[i].responsavel = sel.value;
+        });
+      });
+    }
+
+    function validateAll(){
+      const errors = [];
+
+      ITENS.forEach(it=>{
+        const st = ensureItemState(it.id);
+        if(!st.status){
+          errors.push(`Item ${it.id}: selecione Conforme/NC/NA.`);
+          return;
+        }
+        if(st.status === "NA"){
+          if(!st.naJustificativa.trim()){
+            errors.push(`Item ${it.id}: justificativa obrigatória (Não Aplica).`);
+          }
+        }
+        if(st.status === "C"){
+          if(!st.conformeFotos || st.conformeFotos.length === 0){
+            errors.push(`Item ${it.id}: foto obrigatória (Conforme).`);
+          }
+        }
+        if(st.status === "NC"){
+          if(!st.desvios || st.desvios.length === 0){
+            errors.push(`Item ${it.id}: adicione ao menos 1 desvio (foto).`);
+          } else {
+            st.desvios.forEach((d, idx)=>{
+              if(!d.foto) errors.push(`Item ${it.id} (Desvio #${idx+1}): foto obrigatória.`);
+              if(!d.responsavel || d.responsavel === "Selecione...") errors.push(`Item ${it.id} (Desvio #${idx+1}): responsável obrigatório.`);
+            });
+          }
+        }
+      });
+
+      return errors;
+    }
+
+    function buildPayload(){
+      const itens = ITENS.map(it=>{
+        const st = ensureItemState(it.id);
+        return {
+          itemId: it.id,
+          grupo: it.grupo,
+          texto: it.texto,
+          status: st.status,
+          naJustificativa: st.status==="NA" ? st.naJustificativa : null,
+          // DEMO: salvando só metadados das fotos
+          conformeFotos: st.status==="C" ? (st.conformeFotos || []).map(f=>({ name:f.name, size:f.size, type:f.type })) : [],
+          desvios: st.status==="NC" ? (st.desvios || []).map(d=>({
+            responsavel: d.responsavel,
+            foto: d.foto ? { name:d.foto.name, size:d.foto.size, type:d.foto.type } : null
+          })) : []
+        };
+      });
+
+      return {
+        semanaId: document.getElementById("semanaId").textContent,
+        auditorSemana: document.getElementById("auditorSemana").textContent,
+        dataHora: document.getElementById("dataHora").value,
+        setor: document.getElementById("setor").value || null,
+        itens
+      };
+    }
+
+    // Eventos
+    document.getElementById("btnExpandir").addEventListener("click", ()=>{
+      const items = document.querySelectorAll(".item");
+      const anyClosed = Array.from(items).some(i=>!i.classList.contains("open"));
+      items.forEach(i=>{
+        i.classList.toggle("open", anyClosed);
+        i.querySelector(".chev").textContent = anyClosed ? "▲" : "▼";
+        i.querySelector(".item-top").setAttribute("aria-expanded", String(anyClosed));
+      });
+      document.getElementById("btnExpandir").textContent = anyClosed ? "Recolher tudo" : "Expandir tudo";
+    });
+
+    document.getElementById("btnEnviar").addEventListener("click", async ()=>{
+      const btn = document.getElementById("btnEnviar");
+      const loading = document.getElementById("loadingEnvio");
+
+      const errs = validateAll();
+      if(errs.length){
+        alert("Corrija antes de enviar:\n\n- " + errs.join("\n- "));
+        return;
+      }
+
+      btn.disabled = true;
+      loading.classList.add("on");
+
+      try{
+        const payload = buildPayload();
+
+        const res = await fetch("/api/5s/auditorias", {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if(!res.ok){
+          const txt = await res.text().catch(()=> "");
+          throw new Error(txt || "Falha ao enviar auditoria.");
+        }
+
+        const data = await res.json().catch(()=> ({}));
+        document.getElementById("auditoriaId").value = data.auditoriaId || "OK";
+        alert("Auditoria enviada com sucesso!");
+      }catch(err){
+        alert("Erro ao enviar: " + (err?.message || err));
+      }finally{
+        btn.disabled = false;
+        loading.classList.remove("on");
+      }
+    });
+
+    // Init
+    document.getElementById("dataHora").value = nowBR();
+    initSemanaMock();
+    render();
+  </script>
+</body>
+</html>
