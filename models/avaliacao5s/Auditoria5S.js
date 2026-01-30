@@ -8,10 +8,16 @@ const DesvioSchema = new mongoose.Schema(
       size: Number,
       type: String,
     },
-    status: { type: String, enum: ["ABERTO", "BAIXADO", "VENCIDO"], default: "ABERTO" },
+
+    status: {
+      type: String,
+      enum: ["ABERTO", "BAIXADO", "VENCIDO"],
+      default: "ABERTO",
+    },
+
     baixa: {
       fotosResolucao: [{ name: String, size: Number, type: String }],
-      dataHora: String,
+      dataHora: { type: String, default: null },
     },
   },
   { _id: false }
@@ -20,12 +26,16 @@ const DesvioSchema = new mongoose.Schema(
 const ItemSchema = new mongoose.Schema(
   {
     itemId: { type: Number, required: true },
-    grupo: String,
-    texto: String,
+    grupo: { type: String, required: true },
+    texto: { type: String, required: true },
+
     status: { type: String, enum: ["C", "NC", "NA"], required: true },
-    naJustificativa: String,
+
+    naJustificativa: { type: String, default: null },
+
     conformeFotos: [{ name: String, size: Number, type: String }],
-    desvios: [DesvioSchema],
+
+    desvios: { type: [DesvioSchema], default: [] },
   },
   { _id: false }
 );
@@ -35,11 +45,15 @@ const Auditoria5SSchema = new mongoose.Schema(
     semanaId: { type: String, required: true },
     auditorSemana: { type: String, required: true },
     dataHora: { type: String, required: true },
-    setor: String,
-    itens: [ItemSchema],
-    createdAt: { type: Date, default: Date.now },
+
+    setor: { type: String, default: null },
+
+    itens: { type: [ItemSchema], required: true },
   },
-  { collection: "auditorias_5s" }
+  {
+    collection: "auditorias_5s",
+    timestamps: true, // cria createdAt e updatedAt automaticamente
+  }
 );
 
 module.exports = mongoose.model("Auditoria5S", Auditoria5SSchema);
