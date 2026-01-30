@@ -635,9 +635,11 @@
       return errors;
     }
 
-    function buildPayload(){
+    // ===== ALTERAÇÃO: buildPayload agora NÃO fixa field. O field é gerado no envio (sempre bate com o FormData)
+    function buildPayloadWithFields(){
       const itens = ITENS.map(it=>{
         const st = ensureItemState(it.id);
+
         return {
           itemId: it.id,
           grupo: it.grupo,
@@ -645,8 +647,7 @@
           status: st.status,
           naJustificativa: st.status==="NA" ? st.naJustificativa : null,
 
-          // ✅ AQUI: agora mandamos "referências" para o backend
-          // (o backend vai montar o upload usando os campos do FormData)
+          // Aqui vai o "ponteiro" correto pro server montar URL
           conformeFotos: st.status==="C"
             ? (st.conformeFotos || []).map((f, idx)=>({
                 field: `conf_${it.id}_${idx}`,
@@ -693,7 +694,7 @@
       document.getElementById("btnExpandir").textContent = anyClosed ? "Recolher tudo" : "Expandir tudo";
     });
 
-    // ✅ AQUI: ALTERAÇÃO PRINCIPAL — envio via FormData (Cloudinary)
+    // ✅ ENVIO CORRIGIDO (FormData + payload com fieldnames batendo com os arquivos)
     document.getElementById("btnEnviar").addEventListener("click", async ()=>{
       const btn = document.getElementById("btnEnviar");
       const loading = document.getElementById("loadingEnvio");
@@ -708,11 +709,9 @@
       loading.classList.add("on");
 
       try{
-        const payload = buildPayload();
         const fd = new FormData();
-        fd.append("payload", JSON.stringify(payload));
 
-        // anexar arquivos reais:
+        // 1) anexar arquivos reais (fieldnames padronizados)
         ITENS.forEach((it) => {
           const st = ensureItemState(it.id);
 
@@ -728,6 +727,10 @@
             });
           }
         });
+
+        // 2) agora monta payload com os fieldnames corretos e coloca no form-data
+        const payload = buildPayloadWithFields();
+        fd.append("payload", JSON.stringify(payload));
 
         const res = await fetch("/api/5s/auditorias", {
           method:"POST",
