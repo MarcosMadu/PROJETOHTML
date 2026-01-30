@@ -304,7 +304,7 @@
             </div>
 
             <div class="alert" style="margin-top:14px">
-              <strong>Obs.:</strong> Agora está conectado ao backend para buscar semana/auditor e salvar no MongoDB (metadados das fotos).
+              <strong>Obs.:</strong> Agora está conectado ao backend para buscar semana/auditor e salvar no MongoDB (agora com upload real de fotos no Cloudinary).
             </div>
           </div>
         </aside>
@@ -314,13 +314,6 @@
   </main>
 
   <script>
-    /**
-     * ✅ Versão DEMO (para apresentação):
-     * - Semana/auditor vêm do backend: GET /api/5s/semana-atual
-     * - Envio salva no MongoDB: POST /api/5s/auditorias
-     * - As fotos ainda não sobem (por enquanto salvamos apenas os metadados das imagens).
-     */
-
     // Lista real (auditor automático e responsável da tratativa)
     const RESPONSAVEIS = [
       "Selecione...",
@@ -350,7 +343,7 @@
       "WILDSON DA SILVA BARROS"
     ];
 
-    // Itens (os 18 que você enviou)
+    // Itens
     const ITENS = [
       { id: 1,  grupo: "Utilização Organização e Limpeza", texto: "A área está limpa, livre de excesso de vegetação e acúmulo de materiais? (Ex.: resíduos, sucatas, peças, materiais fugitivos, mato alto e andaimes não utilizados). Os materiais estão ordenados de forma a não atrapalhar a passagem e visualização do espaço, com separação para áreas de recebimento e descarte de material e sem risco de queda, em ambiente limpo e seguro de animais peçonhentos?" },
       { id: 2,  grupo: "Utilização Organização e Limpeza", texto: "A área está isenta de pontos de vazamento/derramamento de material que possam gerar acúmulo de sujeira? (Ex.: água, minério, grãos, acúmulo de resíduos de equipamentos - sondas etc.). Para vazamentos inerentes ao processo (Ex.: vazamentos padrões de equipamento, água do processo de perfuração, água de lubrificação de equipamentos, etc.), é implementada a solução adequada para sua tratativa mantendo o ambiente limpo e seguro?" },
@@ -384,7 +377,6 @@
       return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
     }
 
-    // Semana/auditor (agora via backend)
     async function initSemanaMock(){
       try{
         const res = await fetch("/api/5s/semana-atual");
@@ -474,7 +466,6 @@
         el.querySelectorAll(`input[name="status-${it.id}"]`).forEach(r => {
           r.addEventListener("change", (e) => {
             st.status = e.target.value;
-            // reset específicos quando troca status
             if(st.status !== "NA") st.naJustificativa = "";
             if(st.status !== "C") st.conformeFotos = [];
             if(st.status !== "NC") st.desvios = [];
@@ -653,12 +644,31 @@
           texto: it.texto,
           status: st.status,
           naJustificativa: st.status==="NA" ? st.naJustificativa : null,
-          // DEMO: salvando só metadados das fotos
-          conformeFotos: st.status==="C" ? (st.conformeFotos || []).map(f=>({ name:f.name, size:f.size, type:f.type })) : [],
-          desvios: st.status==="NC" ? (st.desvios || []).map(d=>({
-            responsavel: d.responsavel,
-            foto: d.foto ? { name:d.foto.name, size:d.foto.size, type:d.foto.type } : null
-          })) : []
+
+          // ✅ AQUI: agora mandamos "referências" para o backend
+          // (o backend vai montar o upload usando os campos do FormData)
+          conformeFotos: st.status==="C"
+            ? (st.conformeFotos || []).map((f, idx)=>({
+                field: `conf_${it.id}_${idx}`,
+                name: f.name,
+                size: f.size,
+                type: f.type
+              }))
+            : [],
+
+          desvios: st.status==="NC"
+            ? (st.desvios || []).map((d, idx)=>({
+                responsavel: d.responsavel,
+                foto: d.foto
+                  ? {
+                      field: `nc_${it.id}_${idx}`,
+                      name: d.foto.name,
+                      size: d.foto.size,
+                      type: d.foto.type
+                    }
+                  : null
+              }))
+            : []
         };
       });
 
@@ -683,6 +693,7 @@
       document.getElementById("btnExpandir").textContent = anyClosed ? "Recolher tudo" : "Expandir tudo";
     });
 
+    // ✅ AQUI: ALTERAÇÃO PRINCIPAL — envio via FormData (Cloudinary)
     document.getElementById("btnEnviar").addEventListener("click", async ()=>{
       const btn = document.getElementById("btnEnviar");
       const loading = document.getElementById("loadingEnvio");
@@ -698,11 +709,29 @@
 
       try{
         const payload = buildPayload();
+        const fd = new FormData();
+        fd.append("payload", JSON.stringify(payload));
+
+        // anexar arquivos reais:
+        ITENS.forEach((it) => {
+          const st = ensureItemState(it.id);
+
+          if(st.status === "C"){
+            (st.conformeFotos || []).forEach((file, idx)=>{
+              fd.append(`conf_${it.id}_${idx}`, file);
+            });
+          }
+
+          if(st.status === "NC"){
+            (st.desvios || []).forEach((d, idx)=>{
+              if(d.foto) fd.append(`nc_${it.id}_${idx}`, d.foto);
+            });
+          }
+        });
 
         const res = await fetch("/api/5s/auditorias", {
           method:"POST",
-          headers:{ "Content-Type":"application/json" },
-          body: JSON.stringify(payload)
+          body: fd
         });
 
         if(!res.ok){
