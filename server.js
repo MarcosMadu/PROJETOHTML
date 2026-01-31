@@ -301,7 +301,7 @@ app.post('/api/5s/auditorias', upload5S.any(), async (req, res) => {
       type: d.foto?.type || found.type || null,
       size: d.foto?.size || found.size || null
     }
-
+              : {
                   url: null,
                   public_id: null,
                   name: d.foto?.name || null,
