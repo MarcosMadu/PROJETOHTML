@@ -5,14 +5,27 @@ const mongoose = require("mongoose");
  * OBS: por enquanto você está salvando só {name,size,type}.
  * Quando evoluirmos, dá pra trocar para URL (Cloudinary) + public_id.
  */
-const FotoSchema = new mongoose.Schema(
+const CloudFileSchema = new mongoose.Schema(
   {
+    // Cloudinary
+    public_id: { type: String, default: null },
+    secure_url: { type: String, default: null }, // ✅ use essa no front
+    url: { type: String, default: null },
+
+    // metadados úteis
+    original_filename: { type: String, default: null },
+    format: { type: String, default: null },
+    bytes: { type: Number, default: null },
+    resource_type: { type: String, default: "image" },
+
+    // compatibilidade com seu formato antigo (não quebra docs velhos)
     name: { type: String, default: null },
     size: { type: Number, default: null },
     type: { type: String, default: null },
   },
   { _id: false }
 );
+
 
 const DesvioSchema = new mongoose.Schema(
   {
@@ -21,7 +34,7 @@ const DesvioSchema = new mongoose.Schema(
     // ✅ IMPORTANTE: deve ser OBJETO tipado (não “subdocumento solto”)
     // Isso evita CastError quando chega {name,size,type}
     foto: {
-      type: FotoSchema,
+      type: CloudFileSchema,
       required: true,
     },
 
@@ -34,7 +47,7 @@ const DesvioSchema = new mongoose.Schema(
     baixa: {
       // ✅ Array de objetos tipados
       fotosResolucao: {
-        type: [FotoSchema],
+        type: [CloudFileSchema],
         default: [],
       },
       dataHora: { type: String, default: null },
@@ -55,7 +68,7 @@ const ItemSchema = new mongoose.Schema(
 
     // ✅ Array de objetos tipados (evita CastError)
     conformeFotos: {
-      type: [FotoSchema],
+      type: [CloudFileSchema],
       default: [],
     },
 
