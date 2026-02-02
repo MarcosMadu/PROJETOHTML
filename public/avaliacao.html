@@ -235,6 +235,50 @@
       0%,100%{transform:scale(.9);opacity:.6}
       50%{transform:scale(1.2);opacity:1}
     }
+
+    /* ====== ADICIONADO: Card de maturidade ====== */
+    .maturidade-card{
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:#fff;
+      padding:12px;
+      box-shadow: 0 10px 18px rgba(16,24,40,.06);
+      margin-bottom:14px;
+    }
+    .maturidade-top{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
+      margin-bottom:8px;
+    }
+    .maturidade-top h3{
+      margin:0;
+      font-size:13px;
+      color:var(--text);
+    }
+    .maturidade-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      font-size:12px;
+      color:var(--muted);
+      background:#fff;
+      white-space:nowrap;
+    }
+    .maturidade-pill.ok{border-color: rgba(22,163,74,.35); color: var(--ok); background: rgba(22,163,74,.06)}
+    .maturidade-pill.warn{border-color: rgba(245,158,11,.35); color:var(--warn); background: rgba(245,158,11,.08)}
+    .maturidade-pill.danger{border-color: rgba(220,38,38,.35); color: var(--danger); background: rgba(220,38,38,.06)}
+    .maturidade-body{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+    .mono{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:12px;
+      color:var(--text);
+    }
   </style>
 </head>
 
@@ -287,7 +331,22 @@
               <p class="sub">Semana e auditor são automáticos (alterável no gestor).</p>
             </div>
           </div>
+
           <div class="card-b">
+
+            <!-- ====== ADICIONADO: Card de Maturidade ====== -->
+            <div class="maturidade-card" id="maturidadeCard">
+              <div class="maturidade-top">
+                <h3>Maturidade 5S (automática)</h3>
+                <span class="maturidade-pill warn" id="maturidadePill">
+                  Maturidade: <strong id="maturidadeValor">—</strong>
+                </span>
+              </div>
+              <div class="maturidade-body" id="maturidadeBody">
+                Preencha os status dos itens para calcular a maturidade.
+              </div>
+            </div>
+
             <div class="meta">
               <div class="field">
                 <label>Data/Hora</label>
@@ -343,9 +402,7 @@
       "WILDSON DA SILVA BARROS"
     ];
 
-    // ✅ ITENS ATUALIZADOS (15 itens) — mantive o formato {id, grupo, texto}
-    // Grupo = faixa de maturidade (1..4) conforme sua regra:
-    // 1-7 => M1 | 8-11 => M2 | 12-14 => M3 | 15 => M4
+    // Itens (15) com grupos por faixa de maturidade
     const ITENS = [
       { id: 1,  grupo: "Maturidade 1", texto: "A área está livre de objetos obsoletos, improvisados ou sucateados, sem identificação?" },
       { id: 2,  grupo: "Maturidade 1", texto: "A área está limpa, sem resíduos espalhados pelo chão?" },
@@ -409,6 +466,160 @@
       return state.get(itemId);
     }
 
+    /* ====== ADICIONADO: cálculo de maturidade ====== */
+    function getItemById(id){
+      return ITENS.find(x => x.id === id);
+    }
+
+    function statusLabel(s){
+      if(s === "C") return "C (Conforme)";
+      if(s === "NC") return "NC (Não Conforme)";
+      if(s === "NA") return "NA (Não Aplica)";
+      return "—";
+    }
+
+    function itemAtende(status){
+      // “Atende” = C | “Não atende” = NC ou NA
+      return status === "C";
+    }
+
+    function allHaveStatus(){
+      return ITENS.every(it => {
+        const st = ensureItemState(it.id);
+        return !!st.status;
+      });
+    }
+
+    function computeMaturidade(){
+      // Se ainda tem item sem status, mostramos pendente
+      if(!allHaveStatus()){
+        return {
+          ready: false,
+          maturidade: null,
+          regra: "Preencha os itens para calcular.",
+          derrubou: null
+        };
+      }
+
+      // Faixas:
+      const m1 = [1,2,3,4,5,6,7];
+      const m2 = [8,9,10,11];
+      const m3 = [12,13,14];
+      const m4 = [15];
+
+      // 1) Se qualquer item 1-7 NÃO atender => maturidade 0
+      for(const id of m1){
+        const st = ensureItemState(id);
+        if(!itemAtende(st.status)){
+          const it = getItemById(id);
+          return {
+            ready: true,
+            maturidade: 0,
+            regra: "Itens 1–7 (Maturidade 1): se algum NÃO atender → maturidade 0.",
+            derrubou: { id, status: st.status, texto: it?.texto || "" }
+          };
+        }
+      }
+
+      // 2) Itens 8-11: se algum NÃO atender => maturidade 1
+      for(const id of m2){
+        const st = ensureItemState(id);
+        if(!itemAtende(st.status)){
+          const it = getItemById(id);
+          return {
+            ready: true,
+            maturidade: 1,
+            regra: "Itens 8–11 (Maturidade 2): se algum NÃO atender → maturidade 1.",
+            derrubou: { id, status: st.status, texto: it?.texto || "" }
+          };
+        }
+      }
+
+      // 3) Itens 12-14: se algum NÃO atender => maturidade 2
+      for(const id of m3){
+        const st = ensureItemState(id);
+        if(!itemAtende(st.status)){
+          const it = getItemById(id);
+          return {
+            ready: true,
+            maturidade: 2,
+            regra: "Itens 12–14 (Maturidade 3): se algum NÃO atender → maturidade 2.",
+            derrubou: { id, status: st.status, texto: it?.texto || "" }
+          };
+        }
+      }
+
+      // 4) Item 15: se NÃO atender => maturidade 3; se atender => 4
+      for(const id of m4){
+        const st = ensureItemState(id);
+        const it = getItemById(id);
+        if(!itemAtende(st.status)){
+          return {
+            ready: true,
+            maturidade: 3,
+            regra: "Item 15 (Maturidade 4): se NÃO atender → maturidade 3; se atender → 4.",
+            derrubou: { id, status: st.status, texto: it?.texto || "" }
+          };
+        }
+      }
+
+      // Se chegou aqui, tudo atende até o 15 => 4
+      return {
+        ready: true,
+        maturidade: 4,
+        regra: "Todos itens atendidos (C) nas faixas 1–7, 8–11, 12–14 e item 15 → maturidade 4.",
+        derrubou: null
+      };
+    }
+
+    function updateMaturidadeCard(){
+      const pill = document.getElementById("maturidadePill");
+      const v = document.getElementById("maturidadeValor");
+      const body = document.getElementById("maturidadeBody");
+
+      const r = computeMaturidade();
+
+      if(!r.ready){
+        v.textContent = "—";
+        pill.classList.remove("ok","danger");
+        pill.classList.add("warn");
+        body.innerHTML = `Preencha os status dos itens para calcular a maturidade.`;
+        return;
+      }
+
+      v.textContent = String(r.maturidade);
+
+      // cor da pill (simples e útil)
+      pill.classList.remove("ok","warn","danger");
+      if(r.maturidade >= 3) pill.classList.add("ok");
+      else if(r.maturidade === 2) pill.classList.add("warn");
+      else pill.classList.add("danger");
+
+      if(r.derrubou){
+        body.innerHTML = `
+          <div><strong>Regra aplicada:</strong> ${escapeHtml(r.regra)}</div>
+          <div style="margin-top:8px">
+            <strong>Item que derrubou:</strong>
+            <span class="mono">#${escapeHtml(r.derrubou.id)}</span>
+            (${escapeHtml(statusLabel(r.derrubou.status))})
+          </div>
+          <div style="margin-top:6px">
+            <strong>Pergunta:</strong> ${escapeHtml(r.derrubou.texto || "—")}
+          </div>
+          <div style="margin-top:10px">
+            <strong>Legenda:</strong> 0=inexistente · 1=fraco · 2=em implantação · 3=implantado · 4=excelência
+          </div>
+        `;
+      }else{
+        body.innerHTML = `
+          <div><strong>Regra aplicada:</strong> ${escapeHtml(r.regra)}</div>
+          <div style="margin-top:10px">
+            <strong>Legenda:</strong> 0=inexistente · 1=fraco · 2=em implantação · 3=implantado · 4=excelência
+          </div>
+        `;
+      }
+    }
+
     function render(){
       const container = document.getElementById("listaItens");
       container.innerHTML = "";
@@ -470,12 +681,18 @@
             if(st.status !== "NC") st.desvios = [];
             updateItemPanel(it.id);
             el.querySelector(`#note-${it.id}`).textContent = getNoteText(st.status);
+
+            // ====== ADICIONADO: atualizar maturidade ao mudar status ======
+            updateMaturidadeCard();
           });
         });
 
         container.appendChild(el);
         updateItemPanel(it.id);
       });
+
+      // ====== ADICIONADO: atualizar maturidade após render inicial ======
+      updateMaturidadeCard();
     }
 
     function getNoteText(status){
@@ -509,6 +726,7 @@
         `;
         panel.querySelector(`#na-${CSS.escape(itemId)}`).addEventListener("input", (e)=>{
           st.naJustificativa = e.target.value;
+          // (opcional) NA não atende, mas a maturidade já muda por status
         });
         return;
       }
@@ -634,7 +852,7 @@
       return errors;
     }
 
-    // ===== ALTERAÇÃO: buildPayload agora NÃO fixa field. O field é gerado no envio (sempre bate com o FormData)
+    // buildPayload com fieldnames batendo com os arquivos
     function buildPayloadWithFields(){
       const itens = ITENS.map(it=>{
         const st = ensureItemState(it.id);
@@ -646,7 +864,6 @@
           status: st.status,
           naJustificativa: st.status==="NA" ? st.naJustificativa : null,
 
-          // Aqui vai o "ponteiro" correto pro server montar URL
           conformeFotos: st.status==="C"
             ? (st.conformeFotos || []).map((f, idx)=>({
                 field: `conf_${it.id}_${idx}`,
@@ -693,7 +910,7 @@
       document.getElementById("btnExpandir").textContent = anyClosed ? "Recolher tudo" : "Expandir tudo";
     });
 
-    // ✅ ENVIO CORRIGIDO (FormData + payload com fieldnames batendo com os arquivos)
+    // ENVIO
     document.getElementById("btnEnviar").addEventListener("click", async ()=>{
       const btn = document.getElementById("btnEnviar");
       const loading = document.getElementById("loadingEnvio");
@@ -710,7 +927,7 @@
       try{
         const fd = new FormData();
 
-        // 1) anexar arquivos reais (fieldnames padronizados)
+        // anexar arquivos reais
         ITENS.forEach((it) => {
           const st = ensureItemState(it.id);
 
@@ -727,7 +944,6 @@
           }
         });
 
-        // 2) agora monta payload com os fieldnames corretos e coloca no form-data
         const payload = buildPayloadWithFields();
         fd.append("payload", JSON.stringify(payload));
 
