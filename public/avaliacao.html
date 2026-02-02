@@ -343,29 +343,28 @@
       "WILDSON DA SILVA BARROS"
     ];
 
-    // Itens
+    // ✅ ITENS ATUALIZADOS (15 itens) — mantive o formato {id, grupo, texto}
+    // Grupo = faixa de maturidade (1..4) conforme sua regra:
+    // 1-7 => M1 | 8-11 => M2 | 12-14 => M3 | 15 => M4
     const ITENS = [
-      { id: 1,  grupo: "Utilização Organização e Limpeza", texto: "A área está limpa, livre de excesso de vegetação e acúmulo de materiais? (Ex.: resíduos, sucatas, peças, materiais fugitivos, mato alto e andaimes não utilizados). Os materiais estão ordenados de forma a não atrapalhar a passagem e visualização do espaço, com separação para áreas de recebimento e descarte de material e sem risco de queda, em ambiente limpo e seguro de animais peçonhentos?" },
-      { id: 2,  grupo: "Utilização Organização e Limpeza", texto: "A área está isenta de pontos de vazamento/derramamento de material que possam gerar acúmulo de sujeira? (Ex.: água, minério, grãos, acúmulo de resíduos de equipamentos - sondas etc.). Para vazamentos inerentes ao processo (Ex.: vazamentos padrões de equipamento, água do processo de perfuração, água de lubrificação de equipamentos, etc.), é implementada a solução adequada para sua tratativa mantendo o ambiente limpo e seguro?" },
-      { id: 3,  grupo: "Utilização Organização e Limpeza", texto: "Existe sinalização de riscos, acesso e rota de fuga em boas condições e atualizada? (Ex.: sinalização de segurança, riscos, manobra de veículos, estacionamento, trânsito, restrições de acesso, caminho seguro desbloqueado, bem identificado e em boas condições de utilização - sem buracos, poças etc. que gerem risco de acidente." },
-      { id: 4,  grupo: "Utilização Organização e Limpeza", texto: "Banheiros e vestiários disponíveis atendem às necessidades dos empregados? (identidade de gênero, materiais de higiene - papel, sabão, água, iluminação, limpeza, etc.). O banheiro é limpo na frequência adequada e, mesmo que hidráulico, disponibiliza todos os recursos mínimos citados anteriormente?" },
-      { id: 5,  grupo: "Utilização Organização e Limpeza", texto: "As instalações elétricas estão em boas condições? (Ex.: sem fios expostos, improvisos, sinalizadas etc.). Em intervenção temporária (reforma/manutenção/desmobilização/mobilização) as instalações elétricas não representam riscos de acidentes." },
-      { id: 6,  grupo: "Utilização Organização e Limpeza", texto: "A iluminação e ventilação/climatização estão adequadas? Em caso de desconforto na execução das atividades, acionar equipe de SSMAC para avaliar tecnicamente se a iluminação/climatização está adequada. A iluminação poderá ser natural ou artificial e implantada nas instalações físicas ou nos equipamentos de proteção individual e/ou coletiva (EPI/EPC)." },
-      { id: 7,  grupo: "Utilização Organização e Limpeza", texto: "As estruturas estão em condições mínimas adequadas? (Ex.: condições do piso/tendas/andaimes, sem corrosão excessiva, estruturas íntegras, com proteção de partes móveis, etc.). É necessário manter o padrão mínimo, independente do prazo de realização da tarefa, mesmo em intervenções temporárias (mobilização, desmobilização, obras, reformas e manutenção). Verificar a existência da placa de liberação de tendas e andaimes, dentro da validade, pelo time de SSMAC." },
-      { id: 8,  grupo: "Utilização Organização e Limpeza", texto: "Local de trabalho adequado, com mobiliários disponíveis e em condições ergonômicas adequadas? Em locais de intervenções temporárias (mobilização, desmobilização, obras, reformas e manutenção), avaliar se há disponível estrutura de descanso com assentos e cobertura (ex.: tenda de apoio, sombreiro, container etc.). Em caso de dúvidas, acionar a equipe de SSMAC para fazer uma avaliação técnica." },
-      { id: 9,  grupo: "Utilização Organização e Limpeza", texto: "Recursos básicos estão disponíveis? (Ex.: água, papel, lixeiras, copos, banheiro etc.). Os recursos estão disponíveis, próximos e de fácil acesso inclusive para a execução de atividades em locais de intervenções temporárias (mobilização, desmobilização, obras, reformas e manutenção)." },
-      { id: 10, grupo: "Utilização Organização e Limpeza", texto: "EPCs, materiais e ferramentas estão disponíveis com a cor/inspeção do mês e de fácil acesso para sua utilização, inclusive em locais de atividades remotas (mobilização, desmobilização, obras, reformas e manutenção)?" },
+      { id: 1,  grupo: "Maturidade 1", texto: "A área está livre de objetos obsoletos, improvisados ou sucateados, sem identificação?" },
+      { id: 2,  grupo: "Maturidade 1", texto: "A área está limpa, sem resíduos espalhados pelo chão?" },
+      { id: 3,  grupo: "Maturidade 1", texto: "Existem recipientes/coletores para acondicionamento de resíduos e os mesmos encontram-se identificados?" },
+      { id: 4,  grupo: "Maturidade 1", texto: "Os banheiros e vestiários encontram-se limpos e organizados? Possui todos recursos básicos disponíveis e identificação de gênero?" },
+      { id: 5,  grupo: "Maturidade 1", texto: "Os equipamentos e mobiliário estão isentos de sujeiras ou acúmulo de materiais?" },
+      { id: 6,  grupo: "Maturidade 1", texto: "Os ventiladores, exaustores, ar-condicionado, janelas ou saídas de ar estão perfeitamente limpas? Existe cronograma visual de limpeza?" },
+      { id: 7,  grupo: "Maturidade 1", texto: "Área de passagem está desobstruída e em boas condições?" },
 
-      { id: 11, grupo: "Utilização Organização e Limpeza", texto: "Os resíduos perigosos e produtos químicos estão acondicionados, identificados, possuem FISPQ impressa e de fácil acesso no posto de trabalho e estão devidamente segregados (Em locais com acesso à internet é permitida a disponibilização via QR Code). Para os produtos químicos verificar se há identificação do responsável pelo local, e em caso de dúvidas, acionar o time de SSMAC." },
-      { id: 12, grupo: "Padronização", texto: "Os locais de armazenamento de peças, ferramentas, materiais, insumos, matéria-prima e outros, estão definidos, organizados e identificados?" },
-      { id: 13, grupo: "Padronização", texto: "Existem referências visuais e condição normal x anormal definidas na área? (Ex.: estoque mínimo, limite de empilhamento, indicação de nível, gestão visual, organização da área, etc.). No posto, mesmo que seja um local de intervenção temporária (mobilização, desmobilização, obras, reformas e manutenção), há sinalização, ainda que provisória, para identificação de riscos, materiais para descarte, local de armazenagem de peças, equipamentos, itens pessoais, rota de fuga, caminho seguro, etc.? As referências de normal X anormal (placas com fotos do espaço, descrição de equipamentos, demarcação, pintura etc.) são utilizadas de maneira eficaz, garantindo o propósito da gestão visual, sem excessos?" },
+      { id: 8,  grupo: "Maturidade 2", texto: "O layout das salas administrativas, está organizado, permitindo fluidez na circulação entre as pessoas pelos postos de trabalho?" },
+      { id: 9,  grupo: "Maturidade 2", texto: "A fiação visível dos computadores e equipamentos, estão dispostos de forma organizada e segura?" },
+      { id: 10, grupo: "Maturidade 2", texto: "Existem referências visuais de organização (condição normal esperada)?" },
+      { id: 11, grupo: "Maturidade 2", texto: "Existe mapa, rota de fuga e local de encontro definidos e disponíveis?" },
 
-      { id: 14, grupo: "Disciplina", texto: "As referências visuais e condições normais estabelecidas estão sendo respeitadas? O atendimento do padrão estabelecido pela área é cumprido com disciplina e sem desvios sistêmicos?" },
-      { id: 15, grupo: "Disciplina", texto: "A disciplina nas rotinas de gestão do 5S demonstra um processo à prova de líder e garante uma maturidade 3, sem oscilação, nos últimos 6 meses?" },
+      { id: 12, grupo: "Maturidade 3", texto: "Somente os materiais ou objetos essenciais estão disponíveis nas frentes de trabalho, mesas e escritório?" },
+      { id: 13, grupo: "Maturidade 3", texto: "Itens estão localizados em sua área demarcada/identificada ou organizados conforme referências normais x anormais?" },
+      { id: 14, grupo: "Maturidade 3", texto: "Após a jornada de trabalho ou final da utilização do espaço, o padrão de organização se mantém?" },
 
-      { id: 16, grupo: "Padronização", texto: "Os processos da atividade fim do posto estão escritos, bem definidos, conhecido pela equipe e inexiste posto com maturidade 0/1 na mesma gerência de área? (Ex.: descrição das atividades, responsáveis, equipamentos, peças e materiais, procedimentos, comportamentos ou ações a serem evitados, etc.)" },
-      { id: 17, grupo: "Padronização", texto: "Foi realizado compartilhamento de kaizens/boas práticas no portal da VP Projetos no ano vigente?" },
-      { id: 18, grupo: "Padronização", texto: "Houve a validação da maturidade 4 por equipe multidisciplinar composta, minimamente, pelo gerente de área responsável pelo posto, SSMA, GER Qualidade e Melhoria Contínua da VP de Projetos?" },
+      { id: 15, grupo: "Maturidade 4", texto: "A área é referência de 5S para outras áreas? Possui pelo menos três meses consecutivos de notas de maturidade igual ou superior a 3?" }
     ];
 
     // Estado em memória
