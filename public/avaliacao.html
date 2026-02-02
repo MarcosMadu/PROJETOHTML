@@ -479,9 +479,11 @@
     }
 
     function itemAtende(status){
-      // “Atende” = C | “Não atende” = NC ou NA
-      return status === "C";
+  // “Atende” = C | “Neutro” = NA (não derruba) | “Não atende” = NC
+  if(status === "NA") return true;
+  return status === "C";
     }
+
 
     function allHaveStatus(){
       return ITENS.every(it => {
