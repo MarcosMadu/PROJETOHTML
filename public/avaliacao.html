@@ -236,7 +236,7 @@
       50%{transform:scale(1.2);opacity:1}
     }
 
-    /* ====== ADICIONADO: Card de maturidade ====== */
+    /* ====== Card de maturidade (automática enquanto preenche) ====== */
     .maturidade-card{
       border:1px solid var(--border);
       border-radius:14px;
@@ -279,6 +279,73 @@
       font-size:12px;
       color:var(--text);
     }
+
+    /* ====== ADICIONADO: Card RESULTADO (pós-envio) ====== */
+    .resultado-card{
+      display:none; /* aparece só após envio */
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:14px;
+      box-shadow: 0 12px 22px rgba(16,24,40,.10);
+      margin-bottom:14px;
+      background:#fff;
+      overflow:hidden;
+    }
+    .resultado-card.on{display:block}
+
+    .resultado-head{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
+      margin-bottom:10px;
+    }
+    .resultado-head h3{
+      margin:0;
+      font-size:13px;
+      color:var(--text);
+    }
+    .resultado-sub{
+      margin:2px 0 0 0;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .resultado-big{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .big-num{
+      font-size:56px;
+      line-height:1;
+      font-weight:900;
+      letter-spacing:-1px;
+    }
+    .big-label{
+      font-size:14px;
+      font-weight:800;
+      margin:0;
+    }
+    .big-desc{
+      margin:6px 0 0 0;
+      font-size:12px;
+      color: rgba(16,24,40,.78);
+    }
+
+    /* cores por maturidade (0..4) */
+    .result-0{ border-color: rgba(220,38,38,.35); background: rgba(220,38,38,.08); }
+    .result-0 .big-num, .result-0 .big-label{ color: #dc2626; }
+
+    .result-1{ border-color: rgba(249,115,22,.35); background: rgba(249,115,22,.10); }
+    .result-1 .big-num, .result-1 .big-label{ color: #f97316; }
+
+    .result-2{ border-color: rgba(245,158,11,.40); background: rgba(245,158,11,.12); }
+    .result-2 .big-num, .result-2 .big-label{ color: #f59e0b; }
+
+    .result-3{ border-color: rgba(22,163,74,.35); background: rgba(22,163,74,.10); }
+    .result-3 .big-num, .result-3 .big-label{ color: #16a34a; }
+
+    .result-4{ border-color: rgba(37,99,235,.35); background: rgba(37,99,235,.10); }
+    .result-4 .big-num, .result-4 .big-label{ color: #2563eb; }
   </style>
 </head>
 
@@ -334,7 +401,26 @@
 
           <div class="card-b">
 
-            <!-- ====== ADICIONADO: Card de Maturidade ====== -->
+            <!-- ====== ADICIONADO: Card RESULTADO (após envio) ====== -->
+            <div class="resultado-card" id="resultadoCard">
+              <div class="resultado-head">
+                <div>
+                  <h3>Resultado da Auditoria</h3>
+                  <p class="resultado-sub">Maturidade calculada no momento do envio</p>
+                </div>
+                <span class="maturidade-pill" id="resultadoPill">Enviado ✅</span>
+              </div>
+
+              <div class="resultado-big">
+                <div>
+                  <div class="big-num" id="resultadoNumero">—</div>
+                  <p class="big-label" id="resultadoTitulo">—</p>
+                  <p class="big-desc" id="resultadoDesc">—</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- ====== Card de Maturidade (automática) ====== -->
             <div class="maturidade-card" id="maturidadeCard">
               <div class="maturidade-top">
                 <h3>Maturidade 5S (automática)</h3>
@@ -466,7 +552,7 @@
       return state.get(itemId);
     }
 
-    /* ====== ADICIONADO: cálculo de maturidade ====== */
+    /* ====== cálculo de maturidade (automática) ====== */
     function getItemById(id){
       return ITENS.find(x => x.id === id);
     }
@@ -479,11 +565,10 @@
     }
 
     function itemAtende(status){
-  // “Atende” = C | “Neutro” = NA (não derruba) | “Não atende” = NC
-  if(status === "NA") return true;
-  return status === "C";
+      // “Atende” = C | “Neutro” = NA (não derruba) | “Não atende” = NC
+      if(status === "NA") return true;
+      return status === "C";
     }
-
 
     function allHaveStatus(){
       return ITENS.every(it => {
@@ -609,17 +694,48 @@
             <strong>Pergunta:</strong> ${escapeHtml(r.derrubou.texto || "—")}
           </div>
           <div style="margin-top:10px">
-            <strong>Legenda:</strong> 0=inexistente · 1=fraco · 2=em implantação · 3=implantado · 4=excelência
+            <strong>Legenda:</strong> 0=inexistência · 1=fraco · 2=em implantação · 3=implantado · 4=excelência
           </div>
         `;
       }else{
         body.innerHTML = `
           <div><strong>Regra aplicada:</strong> ${escapeHtml(r.regra)}</div>
           <div style="margin-top:10px">
-            <strong>Legenda:</strong> 0=inexistente · 1=fraco · 2=em implantação · 3=implantado · 4=excelência
+            <strong>Legenda:</strong> 0=inexistência · 1=fraco · 2=em implantação · 3=implantado · 4=excelência
           </div>
         `;
       }
+    }
+
+    /* ====== ADICIONADO: Card RESULTADO (pós-envio) ====== */
+    function maturidadeTexto(m){
+      if(m === 0) return { titulo:"Inexistência", desc:"Há falhas básicas nos itens iniciais. Priorize estabilizar os itens 1–7." };
+      if(m === 1) return { titulo:"Fraco", desc:"Base atendida, mas há gaps em itens 8–11. Reforce padronização e organização visual." };
+      if(m === 2) return { titulo:"Em implantação", desc:"Avanço consistente, porém itens 12–14 ainda não sustentam o padrão. Foque em manutenção." };
+      if(m === 3) return { titulo:"Implantado", desc:"Padrão bom e estável. Falta consolidar excelência no item 15." };
+      return { titulo:"Excelência", desc:"Referência de 5S. Manter rotina e evidências para sustentar o padrão." };
+    }
+
+    function showResultadoMaturidade(m){
+      const card = document.getElementById("resultadoCard");
+      const pill = document.getElementById("resultadoPill");
+      const num = document.getElementById("resultadoNumero");
+      const tit = document.getElementById("resultadoTitulo");
+      const des = document.getElementById("resultadoDesc");
+
+      card.classList.remove("result-0","result-1","result-2","result-3","result-4","on");
+      card.classList.add("on", `result-${m}`);
+
+      num.textContent = String(m);
+
+      const t = maturidadeTexto(m);
+      tit.textContent = t.titulo;
+      des.textContent = t.desc;
+
+      pill.textContent = "Enviado ✅";
+
+      // rola suavemente pra mostrar o resultado
+      card.scrollIntoView({ behavior:"smooth", block:"nearest" });
     }
 
     function render(){
@@ -684,7 +800,7 @@
             updateItemPanel(it.id);
             el.querySelector(`#note-${it.id}`).textContent = getNoteText(st.status);
 
-            // ====== ADICIONADO: atualizar maturidade ao mudar status ======
+            // atualizar maturidade ao mudar status
             updateMaturidadeCard();
           });
         });
@@ -693,7 +809,7 @@
         updateItemPanel(it.id);
       });
 
-      // ====== ADICIONADO: atualizar maturidade após render inicial ======
+      // atualizar maturidade após render inicial
       updateMaturidadeCard();
     }
 
@@ -728,7 +844,6 @@
         `;
         panel.querySelector(`#na-${CSS.escape(itemId)}`).addEventListener("input", (e)=>{
           st.naJustificativa = e.target.value;
-          // (opcional) NA não atende, mas a maturidade já muda por status
         });
         return;
       }
@@ -891,11 +1006,16 @@
         };
       });
 
+      // incluir maturidade calculada no payload (opcional e útil pro backend)
+      const mat = computeMaturidade();
+      const maturidadeFinal = mat.ready ? mat.maturidade : null;
+
       return {
         semanaId: document.getElementById("semanaId").textContent,
         auditorSemana: document.getElementById("auditorSemana").textContent,
         dataHora: document.getElementById("dataHora").value,
         setor: document.getElementById("setor").value || null,
+        maturidade: maturidadeFinal,
         itens
       };
     }
@@ -961,6 +1081,12 @@
 
         const data = await res.json().catch(()=> ({}));
         document.getElementById("auditoriaId").value = data.auditoriaId || "OK";
+
+        // ====== MOSTRAR CARD DE RESULTADO (pós-envio) ======
+        const mat = computeMaturidade();
+        const maturidadeFinal = mat.ready ? mat.maturidade : (payload.maturidade ?? 0);
+        showResultadoMaturidade(maturidadeFinal);
+
         alert("Auditoria enviada com sucesso!");
       }catch(err){
         alert("Erro ao enviar: " + (err?.message || err));
