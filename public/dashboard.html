@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Painel Inicial Plangecon SESMT</title>
+  <title>Painel Inicial Tecnsonda SESMT</title>
 
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -213,7 +213,6 @@
     }
     .chip i{ font-size:.8rem; }
 
-    /* Footer */
     footer{
       color: var(--muted);
       font-size:.9rem;
@@ -228,14 +227,12 @@
       flex-wrap:wrap;
     }
 
-    /* Focus & A11y */
     :focus-visible{
       outline: 2px solid #40bcff;
       outline-offset: 2px;
       border-radius: 12px;
     }
 
-    /* Motion safe */
     @media (prefers-reduced-motion: reduce){
       .ambient{ animation:none }
       .card, .btn{ transition: none }
@@ -250,7 +247,7 @@
       <a class="brand" href="#" aria-label="Plangecon SESMT - Início">
         <div class="logo"><i class="fa-solid fa-shield-heart"></i></div>
         <div>
-          <div class="title">Plangecon • SESMT</div>
+          <div class="title">Tecnosonda • SESMT</div>
           <div class="subtitle">Painel Inicial</div>
         </div>
       </a>
@@ -258,13 +255,11 @@
   </header>
 
   <main class="container">
-    <!-- Hero -->
     <section class="hero" aria-label="Resumo">
-      <h1>Bem-vindo ao DASBHOARD de Segurança</h1>
+      <h1>Bem-vindo ao DASHBOARD de Segurança</h1>
       <p>Trabalhar com segurança é uma responsabilidade compartilhada por todos na empresa.</p>
     </section>
 
-    <!-- Cards -->
     <section class="cards" aria-label="Ações rápidas">
       <!-- Registrar Notificação -->
       <article class="card">
@@ -306,17 +301,27 @@
         </div>
       </article>
 
-      <!-- ✅ NOVO: Avaliação 5S Tecnosonda -->
+      <!-- ✅ Avaliação 5S (Administrativo / Escritório) -->
       <article class="card">
         <div class="card-icon"><i class="fa-solid fa-clipboard-check"></i></div>
-        <h2 class="card-title">Avaliação 5S Tecnosonda</h2>
-        <p class="card-desc">Realize a auditoria 5S semanal com evidências e responsáveis por desvios.</p>
+        <h2 class="card-title">Avaliação 5S (Administrativo)</h2>
+        <p class="card-desc">Auditoria 5S semanal (itens administrativos). Evidências e responsáveis por desvios.</p>
         <div class="card-actions">
           <a class="btn" href="/avaliacao.html"><i class="fa-solid fa-arrow-right-to-bracket"></i> Abrir Auditoria</a>
         </div>
       </article>
 
-      <!-- ✅ NOVO: Gestão 5S -->
+      <!-- ✅ Avaliação 5S (Campo) -->
+      <article class="card">
+        <div class="card-icon"><i class="fa-solid fa-helmet-safety"></i></div>
+        <h2 class="card-title">Avaliação 5S (Campo)</h2>
+        <p class="card-desc">Auditoria 5S semanal em campo (itens de área operacional). Evidências e responsáveis.</p>
+        <div class="card-actions">
+          <a class="btn" href="/avaliacaocampo.html"><i class="fa-solid fa-arrow-right-to-bracket"></i> Abrir Auditoria</a>
+        </div>
+      </article>
+
+      <!-- ✅ Gestão 5S -->
       <article class="card">
         <div class="card-icon"><i class="fa-solid fa-chart-line"></i></div>
         <h2 class="card-title">Gestão 5S</h2>
@@ -336,13 +341,12 @@
           <a class="btn" href="/inspecao.html" aria-disabled="true"><i class="fa-solid fa-eye"></i> Visualizar</a>
         </div>
       </article>
-
-    </section> <!-- fecha .cards -->
+    </section>
   </main>
 
   <footer>
     <div class="footer-wrap">
-      <span>SSMA Plangecon — <span id="year"></span></span>
+      <span>SSMA Tecnosonda — <span id="year"></span></span>
       <span>Construindo segurança todos os dias</span>
     </div>
   </footer>
@@ -350,22 +354,4 @@
   <script>
     // Atualiza ano do rodapé (só se o elemento existir)
     const yearEl = document.getElementById('year');
-    if (yearEl) yearEl.textContent = new Date().getFullYear();
-
-    // Proteção simples do Painel Gestor (Notificações)
-    const gestorBtn = document.getElementById('link-gestor');
-    if (gestorBtn) {
-      const senha = 'AMOARISTIDES';
-      gestorBtn.addEventListener('click', () => {
-        const tentativa = prompt('Informe a senha para acessar o Painel Gestor:');
-        if (tentativa === null) return; // cancelado
-        if (tentativa === senha) {
-          location.href = 'gestor.html';
-        } else {
-          alert('Senha incorreta.');
-        }
-      });
-    }
-  </script>
-</body>
-</html>
+    if (yearEl) yearEl.textContent
