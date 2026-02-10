@@ -352,6 +352,24 @@
   </footer>
 
   <script>
-    // Atualiza ano do rodapé (só se o elemento existir)
-    const yearEl = document.getElementById('year');
-    if (yearEl) yearEl.textContent
+  // Atualiza ano do rodapé
+  const yearEl = document.getElementById('year');
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+  // Proteção simples do Painel Gestor (Notificações)
+  const gestorBtn = document.getElementById('link-gestor');
+  if (gestorBtn) {
+    const senha = 'SESMT2026';
+    gestorBtn.addEventListener('click', () => {
+      const tentativa = prompt('Informe a senha para acessar o Painel Gestor:');
+      if (tentativa === null) return; // cancelado
+      if (tentativa === senha) {
+        location.href = '/gestor.html';
+      } else {
+        alert('Senha incorreta.');
+      }
+    });
+  }
+</script>
+
+
