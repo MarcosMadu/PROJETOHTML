@@ -82,7 +82,18 @@
       outline:none;
       background:#fff;
     }
-    .field input:focus, .field select:focus{
+    .field textarea{
+      width:100%;
+      padding:10px 12px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      outline:none;
+      background:#fff;
+      min-height: 90px;
+      resize: vertical;
+      font-family: inherit;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus{
       border-color: rgba(37,99,235,.5);
       box-shadow: 0 0 0 4px rgba(37,99,235,.12);
     }
@@ -277,6 +288,7 @@
     .deviation .head{
       display:flex; align-items:center; justify-content:space-between; gap:10px;
       margin-bottom:8px;
+      flex-wrap: wrap;
     }
 
     /* ====== ADICIONADO: seleção + evidências ====== */
@@ -337,6 +349,42 @@
       background:#fff;
       font-size:12px;
       color:var(--muted);
+    }
+
+    /* ====== ADICIONADO: bloco de BAIXA (por desvio) ====== */
+    .baixaBox{
+      margin-top:10px;
+      border:1px solid rgba(37,99,235,.25);
+      background: rgba(37,99,235,.04);
+      border-radius:14px;
+      padding:10px;
+    }
+    .baixaTop{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:8px;
+    }
+    .baixaTop .ttl{
+      font-size:12px;
+      font-weight:900;
+      color: var(--text);
+      margin:0;
+    }
+    .baixaHint{
+      margin:0;
+      font-size:12px;
+      color: var(--muted);
+    }
+    .hrMini{
+      height:1px;
+      background: var(--border);
+      margin:10px 0;
+    }
+    .inlineStatus{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
     }
   </style>
 </head>
@@ -451,7 +499,7 @@
               </div>
             </div>
 
-            <!-- ====== ADICIONADO: barra de seleção/exclusão ====== -->
+            <!-- ====== barra de seleção/exclusão ====== -->
             <div class="bulkbar">
               <label class="pill2" style="cursor:pointer;">
                 <input type="checkbox" id="chkAll" class="check" />
@@ -465,9 +513,7 @@
               <table>
                 <thead>
                   <tr>
-                    <!-- ADICIONADO -->
                     <th class="checkcell">Sel.</th>
-
                     <th style="width:120px">ID</th>
                     <th style="width:160px">Data/Hora</th>
                     <th style="width:180px">Auditor</th>
@@ -588,7 +634,7 @@
     let registrosAll = []; // cache geral
     let selectedDocId = null;
 
-    // ====== ADICIONADO: seleção ======
+    // ====== seleção ======
     const selectedIds = new Set();
 
     function updateBulkUI(){
@@ -658,7 +704,7 @@
         .replaceAll("'","&#039;");
     }
 
-    // ====== ADICIONADO: URL de imagem ======
+    // ====== URL de imagem ======
     function getImageUrl(file){
       // Ajuste aqui se você usa Cloudinary (ex.: file.url) ou outra rota
       if(!file) return null;
@@ -887,91 +933,251 @@
         <div class="evid-grid">${thumbs}</div>
       `;
     }
-async function openDetails(id){
-  selectedDocId = id;
-  openBackdrop(true);
-  $("modalBody").innerHTML = `<span class="loading on"><span class="dot"></span>Carregando detalhes...</span>`;
 
-  try{
-    const res = await fetch(`/api/5s/auditorias/${encodeURIComponent(id)}`);
-    if(!res.ok) throw new Error("Falha ao buscar detalhes.");
-    const doc = await res.json();
+    function optionNomesHtml(selected){
+      const sel = selected || "Selecione...";
+      const opts = [
+        `<option value="Selecione..." ${sel==="Selecione..." ? "selected" : ""}>Selecione...</option>`,
+        ...NOMES_5S.map(n => `<option value="${escapeHtml(n)}" ${n===sel ? "selected" : ""}>${escapeHtml(n)}</option>`)
+      ];
+      return opts.join("");
+    }
 
-    const pr = prazoBadge(doc.semanaId);
-    const auditor = getAuditorSemana(doc.semanaId, doc.auditorSemana);
+    function isDesvioBaixado(d){
+      return !!(d?.baixa?.dataHora || (Array.isArray(d?.baixa?.fotosResolucao) && d.baixa.fotosResolucao.length));
+    }
 
-    $("modalTitle").textContent = `Auditoria 5S — ${String(doc._id).slice(0,8)}...`;
-    $("modalSub").innerHTML = `
-      Semana: <strong>${escapeHtml(doc.semanaId)}</strong> ·
-      Auditor: <strong>${escapeHtml(auditor)}</strong> ·
-      Data/Hora: <strong>${escapeHtml(doc.dataHora || "—")}</strong> ·
-      Setor: <strong>${escapeHtml(doc.setor || "—")}</strong>
-    `;
+    // ====== ADICIONADO: enviar BAIXA (por desvio) ======
+    async function enviarBaixa({ auditoriaId, itemId, desvioIndex, resp, comentario, fotoFile }){
+      // >>> IMPORTANTE:
+      // Esta rota é a que faz mais sentido para o seu modelo (item.desvios[index].baixa...).
+      // Se sua rota tiver outro caminho, me diga e eu ajusto em 1 minuto.
+      const url = `/api/5s/auditorias/${encodeURIComponent(auditoriaId)}/itens/${encodeURIComponent(itemId)}/desvios/${encodeURIComponent(desvioIndex)}/baixa`;
 
-    let html = `<div class="items">`;
+      const fd = new FormData();
+      fd.append("responsavelCorrecao", resp);
+      fd.append("comentarioBaixa", comentario);
+      if(fotoFile) fd.append("fotoResolucao", fotoFile);
 
-    (doc.itens || []).forEach((it, idx) => {
-      const statusBadge =
-        it.status === "C"  ? `<span class="badge ok">Conforme</span>` :
-        it.status === "NC" ? `<span class="badge danger">Não Conforme</span>` :
-        it.status === "NA" ? `<span class="badge warn">Não Aplica</span>` :
-        `<span class="badge">—</span>`;
+      const res = await fetch(url, { method:"POST", body: fd });
+      if(!res.ok){
+        const txt = await res.text().catch(()=> "");
+        throw new Error(txt || "Falha ao dar baixa.");
+      }
+      return await res.json().catch(()=> ({}));
+    }
 
-      /* ========= CONFORME ========= */
-      const conformeFotos = Array.isArray(it.conformeFotos)
-        ? it.conformeFotos
-        : [];
+    async function openDetails(id){
+      selectedDocId = id;
+      openBackdrop(true);
+      $("modalBody").innerHTML = `<span class="loading on"><span class="dot"></span>Carregando detalhes...</span>`;
 
-      /* ========= NÃO CONFORME ========= */
-      const desvios = Array.isArray(it.desvios) ? it.desvios : [];
+      try{
+        const res = await fetch(`/api/5s/auditorias/${encodeURIComponent(id)}`);
+        if(!res.ok) throw new Error("Falha ao buscar detalhes.");
+        const doc = await res.json();
 
-      const fotosNC = desvios
-        .map(d => d?.foto)
-        .filter(Boolean);
+        const auditor = getAuditorSemana(doc.semanaId, doc.auditorSemana);
 
-      const fotosBaixa = desvios
-        .flatMap(d => Array.isArray(d?.baixa?.fotosResolucao) ? d.baixa.fotosResolucao : []);
+        $("modalTitle").textContent = `Auditoria 5S — ${String(doc._id).slice(0,8)}...`;
+        $("modalSub").innerHTML = `
+          Semana: <strong>${escapeHtml(doc.semanaId)}</strong> ·
+          Auditor: <strong>${escapeHtml(auditor)}</strong> ·
+          Data/Hora: <strong>${escapeHtml(doc.dataHora || "—")}</strong> ·
+          Setor: <strong>${escapeHtml(doc.setor || "—")}</strong>
+          ${doc.maturidade !== undefined && doc.maturidade !== null ? ` · Maturidade: <strong>${escapeHtml(String(doc.maturidade))}</strong>` : ``}
+        `;
 
-      html += `
-        <div class="item">
-          <div class="item-top" data-toggle="${idx}">
-            <div class="item-left">
-              <div class="num">${idx + 1}</div>
-              <div class="txt">
-                <div class="tag">${escapeHtml(it.grupo || "—")}</div>
-                <p class="q">${escapeHtml(it.texto || "—")}</p>
+        let html = `<div class="items">`;
+
+        (doc.itens || []).forEach((it, idx) => {
+          const statusBadge =
+            it.status === "C"  ? `<span class="badge ok">Conforme</span>` :
+            it.status === "NC" ? `<span class="badge danger">Não Conforme</span>` :
+            it.status === "NA" ? `<span class="badge warn">Não Aplica</span>` :
+            `<span class="badge">—</span>`;
+
+          const conformeFotos = Array.isArray(it.conformeFotos) ? it.conformeFotos : [];
+          const desvios = Array.isArray(it.desvios) ? it.desvios : [];
+
+          const fotosNC = desvios.map(d => d?.foto).filter(Boolean);
+          const fotosBaixa = desvios.flatMap(d => Array.isArray(d?.baixa?.fotosResolucao) ? d.baixa.fotosResolucao : []);
+
+          // ====== ADICIONADO: bloco de baixa (somente se NC) ======
+          let baixaHtml = "";
+          if(it.status === "NC"){
+            const desviosHtml = (desvios.length ? desvios : []).map((d, di) => {
+              const baixado = isDesvioBaixado(d);
+
+              const respOrig = d?.responsavel || "—";
+              const fotoNC = d?.foto ? [d.foto] : [];
+              const baixaFotos = Array.isArray(d?.baixa?.fotosResolucao) ? d.baixa.fotosResolucao : [];
+              const baixaResp = d?.baixa?.responsavelCorrecao || d?.baixa?.responsavel || "";
+              const baixaComentario = d?.baixa?.comentarioBaixa || d?.baixa?.comentario || "";
+              const baixaData = d?.baixa?.dataHora || d?.baixa?.data || "";
+
+              return `
+                <div class="deviation">
+                  <div class="head">
+                    <div class="inlineStatus">
+                      <span class="badge">Desvio #${di + 1}</span>
+                      <span class="badge">${escapeHtml(respOrig)}</span>
+                      ${baixado ? `<span class="badge ok">Baixado</span>` : `<span class="badge warn">Em aberto</span>`}
+                    </div>
+                    ${baixado ? `<span class="miniLine" style="margin:0">Baixa: ${escapeHtml(baixaData || "—")}</span>` : ``}
+                  </div>
+
+                  <div class="miniLine" style="margin-top:0"><strong>Evidência NC:</strong></div>
+                  ${renderThumbs("NC (foto do desvio)", fotoNC)}
+
+                  ${baixado ? `
+                    <div class="hrMini"></div>
+                    <div class="miniLine" style="margin-top:0"><strong>Baixa registrada:</strong></div>
+                    <p class="miniLine"><strong>Responsável:</strong> ${escapeHtml(baixaResp || "—")}</p>
+                    <p class="miniLine"><strong>Comentário:</strong> ${escapeHtml(baixaComentario || "—")}</p>
+                    ${renderThumbs("Fotos da baixa", baixaFotos)}
+                  ` : `
+                    <div class="baixaBox" data-baixa-box="${escapeHtml(doc._id)}|${escapeHtml(it.itemId ?? it.id ?? idx)}|${di}">
+                      <div class="baixaTop">
+                        <p class="ttl">Dar baixa neste desvio</p>
+                        <span class="badge warn">Obrigatório: responsável + comentário + foto</span>
+                      </div>
+                      <p class="baixaHint">A baixa atualiza no banco e pode recalcular a maturidade automaticamente.</p>
+
+                      <div class="row" style="margin-top:10px">
+                        <div class="field">
+                          <label>Responsável pela correção</label>
+                          <select data-baixa-resp>
+                            ${optionNomesHtml("Selecione...")}
+                          </select>
+                        </div>
+                        <div class="field">
+                          <label>Foto da correção</label>
+                          <input type="file" accept="image/*" data-baixa-foto />
+                        </div>
+                      </div>
+
+                      <div class="row" style="margin-top:10px">
+                        <div class="field" style="flex:1 1 100%">
+                          <label>Comentário da correção</label>
+                          <textarea placeholder="Descreva a correção executada..." data-baixa-coment></textarea>
+                        </div>
+                      </div>
+
+                      <div class="row" style="margin-top:10px; justify-content:flex-end">
+                        <span class="loading" data-baixa-loading><span class="dot"></span>Enviando baixa...</span>
+                        <button class="btn mini" type="button"
+                          data-baixar
+                          data-auditoria-id="${escapeHtml(doc._id)}"
+                          data-item-id="${escapeHtml(String(it.itemId ?? it.id ?? idx))}"
+                          data-desvio-index="${escapeHtml(String(di))}">
+                          Dar baixa
+                        </button>
+                      </div>
+                    </div>
+                  `}
+                </div>
+              `;
+            }).join("");
+
+            baixaHtml = `
+              <div class="miniLine" style="margin-top:10px"><strong>Tratativa (NC):</strong> dê baixa por desvio para manter controle até o final da semana.</div>
+              ${desviosHtml || `<div class="alert"><strong>Sem desvios listados.</strong> (Isso só deveria ocorrer se a auditoria foi salva sem desvios.)</div>`}
+            `;
+          }
+
+          html += `
+            <div class="item">
+              <div class="item-top" data-toggle="${idx}">
+                <div class="item-left">
+                  <div class="num">${idx + 1}</div>
+                  <div class="txt">
+                    <div class="tag">${escapeHtml(it.grupo || "—")}</div>
+                    <p class="q">${escapeHtml(it.texto || "—")}</p>
+                    ${it.status === "NA" && it.naJustificativa ? `<p class="miniLine"><strong>Justificativa (NA):</strong> ${escapeHtml(it.naJustificativa)}</p>` : ``}
+                  </div>
+                </div>
+                ${statusBadge}
+              </div>
+
+              <div class="evid-wrap" data-ev="${idx}">
+                ${renderThumbs("Conforme", conformeFotos)}
+                ${renderThumbs("Não Conforme (fotos)", fotosNC)}
+                ${renderThumbs("Baixa (fotos)", fotosBaixa)}
+                ${baixaHtml}
               </div>
             </div>
-            ${statusBadge}
-          </div>
+          `;
+        });
 
-          <div class="evid-wrap" data-ev="${idx}">
-            ${renderThumbs("Conforme", conformeFotos)}
-            ${renderThumbs("Não Conforme", fotosNC)}
-            ${renderThumbs("Baixa", fotosBaixa)}
-          </div>
-        </div>
-      `;
-    });
+        html += `</div>`;
+        $("modalBody").innerHTML = html;
 
-    html += `</div>`;
-    $("modalBody").innerHTML = html;
+        // Toggle abrir/fechar evidências
+        $("modalBody").querySelectorAll("[data-toggle]").forEach(el => {
+          el.addEventListener("click", () => {
+            const idx = el.getAttribute("data-toggle");
+            const box = $("modalBody").querySelector(`[data-ev="${idx}"]`);
+            if(box) box.classList.toggle("on");
+          });
+        });
 
-    // Toggle abrir/fechar evidências
-    $("modalBody").querySelectorAll("[data-toggle]").forEach(el => {
-      el.addEventListener("click", () => {
-        const idx = el.getAttribute("data-toggle");
-        const box = $("modalBody").querySelector(`[data-ev="${idx}"]`);
-        if(box) box.classList.toggle("on");
-      });
-    });
+        // ====== ADICIONADO: handler do botão "Dar baixa" ======
+        $("modalBody").querySelectorAll("[data-baixar]").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const auditoriaId = btn.getAttribute("data-auditoria-id");
+            const itemId = btn.getAttribute("data-item-id");
+            const desvioIndex = Number(btn.getAttribute("data-desvio-index"));
 
-  }catch(err){
-    $("modalBody").innerHTML = `<div class="alert"><strong>Erro:</strong> ${escapeHtml(err.message)}</div>`;
-  }
-} ;
+            const box = btn.closest("[data-baixa-box]");
+            if(!box) return;
 
-     
+            const selResp = box.querySelector("[data-baixa-resp]");
+            const inpFoto = box.querySelector("[data-baixa-foto]");
+            const txtComent = box.querySelector("[data-baixa-coment]");
+            const loading = box.querySelector("[data-baixa-loading]");
+
+            const resp = (selResp?.value || "").trim();
+            const comentario = (txtComent?.value || "").trim();
+            const fotoFile = (inpFoto?.files || [])[0] || null;
+
+            if(!resp || resp === "Selecione..."){
+              alert("Selecione o responsável pela correção.");
+              return;
+            }
+            if(!comentario){
+              alert("Informe o comentário da correção.");
+              return;
+            }
+            if(!fotoFile){
+              alert("Anexe a foto da correção.");
+              return;
+            }
+
+            try{
+              btn.disabled = true;
+              if(loading) loading.classList.add("on");
+
+              await enviarBaixa({ auditoriaId, itemId, desvioIndex, resp, comentario, fotoFile });
+
+              // Recarrega detalhes (modal) + tabela/KPIs (pode mudar maturidade)
+              await openDetails(auditoriaId);
+              await loadRegistros();
+              alert("Baixa registrada com sucesso!");
+            }catch(err){
+              alert("Erro ao dar baixa: " + (err?.message || err));
+            }finally{
+              btn.disabled = false;
+              if(loading) loading.classList.remove("on");
+            }
+          });
+        });
+
+      }catch(err){
+        $("modalBody").innerHTML = `<div class="alert"><strong>Erro:</strong> ${escapeHtml(err.message)}</div>`;
+      }
+    }
+
     // ====== Carregamento ======
     async function loadSemanaAtual(){
       try{
@@ -1034,7 +1240,7 @@ async function openDetails(id){
       $("auditorAuto").textContent = getAuditorSemana(semanaAtual, auditorAuto);
     }
 
-    // ====== ADICIONADO: excluir selecionados ======
+    // ====== excluir selecionados ======
     async function excluirSelecionados(){
       const ids = Array.from(selectedIds);
       if(!ids.length) return;
@@ -1118,7 +1324,7 @@ async function openDetails(id){
       alert("Troca removida. Voltou para o auditor automático.");
     });
 
-    // ADICIONADO: selecionar todos visíveis
+    // selecionar todos visíveis
     $("chkAll").addEventListener("change", ()=>{
       const visibleChecks = Array.from($("tbody").querySelectorAll("input[data-sel]"));
       if($("chkAll").checked){
@@ -1130,6 +1336,17 @@ async function openDetails(id){
     });
 
     $("btnExcluirSelecionados").addEventListener("click", excluirSelecionados);
+
+    // Copiar ID
+    $("btnCopiarId").addEventListener("click", async ()=>{
+      if(!selectedDocId) return alert("Nenhuma auditoria selecionada.");
+      try{
+        await navigator.clipboard.writeText(selectedDocId);
+        alert("ID copiado!");
+      }catch{
+        alert("Não foi possível copiar automaticamente. Copie manualmente: " + selectedDocId);
+      }
+    });
 
     // ====== Init ======
     (async function init(){
