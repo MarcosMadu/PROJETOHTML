@@ -82,18 +82,7 @@
       outline:none;
       background:#fff;
     }
-    .field textarea{
-      width:100%;
-      padding:10px 12px;
-      border:1px solid var(--border);
-      border-radius:12px;
-      outline:none;
-      background:#fff;
-      min-height: 90px;
-      resize: vertical;
-      font-family: inherit;
-    }
-    .field input:focus, .field select:focus, .field textarea:focus{
+    .field input:focus, .field select:focus{
       border-color: rgba(37,99,235,.5);
       box-shadow: 0 0 0 4px rgba(37,99,235,.12);
     }
@@ -162,7 +151,7 @@
     table{
       border-collapse:collapse;
       width:100%;
-      min-width:1080px;
+      min-width:980px; /* ajustado (removemos Setor/Resumo) */
       font-size:13px;
     }
     th, td{
@@ -288,10 +277,9 @@
     .deviation .head{
       display:flex; align-items:center; justify-content:space-between; gap:10px;
       margin-bottom:8px;
-      flex-wrap: wrap;
     }
 
-    /* ====== ADICIONADO: seleção + evidências ====== */
+    /* seleção + evidências */
     .checkcell{ width:42px; }
     .check{
       width:18px;height:18px;
@@ -350,42 +338,6 @@
       font-size:12px;
       color:var(--muted);
     }
-
-    /* ====== ADICIONADO: bloco de BAIXA (por desvio) ====== */
-    .baixaBox{
-      margin-top:10px;
-      border:1px solid rgba(37,99,235,.25);
-      background: rgba(37,99,235,.04);
-      border-radius:14px;
-      padding:10px;
-    }
-    .baixaTop{
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-      flex-wrap:wrap;
-      margin-bottom:8px;
-    }
-    .baixaTop .ttl{
-      font-size:12px;
-      font-weight:900;
-      color: var(--text);
-      margin:0;
-    }
-    .baixaHint{
-      margin:0;
-      font-size:12px;
-      color: var(--muted);
-    }
-    .hrMini{
-      height:1px;
-      background: var(--border);
-      margin:10px 0;
-    }
-    .inlineStatus{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
   </style>
 </head>
 
@@ -418,7 +370,7 @@
           <div class="card-h">
             <div>
               <h2>Indicadores</h2>
-              <p class="sub">Cálculo com base nos registros carregados (por padrão, semana selecionada).</p>
+              <p class="sub">Abertas = desvios (NC) sem baixa dentro do prazo (Seg–Sáb). Após o prazo, auditoria fecha.</p>
             </div>
             <span class="loading" id="loadingKpi"><span class="dot"></span>Carregando...</span>
           </div>
@@ -445,15 +397,15 @@
                 <p class="s">C / (C + NC) · 100</p>
               </div>
               <div class="kpi">
-                <p class="t">Abertas x Baixadas</p>
+                <p class="t">Abertas x Fechadas</p>
                 <p class="v" id="kpiAB">—</p>
                 <p class="s">Somente desvios (NC)</p>
               </div>
             </div>
 
             <div class="alert" style="margin-top:12px">
-              <strong>Status de prazo:</strong> para demo, consideramos “prazo da tratativa” até o <strong>fim da semana ISO</strong>.
-              Se hoje passou do fim da semana, fica <strong>“Vencido — realizar tratativa”</strong>.
+              <strong>Regra de prazo:</strong> a auditoria fica <strong>Aberta</strong> até <strong>sábado 23:59</strong> da semana da auditoria.
+              Depois disso ela <strong>Fecha</strong> com a maturidade que ficou e <strong>não permite baixa</strong>.
             </div>
           </div>
         </section>
@@ -478,20 +430,16 @@
                 <select id="fSemana"></select>
               </div>
               <div class="field">
-                <label>Status do prazo</label>
-                <select id="fPrazo">
+                <label>Status</label>
+                <select id="fStatus">
                   <option value="Todos">Todos</option>
-                  <option value="NoPrazo">No prazo</option>
-                  <option value="Vencido">Vencido</option>
+                  <option value="Abertas">Abertas</option>
+                  <option value="Fechadas">Fechadas</option>
                 </select>
               </div>
               <div class="field">
                 <label>Auditor</label>
                 <input id="fAuditor" placeholder="Filtrar por auditor..." />
-              </div>
-              <div class="field">
-                <label>Área/Setor</label>
-                <input id="fSetor" placeholder="Ex.: Pátio / Sonda..." />
               </div>
               <div class="field" style="flex:2 1 320px">
                 <label>Busca (ID / texto / responsável)</label>
@@ -499,7 +447,6 @@
               </div>
             </div>
 
-            <!-- ====== barra de seleção/exclusão ====== -->
             <div class="bulkbar">
               <label class="pill2" style="cursor:pointer;">
                 <input type="checkbox" id="chkAll" class="check" />
@@ -516,11 +463,10 @@
                     <th class="checkcell">Sel.</th>
                     <th style="width:120px">ID</th>
                     <th style="width:160px">Data/Hora</th>
-                    <th style="width:180px">Auditor</th>
-                    <th style="width:180px">Setor</th>
-                    <th style="width:120px">Dias p/ vencer</th>
+                    <th style="width:220px">Auditor</th>
+                    <th style="width:110px">Maturidade</th>
+                    <th style="width:120px">Dias p/ fechar</th>
                     <th style="width:240px">Status</th>
-                    <th style="width:130px">Resumo</th>
                     <th style="width:120px">Ações</th>
                   </tr>
                 </thead>
@@ -529,8 +475,7 @@
             </div>
 
             <div class="alert">
-              <strong>Obs.:</strong> o botão “Mudar auditor da semana” aqui é uma <strong>sobreposição local</strong> (salva no navegador).
-              Depois, se você quiser, a gente cria uma rota no backend para persistir essa troca no banco.
+              <strong>Obs.:</strong> “Mudar auditor da semana” é uma <strong>sobreposição local</strong> (salva no navegador) e não altera auditorias já lançadas.
             </div>
           </div>
         </section>
@@ -587,7 +532,7 @@
         </div>
 
         <div class="alert">
-          <strong>Regras da sua especificação:</strong> auditor é automático por semana, mas aqui temos a opção de troca via gestor.
+          <strong>Regras:</strong> auditor é automático por semana, mas aqui temos opção de troca via gestor (local).
         </div>
       </div>
       <div class="modal-f">
@@ -598,7 +543,6 @@
   </div>
 
   <script>
-    // Lista de nomes (mesma do backend)
     const NOMES_5S = [
       "ALLAN DO NASCIMENTO MORAES",
       "ANDRE DA CONCEICAO ALVES",
@@ -630,11 +574,9 @@
 
     let semanaAtual = null;
     let auditorAuto = null;
-    let registros = []; // (mantido)
-    let registrosAll = []; // cache geral
+    let registrosAll = [];
     let selectedDocId = null;
 
-    // ====== seleção ======
     const selectedIds = new Set();
 
     function updateBulkUI(){
@@ -648,7 +590,7 @@
       $("chkAll").indeterminate = !allVisibleChecked && n > 0 && visibleIds.some(id => selectedIds.has(id));
     }
 
-    // ====== Datas / Semana ISO ======
+    // ====== Semana ISO (prazo Seg–Sáb) ======
     function parseSemanaId(semanaId){
       const [y, w] = String(semanaId).split("-W");
       return { year: Number(y), week: Number(w) };
@@ -660,33 +602,60 @@
       week1Monday.setUTCDate(simple.getUTCDate() - (dow - 1));
       const monday = new Date(week1Monday);
       monday.setUTCDate(week1Monday.getUTCDate() + (week - 1) * 7);
-      return monday;
+      return monday; // Monday 00:00 UTC
     }
-    function endOfISOWeek(year, week){
+    function endOfISOSaturday(year, week){
       const monday = startOfISOWeek(year, week);
-      const end = new Date(monday);
-      end.setUTCDate(monday.getUTCDate() + 6);
-      end.setUTCHours(23,59,59,999);
-      return end;
+      const sat = new Date(monday);
+      sat.setUTCDate(monday.getUTCDate() + 5); // Saturday
+      sat.setUTCHours(23,59,59,999);
+      return sat;
     }
-    function daysToEndOfWeek(semanaId){
+    function daysToClose(semanaId){
       if(!semanaId) return 0;
       const { year, week } = parseSemanaId(semanaId);
-      const end = endOfISOWeek(year, week);
+      const end = endOfISOSaturday(year, week);
       const now = new Date();
       const ms = end.getTime() - now.getTime();
       return Math.ceil(ms / 86400000);
     }
-    function prazoBadge(semanaId){
-      const d = daysToEndOfWeek(semanaId);
-      if (d < 0) return { label: "Vencido — realizar tratativa", cls: "danger", dias: d };
-      if (d === 0) return { label: "Vence hoje", cls: "warn", dias: d };
-      return { label: "No prazo", cls: "ok", dias: d };
+
+    function hasOpenDeviations(doc){
+      const itens = Array.isArray(doc.itens) ? doc.itens : [];
+      for(const it of itens){
+        if(it.status !== "NC") continue;
+        const desv = Array.isArray(it.desvios) ? it.desvios : [];
+        for(const d of desv){
+          const baixado = !!(d?.baixa?.dataHora || (Array.isArray(d?.baixa?.fotosResolucao) && d.baixa.fotosResolucao.length));
+          if(!baixado) return true;
+        }
+      }
+      return false;
     }
 
-    // ====== Auditor override local ======
+    function auditoriaStatus(doc){
+      // regra:
+      // - Se não tem desvio aberto => Fechada
+      // - Se tem desvio aberto e ainda está dentro da semana (até sábado) => Aberta
+      // - Se tem desvio aberto e passou sábado => Fechada (prazo encerrado)
+      const open = hasOpenDeviations(doc);
+      const d = daysToClose(doc.semanaId);
+
+      if(!open){
+        return { key:"Fechada", label:"Fechada", cls:"ok", dias: Math.max(d, 0), within:true, canBaixa:false };
+      }
+
+      if(d >= 0){
+        if(d === 0) return { key:"Aberta", label:"Aberta — fecha hoje (Sáb)", cls:"warn", dias:d, within:true, canBaixa:true };
+        return { key:"Aberta", label:"Aberta", cls:"warn", dias:d, within:true, canBaixa:true };
+      }
+
+      return { key:"Fechada", label:"Fechada — prazo encerrado", cls:"danger", dias:d, within:false, canBaixa:false };
+    }
+
+    // ====== Auditor override local (somente semana atual) ======
     function lsKey(semanaId){ return `5s_auditor_override_${semanaId}`; }
-    function getAuditorSemana(semanaId, auditorAuto){
+    function getAuditorSemanaAtual(semanaId, auditorAuto){
       const o = localStorage.getItem(lsKey(semanaId));
       return o || auditorAuto || "—";
     }
@@ -704,9 +673,7 @@
         .replaceAll("'","&#039;");
     }
 
-    // ====== URL de imagem ======
     function getImageUrl(file){
-      // Ajuste aqui se você usa Cloudinary (ex.: file.url) ou outra rota
       if(!file) return null;
       if(typeof file === "string"){
         if(file.startsWith("http")) return file;
@@ -722,12 +689,14 @@
       let totalItens = 0;
       let c = 0, nc = 0, na = 0;
       let desviosTotal = 0;
-      let desviosBaixados = 0;
+      let desviosFechados = 0;
       let desviosAbertos = 0;
 
       for(const doc of list){
         const itens = Array.isArray(doc.itens) ? doc.itens : [];
         totalItens += itens.length;
+
+        const stAud = auditoriaStatus(doc);
 
         for(const it of itens){
           if(it.status === "C") c++;
@@ -739,8 +708,13 @@
             for(const d of desvios){
               desviosTotal++;
               const baixado = !!(d?.baixa?.dataHora || (Array.isArray(d?.baixa?.fotosResolucao) && d.baixa.fotosResolucao.length));
-              if(baixado) desviosBaixados++;
-              else desviosAbertos++;
+              // Se auditoria está fechada, tudo é “fechado” (baixado ou expirou)
+              if(!stAud.canBaixa){
+                desviosFechados++;
+              }else{
+                if(baixado) desviosFechados++;
+                else desviosAbertos++;
+              }
             }
           }
         }
@@ -754,7 +728,7 @@
         totalItens,
         desviosTotal,
         pctConformidade: pct,
-        baixadas: desviosBaixados,
+        fechadas: desviosFechados,
         abertas: desviosAbertos,
         breakdown: { c, nc, na }
       };
@@ -767,46 +741,30 @@
       $("kpiItens").textContent = String(k.totalItens);
       $("kpiNC").textContent = String(k.desviosTotal);
       $("kpiPct").textContent = `${k.pctConformidade.toFixed(1)}%`;
-      $("kpiAB").textContent = `${k.abertas} / ${k.baixadas}`;
+      $("kpiAB").textContent = `${k.abertas} / ${k.fechadas}`;
     }
 
-    // ====== Render tabela ======
-    function countResumo(doc){
-      const itens = Array.isArray(doc.itens) ? doc.itens : [];
-      let C=0, NC=0, NA=0, desv=0;
-      for(const it of itens){
-        if(it.status==="C") C++;
-        if(it.status==="NC"){
-          NC++;
-          desv += Array.isArray(it.desvios) ? it.desvios.length : 0;
-        }
-        if(it.status==="NA") NA++;
-      }
-      return { C, NC, NA, desv };
-    }
-
+    // ====== Filtros ======
     function matchesFilter(doc){
       const semanaSel = $("fSemana").value;
-      const prazoSel = $("fPrazo").value;
+      const statusSel = $("fStatus").value;
       const auditorTxt = ($("fAuditor").value || "").trim().toLowerCase();
-      const setorTxt = ($("fSetor").value || "").trim().toLowerCase();
       const buscaTxt = ($("fBusca").value || "").trim().toLowerCase();
 
       if(semanaSel && semanaSel !== "Todas" && doc.semanaId !== semanaSel) return false;
 
-      const pr = prazoBadge(doc.semanaId || semanaAtual || "");
-      if(prazoSel === "Vencido" && pr.dias >= 0) return false;
-      if(prazoSel === "NoPrazo" && pr.dias < 0) return false;
+      const stAud = auditoriaStatus(doc);
+      if(statusSel === "Abertas" && stAud.key !== "Aberta") return false;
+      if(statusSel === "Fechadas" && stAud.key !== "Fechada") return false;
 
-      const auditor = (getAuditorSemana(doc.semanaId, doc.auditorSemana) || "").toLowerCase();
+      // IMPORTANTE: auditor NÃO muda para auditorias antigas => usa doc.auditorSemana (salvo)
+      const auditor = String(doc.auditorSemana || "").toLowerCase();
       if(auditorTxt && !auditor.includes(auditorTxt)) return false;
-
-      const setor = (doc.setor || "").toLowerCase();
-      if(setorTxt && !setor.includes(setorTxt)) return false;
 
       if(buscaTxt){
         const id = String(doc._id || "").toLowerCase();
         const data = String(doc.dataHora || "").toLowerCase();
+        const mat = String(doc.maturidade ?? "").toLowerCase();
 
         let found = false;
         const itens = Array.isArray(doc.itens) ? doc.itens : [];
@@ -814,6 +772,7 @@
           const t = (it.texto || "").toLowerCase();
           const g = (it.grupo || "").toLowerCase();
           if(t.includes(buscaTxt) || g.includes(buscaTxt)) { found = true; break; }
+
           if(it.status === "NC"){
             const desv = Array.isArray(it.desvios) ? it.desvios : [];
             for(const d of desv){
@@ -824,7 +783,7 @@
           }
         }
 
-        if(!(id.includes(buscaTxt) || data.includes(buscaTxt) || setor.includes(buscaTxt) || auditor.includes(buscaTxt) || found)){
+        if(!(id.includes(buscaTxt) || data.includes(buscaTxt) || auditor.includes(buscaTxt) || mat.includes(buscaTxt) || found)){
           return false;
         }
       }
@@ -839,7 +798,7 @@
       const list = registrosAll.filter(matchesFilter);
 
       if(!list.length){
-        tbody.innerHTML = `<tr><td colspan="9" style="color:var(--muted)">Nenhum registro encontrado com os filtros atuais.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="color:var(--muted)">Nenhum registro encontrado com os filtros atuais.</td></tr>`;
         setKPIs(list, $("fSemana").value === "Todas" ? null : $("fSemana").value);
         updateBulkUI();
         return;
@@ -848,12 +807,9 @@
       setKPIs(list, $("fSemana").value === "Todas" ? null : $("fSemana").value);
 
       for(const doc of list){
-        const pr = prazoBadge(doc.semanaId);
-        const auditor = getAuditorSemana(doc.semanaId, doc.auditorSemana);
-        const r = countResumo(doc);
-
-        const badgeCls = pr.cls === "ok" ? "ok" : pr.cls === "warn" ? "warn" : "danger";
-        const diasTxt = String(pr.dias);
+        const stAud = auditoriaStatus(doc);
+        const auditor = doc.auditorSemana || "—";
+        const diasTxt = String(stAud.dias);
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
@@ -863,27 +819,19 @@
 
           <td><span class="link" data-open="${escapeHtml(doc._id)}">${escapeHtml(String(doc._id).slice(0,8))}...</span></td>
           <td>${escapeHtml(doc.dataHora || "—")}</td>
-          <td>${escapeHtml(auditor || "—")}</td>
-          <td>${escapeHtml(doc.setor || "—")}</td>
+          <td>${escapeHtml(auditor)}</td>
+          <td><strong>${escapeHtml(String(doc.maturidade ?? "—"))}</strong></td>
           <td><strong>${diasTxt}</strong></td>
-          <td><span class="badge ${badgeCls}">${escapeHtml(pr.label)}</span></td>
-          <td>
-            <span class="badge">${r.C} C</span>
-            <span class="badge">${r.NC} NC</span>
-            <span class="badge">${r.NA} NA</span>
-            <span class="badge">${r.desv} desvios</span>
-          </td>
+          <td><span class="badge ${stAud.cls === "ok" ? "ok" : stAud.cls === "warn" ? "warn" : "danger"}">${escapeHtml(stAud.label)}</span></td>
           <td><button class="btn ghost mini" data-open="${escapeHtml(doc._id)}">Visualizar</button></td>
         `;
         tbody.appendChild(tr);
       }
 
-      // abrir detalhes
       tbody.querySelectorAll("[data-open]").forEach(el=>{
         el.addEventListener("click", ()=> openDetails(el.getAttribute("data-open")));
       });
 
-      // seleção
       tbody.querySelectorAll("input[data-sel]").forEach(chk=>{
         chk.addEventListener("change", ()=>{
           const id = chk.getAttribute("data-sel");
@@ -934,39 +882,6 @@
       `;
     }
 
-    function optionNomesHtml(selected){
-      const sel = selected || "Selecione...";
-      const opts = [
-        `<option value="Selecione..." ${sel==="Selecione..." ? "selected" : ""}>Selecione...</option>`,
-        ...NOMES_5S.map(n => `<option value="${escapeHtml(n)}" ${n===sel ? "selected" : ""}>${escapeHtml(n)}</option>`)
-      ];
-      return opts.join("");
-    }
-
-    function isDesvioBaixado(d){
-      return !!(d?.baixa?.dataHora || (Array.isArray(d?.baixa?.fotosResolucao) && d.baixa.fotosResolucao.length));
-    }
-
-    // ====== ADICIONADO: enviar BAIXA (por desvio) ======
-    async function enviarBaixa({ auditoriaId, itemId, desvioIndex, resp, comentario, fotoFile }){
-      // >>> IMPORTANTE:
-      // Esta rota é a que faz mais sentido para o seu modelo (item.desvios[index].baixa...).
-      // Se sua rota tiver outro caminho, me diga e eu ajusto em 1 minuto.
-      const url = `/api/5s/auditorias/${encodeURIComponent(auditoriaId)}/itens/${encodeURIComponent(itemId)}/desvios/${encodeURIComponent(desvioIndex)}/baixa`;
-
-      const fd = new FormData();
-      fd.append("responsavelCorrecao", resp);
-      fd.append("comentarioBaixa", comentario);
-      if(fotoFile) fd.append("fotoResolucao", fotoFile);
-
-      const res = await fetch(url, { method:"POST", body: fd });
-      if(!res.ok){
-        const txt = await res.text().catch(()=> "");
-        throw new Error(txt || "Falha ao dar baixa.");
-      }
-      return await res.json().catch(()=> ({}));
-    }
-
     async function openDetails(id){
       selectedDocId = id;
       openBackdrop(true);
@@ -977,15 +892,16 @@
         if(!res.ok) throw new Error("Falha ao buscar detalhes.");
         const doc = await res.json();
 
-        const auditor = getAuditorSemana(doc.semanaId, doc.auditorSemana);
+        const stAud = auditoriaStatus(doc);
+        const auditor = doc.auditorSemana || "—";
 
         $("modalTitle").textContent = `Auditoria 5S — ${String(doc._id).slice(0,8)}...`;
         $("modalSub").innerHTML = `
           Semana: <strong>${escapeHtml(doc.semanaId)}</strong> ·
           Auditor: <strong>${escapeHtml(auditor)}</strong> ·
-          Data/Hora: <strong>${escapeHtml(doc.dataHora || "—")}</strong> ·
-          Setor: <strong>${escapeHtml(doc.setor || "—")}</strong>
-          ${doc.maturidade !== undefined && doc.maturidade !== null ? ` · Maturidade: <strong>${escapeHtml(String(doc.maturidade))}</strong>` : ``}
+          Maturidade: <strong>${escapeHtml(String(doc.maturidade ?? "—"))}</strong> ·
+          Status: <strong>${escapeHtml(stAud.label)}</strong> ·
+          Data/Hora: <strong>${escapeHtml(doc.dataHora || "—")}</strong>
         `;
 
         let html = `<div class="items">`;
@@ -999,92 +915,8 @@
 
           const conformeFotos = Array.isArray(it.conformeFotos) ? it.conformeFotos : [];
           const desvios = Array.isArray(it.desvios) ? it.desvios : [];
-
           const fotosNC = desvios.map(d => d?.foto).filter(Boolean);
           const fotosBaixa = desvios.flatMap(d => Array.isArray(d?.baixa?.fotosResolucao) ? d.baixa.fotosResolucao : []);
-
-          // ====== ADICIONADO: bloco de baixa (somente se NC) ======
-          let baixaHtml = "";
-          if(it.status === "NC"){
-            const desviosHtml = (desvios.length ? desvios : []).map((d, di) => {
-              const baixado = isDesvioBaixado(d);
-
-              const respOrig = d?.responsavel || "—";
-              const fotoNC = d?.foto ? [d.foto] : [];
-              const baixaFotos = Array.isArray(d?.baixa?.fotosResolucao) ? d.baixa.fotosResolucao : [];
-              const baixaResp = d?.baixa?.responsavelCorrecao || d?.baixa?.responsavel || "";
-              const baixaComentario = d?.baixa?.comentarioBaixa || d?.baixa?.comentario || "";
-              const baixaData = d?.baixa?.dataHora || d?.baixa?.data || "";
-
-              return `
-                <div class="deviation">
-                  <div class="head">
-                    <div class="inlineStatus">
-                      <span class="badge">Desvio #${di + 1}</span>
-                      <span class="badge">${escapeHtml(respOrig)}</span>
-                      ${baixado ? `<span class="badge ok">Baixado</span>` : `<span class="badge warn">Em aberto</span>`}
-                    </div>
-                    ${baixado ? `<span class="miniLine" style="margin:0">Baixa: ${escapeHtml(baixaData || "—")}</span>` : ``}
-                  </div>
-
-                  <div class="miniLine" style="margin-top:0"><strong>Evidência NC:</strong></div>
-                  ${renderThumbs("NC (foto do desvio)", fotoNC)}
-
-                  ${baixado ? `
-                    <div class="hrMini"></div>
-                    <div class="miniLine" style="margin-top:0"><strong>Baixa registrada:</strong></div>
-                    <p class="miniLine"><strong>Responsável:</strong> ${escapeHtml(baixaResp || "—")}</p>
-                    <p class="miniLine"><strong>Comentário:</strong> ${escapeHtml(baixaComentario || "—")}</p>
-                    ${renderThumbs("Fotos da baixa", baixaFotos)}
-                  ` : `
-                    <div class="baixaBox" data-baixa-box="${escapeHtml(doc._id)}|${escapeHtml(it.itemId ?? it.id ?? idx)}|${di}">
-                      <div class="baixaTop">
-                        <p class="ttl">Dar baixa neste desvio</p>
-                        <span class="badge warn">Obrigatório: responsável + comentário + foto</span>
-                      </div>
-                      <p class="baixaHint">A baixa atualiza no banco e pode recalcular a maturidade automaticamente.</p>
-
-                      <div class="row" style="margin-top:10px">
-                        <div class="field">
-                          <label>Responsável pela correção</label>
-                          <select data-baixa-resp>
-                            ${optionNomesHtml("Selecione...")}
-                          </select>
-                        </div>
-                        <div class="field">
-                          <label>Foto da correção</label>
-                          <input type="file" accept="image/*" data-baixa-foto />
-                        </div>
-                      </div>
-
-                      <div class="row" style="margin-top:10px">
-                        <div class="field" style="flex:1 1 100%">
-                          <label>Comentário da correção</label>
-                          <textarea placeholder="Descreva a correção executada..." data-baixa-coment></textarea>
-                        </div>
-                      </div>
-
-                      <div class="row" style="margin-top:10px; justify-content:flex-end">
-                        <span class="loading" data-baixa-loading><span class="dot"></span>Enviando baixa...</span>
-                        <button class="btn mini" type="button"
-                          data-baixar
-                          data-auditoria-id="${escapeHtml(doc._id)}"
-                          data-item-id="${escapeHtml(String(it.itemId ?? it.id ?? idx))}"
-                          data-desvio-index="${escapeHtml(String(di))}">
-                          Dar baixa
-                        </button>
-                      </div>
-                    </div>
-                  `}
-                </div>
-              `;
-            }).join("");
-
-            baixaHtml = `
-              <div class="miniLine" style="margin-top:10px"><strong>Tratativa (NC):</strong> dê baixa por desvio para manter controle até o final da semana.</div>
-              ${desviosHtml || `<div class="alert"><strong>Sem desvios listados.</strong> (Isso só deveria ocorrer se a auditoria foi salva sem desvios.)</div>`}
-            `;
-          }
 
           html += `
             <div class="item">
@@ -1094,7 +926,6 @@
                   <div class="txt">
                     <div class="tag">${escapeHtml(it.grupo || "—")}</div>
                     <p class="q">${escapeHtml(it.texto || "—")}</p>
-                    ${it.status === "NA" && it.naJustificativa ? `<p class="miniLine"><strong>Justificativa (NA):</strong> ${escapeHtml(it.naJustificativa)}</p>` : ``}
                   </div>
                 </div>
                 ${statusBadge}
@@ -1102,9 +933,13 @@
 
               <div class="evid-wrap" data-ev="${idx}">
                 ${renderThumbs("Conforme", conformeFotos)}
-                ${renderThumbs("Não Conforme (fotos)", fotosNC)}
-                ${renderThumbs("Baixa (fotos)", fotosBaixa)}
-                ${baixaHtml}
+                ${renderThumbs("Não Conforme", fotosNC)}
+                ${renderThumbs("Baixa", fotosBaixa)}
+                ${
+                  stAud.canBaixa
+                    ? `<p class="miniLine"><strong>Baixa:</strong> Permitida até sábado 23:59 desta semana.</p>`
+                    : `<p class="miniLine"><strong>Baixa:</strong> <span style="color:var(--danger);font-weight:800;">Bloqueada</span> (auditoria fechada).</p>`
+                }
               </div>
             </div>
           `;
@@ -1113,63 +948,11 @@
         html += `</div>`;
         $("modalBody").innerHTML = html;
 
-        // Toggle abrir/fechar evidências
         $("modalBody").querySelectorAll("[data-toggle]").forEach(el => {
           el.addEventListener("click", () => {
             const idx = el.getAttribute("data-toggle");
             const box = $("modalBody").querySelector(`[data-ev="${idx}"]`);
             if(box) box.classList.toggle("on");
-          });
-        });
-
-        // ====== ADICIONADO: handler do botão "Dar baixa" ======
-        $("modalBody").querySelectorAll("[data-baixar]").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            const auditoriaId = btn.getAttribute("data-auditoria-id");
-            const itemId = btn.getAttribute("data-item-id");
-            const desvioIndex = Number(btn.getAttribute("data-desvio-index"));
-
-            const box = btn.closest("[data-baixa-box]");
-            if(!box) return;
-
-            const selResp = box.querySelector("[data-baixa-resp]");
-            const inpFoto = box.querySelector("[data-baixa-foto]");
-            const txtComent = box.querySelector("[data-baixa-coment]");
-            const loading = box.querySelector("[data-baixa-loading]");
-
-            const resp = (selResp?.value || "").trim();
-            const comentario = (txtComent?.value || "").trim();
-            const fotoFile = (inpFoto?.files || [])[0] || null;
-
-            if(!resp || resp === "Selecione..."){
-              alert("Selecione o responsável pela correção.");
-              return;
-            }
-            if(!comentario){
-              alert("Informe o comentário da correção.");
-              return;
-            }
-            if(!fotoFile){
-              alert("Anexe a foto da correção.");
-              return;
-            }
-
-            try{
-              btn.disabled = true;
-              if(loading) loading.classList.add("on");
-
-              await enviarBaixa({ auditoriaId, itemId, desvioIndex, resp, comentario, fotoFile });
-
-              // Recarrega detalhes (modal) + tabela/KPIs (pode mudar maturidade)
-              await openDetails(auditoriaId);
-              await loadRegistros();
-              alert("Baixa registrada com sucesso!");
-            }catch(err){
-              alert("Erro ao dar baixa: " + (err?.message || err));
-            }finally{
-              btn.disabled = false;
-              if(loading) loading.classList.remove("on");
-            }
           });
         });
 
@@ -1188,11 +971,11 @@
         auditorAuto = data.auditorSemana || null;
 
         $("semanaAtual").textContent = semanaAtual || "—";
-        $("auditorAuto").textContent = getAuditorSemana(semanaAtual, auditorAuto);
+        $("auditorAuto").textContent = getAuditorSemanaAtual(semanaAtual, auditorAuto);
 
         $("audSemana").value = semanaAtual || "";
         $("audAutoInput").value = auditorAuto || "";
-        fillSelectNomes($("audNovo"), getAuditorSemana(semanaAtual, auditorAuto));
+        fillSelectNomes($("audNovo"), getAuditorSemanaAtual(semanaAtual, auditorAuto));
       }catch{
         $("semanaAtual").textContent = "erro";
         $("auditorAuto").textContent = "erro";
@@ -1222,7 +1005,7 @@
 
         renderTable();
       }catch(err){
-        $("tbody").innerHTML = `<tr><td colspan="9" style="color:var(--muted)">Erro ao carregar: ${escapeHtml(err?.message || err)}</td></tr>`;
+        $("tbody").innerHTML = `<tr><td colspan="8" style="color:var(--muted)">Erro ao carregar: ${escapeHtml(err?.message || err)}</td></tr>`;
       }finally{
         $("loadingTabela").classList.remove("on");
         $("loadingKpi").classList.remove("on");
@@ -1237,10 +1020,10 @@
       openAuditorModal(false);
     }
     function refreshAuditorPills(){
-      $("auditorAuto").textContent = getAuditorSemana(semanaAtual, auditorAuto);
+      $("auditorAuto").textContent = getAuditorSemanaAtual(semanaAtual, auditorAuto);
     }
 
-    // ====== excluir selecionados ======
+    // ====== Excluir selecionados ======
     async function excluirSelecionados(){
       const ids = Array.from(selectedIds);
       if(!ids.length) return;
@@ -1249,7 +1032,6 @@
       if(!ok) return;
 
       try{
-        // rota em lote (se você tiver). Se não tiver, cai no fallback (um por um)
         let batchOk = false;
         try{
           const r = await fetch("/api/5s/auditorias/bulk-delete", {
@@ -1261,12 +1043,9 @@
         }catch{}
 
         if(!batchOk){
-          // fallback: delete individual
           for(const id of ids){
             const r = await fetch(`/api/5s/auditorias/${encodeURIComponent(id)}`, { method:"DELETE" });
-            if(!r.ok){
-              throw new Error(`Falha ao excluir ID ${id}`);
-            }
+            if(!r.ok) throw new Error(`Falha ao excluir ID ${id}`);
           }
         }
 
@@ -1285,7 +1064,7 @@
 
     $("btnRecarregar").addEventListener("click", loadRegistros);
 
-    ["fSemana","fPrazo","fAuditor","fSetor","fBusca"].forEach(id=>{
+    ["fSemana","fStatus","fAuditor","fBusca"].forEach(id=>{
       $(id).addEventListener("input", renderTable);
       $(id).addEventListener("change", renderTable);
     });
@@ -1297,7 +1076,7 @@
     $("btnMudarAuditor").addEventListener("click", ()=>{
       $("audSemana").value = semanaAtual || "";
       $("audAutoInput").value = auditorAuto || "";
-      fillSelectNomes($("audNovo"), getAuditorSemana(semanaAtual, auditorAuto));
+      fillSelectNomes($("audNovo"), getAuditorSemanaAtual(semanaAtual, auditorAuto));
       openAuditorModal(true);
     });
 
@@ -1324,7 +1103,6 @@
       alert("Troca removida. Voltou para o auditor automático.");
     });
 
-    // selecionar todos visíveis
     $("chkAll").addEventListener("change", ()=>{
       const visibleChecks = Array.from($("tbody").querySelectorAll("input[data-sel]"));
       if($("chkAll").checked){
@@ -1332,23 +1110,23 @@
       }else{
         visibleChecks.forEach(c => selectedIds.delete(String(c.getAttribute("data-sel"))));
       }
-      renderTable(); // mantém consistente
+      renderTable();
     });
 
     $("btnExcluirSelecionados").addEventListener("click", excluirSelecionados);
 
     // Copiar ID
     $("btnCopiarId").addEventListener("click", async ()=>{
-      if(!selectedDocId) return alert("Nenhuma auditoria selecionada.");
+      if(!selectedDocId) return;
       try{
-        await navigator.clipboard.writeText(selectedDocId);
+        await navigator.clipboard.writeText(String(selectedDocId));
         alert("ID copiado!");
       }catch{
-        alert("Não foi possível copiar automaticamente. Copie manualmente: " + selectedDocId);
+        alert("Não foi possível copiar automaticamente.");
       }
     });
 
-    // ====== Init ======
+    // Init
     (async function init(){
       await loadSemanaAtual();
       await loadRegistros();
