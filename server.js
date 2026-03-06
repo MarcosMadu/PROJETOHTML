@@ -75,12 +75,23 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ========================= MongoDB ========================
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => console.log('✅ Conectado ao MongoDB'))
-.catch(err => console.error('❌ Erro ao conectar no MongoDB:', err));
+async function startServer() {
+  try {
+    await mongoose.connect(process.env.MONGO_URI || process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 30000
+    });
+
+    console.log('✅ Conectado ao MongoDB');
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
+    });
+
+  } catch (err) {
+    console.error('❌ Erro ao conectar no MongoDB:', err);
+    process.exit(1);
+  }
+}
 
 // ========================= Rotas HTML =====================
 app.get('/', (req, res) => {
@@ -961,6 +972,6 @@ app.post(
 );
 
 // ============================ START ================================
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
+// ============================ START ================================
+startServer();
 });
