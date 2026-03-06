@@ -1123,27 +1123,23 @@
     // =========================
     // GRÁFICOS
     // =========================
-    function renderChartEvolucao(){
-      const ctx = document.getElementById("chartEvolucao");
-      const agg = buildTemporalAggregation(filteredData);
+   function renderChartCategoria(){
+  const ctx = document.getElementById("chartCategoria");
+  const map = groupCount(filteredData, r => r.categoria || "Não informada");
+  const top = topNMap(map, 10);
 
-      upsertChart("evolucao", ctx, {
-        type: "bar",
-        data: {
-          labels: agg.labels,
-          datasets: [{
-            label: "Registros",
-            data: agg.totals,
-            borderWidth: 1
-          }]
-        },
-        options: baseChartOptions({
-          responsive:true,
-          maintainAspectRatio:false,
-          plugins:{ legend:{display:false} }
-        })
-      });
-    }
+  upsertChart("categoria", ctx, {
+    type: "bar",
+    data: {
+      labels: top.map(x => x[0]),
+      datasets: [{
+        label: "Quantidade",
+        data: top.map(x => x[1])
+      }]
+    },
+    options: baseHorizontalBarOptions()
+  });
+}
 
     function renderChartTaxaResolucao(){
       const ctx = document.getElementById("chartTaxaResolucao");
