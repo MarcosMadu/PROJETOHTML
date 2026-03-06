@@ -1,0 +1,1445 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gestão 5S Tecnosonda — Painel do Gestor</title>
+  <style>
+    :root{
+      --bg:#f2f4f7;
+      --card:#ffffff;
+      --text:#101828;
+      --muted:#667085;
+      --border:#e4e7ec;
+      --shadow: 0 10px 24px rgba(16,24,40,.08);
+      --primary:#2563eb;
+      --danger:#dc2626;
+      --ok:#16a34a;
+      --warn:#f59e0b;
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    header{
+      position: sticky; top:0; z-index:10;
+      background: rgba(242,244,247,.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .wrap{max-width:1200px;margin:0 auto;padding:18px 18px}
+    .topbar{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+      flex-wrap:wrap;
+    }
+    .brand{display:flex; flex-direction:column; gap:4px}
+    .brand h1{margin:0;font-size:18px;letter-spacing:.2px}
+    .brand p{margin:0;color:var(--muted);font-size:12px}
+    .pill{
+      display:inline-flex; gap:8px; align-items:center;
+      padding:8px 12px; border:1px solid var(--border); background:#fff;
+      border-radius:999px; box-shadow: 0 4px 12px rgba(16,24,40,.04);
+      font-size:12px; color:var(--muted);
+      white-space:nowrap;
+    }
+
+    main .wrap{padding-top:18px; padding-bottom:40px}
+
+    .grid{
+      display:grid; grid-template-columns: 1fr; gap:14px;
+    }
+
+    .card{
+      background: var(--card);
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card-h{
+      padding:16px 16px 10px 16px;
+      border-bottom:1px solid var(--border);
+      display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
+      flex-wrap:wrap;
+    }
+    .card-h h2{margin:0;font-size:14px}
+    .card-h .sub{margin:4px 0 0 0;font-size:12px;color:var(--muted)}
+    .card-b{padding:16px}
+
+    .row{display:flex; gap:10px; flex-wrap:wrap}
+    .row > *{flex: 1 1 220px}
+
+    .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    .field input, .field select, .field textarea{
+      width:100%;
+      padding:10px 12px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      outline:none;
+      background:#fff;
+      font-family: inherit;
+    }
+    .field textarea{min-height:86px; resize:vertical}
+    .field input:focus, .field select:focus, .field textarea:focus{
+      border-color: rgba(37,99,235,.5);
+      box-shadow: 0 0 0 4px rgba(37,99,235,.12);
+    }
+
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      border:1px solid transparent;
+      padding:10px 12px; border-radius:12px;
+      cursor:pointer; font-weight:700; font-size:13px;
+      background: var(--primary); color:#fff;
+      box-shadow: 0 10px 18px rgba(37,99,235,.18);
+      white-space:nowrap;
+    }
+    .btn:disabled{opacity:.55; cursor:not-allowed}
+    .btn.ghost{
+      background:#fff; color:var(--text);
+      border-color: var(--border);
+      box-shadow:none;
+      font-weight:700;
+    }
+    .btn.danger{
+      background: var(--danger);
+      box-shadow: 0 10px 18px rgba(220,38,38,.18);
+    }
+    .btn.warn{
+      background: var(--warn);
+      box-shadow: 0 10px 18px rgba(245,158,11,.18);
+    }
+    .mini{padding:8px 10px; border-radius:10px; font-size:12px}
+
+    .kpis{
+      display:grid;
+      grid-template-columns: repeat(5, minmax(160px, 1fr));
+      gap:10px;
+    }
+    @media (max-width: 980px){
+      .kpis{grid-template-columns: repeat(2, minmax(160px, 1fr))}
+    }
+    .kpi{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px;
+      background:#fff;
+    }
+    .kpi .t{font-size:12px;color:var(--muted);margin:0 0 6px 0}
+    .kpi .v{font-size:18px;font-weight:800;margin:0}
+    .kpi .s{font-size:12px;color:var(--muted);margin:6px 0 0 0}
+
+    .badge{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:4px 10px; border-radius:999px;
+      font-size:12px; border:1px solid var(--border);
+      color: var(--muted); background:#fff;
+      white-space:nowrap;
+    }
+    .badge.ok{border-color: rgba(22,163,74,.35); color: var(--ok); background: rgba(22,163,74,.06)}
+    .badge.warn{border-color: rgba(245,158,11,.35); color:var(--warn); background: rgba(245,158,11,.08)}
+    .badge.danger{border-color: rgba(220,38,38,.35); color: var(--danger); background: rgba(220,38,38,.06)}
+    .badge.soft{border-color: rgba(37,99,235,.25); color: var(--primary); background: rgba(37,99,235,.06)}
+
+    .table-wrap{
+      border:1px solid var(--border);
+      border-radius:14px;
+      overflow:auto;
+      background:#fff;
+    }
+    table{
+      border-collapse:collapse;
+      width:100%;
+      min-width:980px;
+      font-size:13px;
+    }
+    th, td{
+      border-bottom:1px solid var(--border);
+      padding:10px 12px;
+      text-align:left;
+      vertical-align:top;
+    }
+    th{
+      position:sticky; top:0;
+      background:#fbfcfe;
+      z-index:2;
+      font-size:12px;
+      color:var(--muted);
+    }
+    tr:hover td{background:#fbfdff}
+    .link{
+      color: var(--primary);
+      font-weight:800;
+      cursor:pointer;
+      text-decoration:none;
+    }
+
+    .alert{
+      margin-top:10px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:#fff;
+      padding:10px 12px;
+      font-size:12px;
+      color:var(--muted);
+    }
+    .alert strong{color:var(--text)}
+
+    .loading{
+      display:none; align-items:center; gap:10px;
+      color:var(--muted); font-size:12px;
+    }
+    .loading.on{display:inline-flex}
+    .dot{
+      width:10px;height:10px;border-radius:999px;background:var(--primary);
+      animation:pulse .9s infinite ease-in-out;
+    }
+    @keyframes pulse{
+      0%,100%{transform:scale(.9);opacity:.6}
+      50%{transform:scale(1.2);opacity:1}
+    }
+
+    /* Modal */
+    .backdrop{
+      position:fixed; inset:0;
+      background: rgba(16,24,40,.55);
+      display:none;
+      align-items:flex-start;
+      justify-content:center;
+      padding:22px;
+      z-index:999;
+    }
+    .backdrop.on{display:flex}
+
+    /* Modal agora "quase tela cheia" pra ficar organizado */
+    .modal{
+      width:min(1200px, 100%);
+      height: calc(100vh - 44px);
+      max-height: calc(100vh - 44px);
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:18px;
+      box-shadow: 0 30px 80px rgba(16,24,40,.25);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+    @media (max-width: 720px){
+      .backdrop{padding:12px}
+      .modal{height: calc(100vh - 24px); max-height: calc(100vh - 24px)}
+    }
+
+    .modal-h{
+      padding:14px 16px;
+      border-bottom:1px solid var(--border);
+      display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
+      background: rgba(255,255,255,.9);
+    }
+    .modal-h h3{margin:0;font-size:14px}
+    .modal-h p{margin:4px 0 0 0;font-size:12px;color:var(--muted)}
+    .modal-b{padding:16px; flex: 1 1 auto; overflow:auto}
+    .modal-f{
+      padding:12px 16px;
+      border-top:1px solid var(--border);
+      display:flex; justify-content:flex-end; gap:10px; flex-wrap:wrap;
+      background: rgba(255,255,255,.9);
+    }
+
+    .items{
+      display:flex; flex-direction:column; gap:10px;
+    }
+    .item{
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:#fff;
+      overflow:hidden;
+    }
+    .item-top{
+      padding:12px;
+      display:flex; gap:10px; align-items:flex-start; justify-content:space-between;
+      cursor:pointer;
+    }
+    .item-top:hover{ background:#fbfdff; }
+    .item-left{display:flex; gap:10px; align-items:flex-start}
+    .num{
+      width:28px;height:28px;border-radius:10px;
+      display:grid; place-items:center;
+      border:1px solid var(--border);
+      color:var(--muted); font-size:12px;
+      background: #f8fafc;
+      flex:0 0 auto;
+    }
+    .txt{min-width:0}
+    .tag{
+      display:inline-flex; padding:4px 8px; border-radius:999px;
+      font-size:11px; border:1px solid var(--border);
+      color:var(--muted); background:#fff;
+      margin-bottom:6px;
+    }
+    .q{margin:0; font-size:13px; line-height:1.35}
+    .miniLine{margin:6px 0 0 0; font-size:12px; color:var(--muted)}
+
+    /* seleção + evidências */
+    .checkcell{ width:42px; }
+    .check{
+      width:18px;height:18px;
+      accent-color: var(--primary);
+      cursor:pointer;
+    }
+    .bulkbar{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      margin-top:12px;
+      padding:10px;
+      border:1px solid var(--border);
+      background:#fff;
+      border-radius:14px;
+    }
+    .bulkbar .muted{ color:var(--muted); font-size:12px; }
+
+    .evid-wrap{
+      border-top:1px solid var(--border);
+      padding:12px;
+      display:none;
+      background: #fbfcfe;
+    }
+    .evid-wrap.on{ display:block; }
+
+    .evid-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap:10px;
+      margin-top:10px;
+    }
+    .thumb{
+      border:1px solid var(--border);
+      border-radius:14px;
+      overflow:hidden;
+      background:#fff;
+      box-shadow: 0 6px 16px rgba(16,24,40,.06);
+    }
+    .thumb img{
+      width:100%;
+      height:120px;
+      object-fit:cover;
+      display:block;
+    }
+    .thumb .cap{
+      padding:8px 10px;
+      font-size:12px;
+      color:var(--muted);
+      border-top:1px solid var(--border);
+      word-break:break-word;
+    }
+    .pill2{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:4px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#fff;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    /* Desvios (NC) */
+    .dev{
+      border:1px solid var(--border);
+      background:#fff;
+      border-radius:14px;
+      padding:12px;
+      margin-top:10px;
+      box-shadow: 0 6px 16px rgba(16,24,40,.05);
+    }
+    .dev-head{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
+      flex-wrap:wrap;
+    }
+    .dev-title{
+      display:flex; flex-direction:column; gap:6px;
+      min-width: 220px;
+    }
+    .dev-title .line{
+      display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+      font-size:12px; color:var(--muted);
+    }
+    .dev-title strong{color:var(--text)}
+    .dev-desc{
+      margin:8px 0 0 0;
+      font-size:13px;
+      color:var(--text);
+      line-height:1.35;
+    }
+
+    .baixaBox{
+      margin-top:10px;
+      border:1px dashed var(--border);
+      background:#fbfcfe;
+      border-radius:14px;
+      padding:12px;
+    }
+    .baixaGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    @media (max-width: 860px){
+      .baixaGrid{grid-template-columns: 1fr}
+    }
+    .help{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:6px;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="wrap">
+      <div class="topbar">
+        <div class="brand">
+          <h1>Gestão 5S Tecnosonda</h1>
+          <p>Painel do gestor — visão geral por semana, detalhes e controle do auditor automático</p>
+        </div>
+
+        <div class="row" style="flex:0 0 auto; justify-content:flex-end">
+          <div class="pill">
+            Semana atual: <strong id="semanaAtual">—</strong> · Auditor (auto): <strong id="auditorAuto">—</strong>
+          </div>
+          <button class="btn ghost mini" id="btnMudarAuditor">Mudar auditor da semana</button>
+          <button class="btn mini" id="btnAbrirAvaliacao">Abrir Avaliação (avaliacao.html)</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <div class="grid">
+
+        <!-- KPIs -->
+        <section class="card">
+          <div class="card-h">
+            <div>
+              <h2>Indicadores</h2>
+              <p class="sub">Abertas = desvios (NC) sem baixa dentro do prazo (Seg–Sáb). Após o prazo, auditoria fecha.</p>
+            </div>
+            <span class="loading" id="loadingKpi"><span class="dot"></span>Carregando...</span>
+          </div>
+          <div class="card-b">
+            <div class="kpis">
+              <div class="kpi">
+                <p class="t">Total de registros</p>
+                <p class="v" id="kpiRegistros">—</p>
+                <p class="s" id="kpiRegistrosSub">—</p>
+              </div>
+              <div class="kpi">
+                <p class="t">Total de itens</p>
+                <p class="v" id="kpiItens">—</p>
+                <p class="s">Somatório dos itens avaliados</p>
+              </div>
+              <div class="kpi">
+                <p class="t">NCs (desvios)</p>
+                <p class="v" id="kpiNC">—</p>
+                <p class="s">Cada foto em NC = 1 desvio</p>
+              </div>
+              <div class="kpi">
+                <p class="t">% Conformidade</p>
+                <p class="v" id="kpiPct">—</p>
+                <p class="s">C / (C + NC) · 100</p>
+              </div>
+              <div class="kpi">
+                <p class="t">Abertas x Fechadas</p>
+                <p class="v" id="kpiAB">—</p>
+                <p class="s">Somente desvios (NC)</p>
+              </div>
+            </div>
+
+            <div class="alert" style="margin-top:12px">
+              <strong>Regra de prazo:</strong> a auditoria fica <strong>Aberta</strong> até <strong>sábado 23:59</strong> da semana da auditoria.
+              Depois disso ela <strong>Fecha</strong> com a maturidade que ficou e <strong>não permite baixa</strong>.
+            </div>
+          </div>
+        </section>
+
+        <!-- Filtros + Tabela -->
+        <section class="card">
+          <div class="card-h">
+            <div>
+              <h2>Registros</h2>
+              <p class="sub">Clique em “Visualizar” para abrir a auditoria com todos os detalhes.</p>
+            </div>
+            <div class="row" style="flex:0 0 auto">
+              <span class="loading" id="loadingTabela"><span class="dot"></span>Carregando registros...</span>
+              <button class="btn ghost mini" id="btnRecarregar">Recarregar</button>
+            </div>
+          </div>
+
+          <div class="card-b">
+            <div class="row">
+              <div class="field">
+                <label>Semana</label>
+                <select id="fSemana"></select>
+              </div>
+              <div class="field">
+                <label>Status</label>
+                <select id="fStatus">
+                  <option value="Todos">Todos</option>
+                  <option value="Abertas">Abertas</option>
+                  <option value="Fechadas">Fechadas</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Auditor</label>
+                <input id="fAuditor" placeholder="Filtrar por auditor..." />
+              </div>
+              <div class="field" style="flex:2 1 320px">
+                <label>Busca (ID / texto / responsável)</label>
+                <input id="fBusca" placeholder="Ex.: 678... / vazamento / ALLAN..." />
+              </div>
+            </div>
+
+            <div class="bulkbar">
+              <label class="pill2" style="cursor:pointer;">
+                <input type="checkbox" id="chkAll" class="check" />
+                Selecionar todos
+              </label>
+              <button class="btn danger mini" id="btnExcluirSelecionados" disabled>Excluir selecionados</button>
+              <span class="muted" id="bulkInfo">0 selecionado(s)</span>
+            </div>
+
+            <div class="table-wrap" style="margin-top:12px">
+              <table>
+                <thead>
+                  <tr>
+                    <th class="checkcell">Sel.</th>
+                    <th style="width:120px">ID</th>
+                    <th style="width:160px">Data/Hora</th>
+                    <th style="width:220px">Auditor</th>
+                    <th style="width:110px">Maturidade</th>
+                    <th style="width:120px">Dias p/ fechar</th>
+                    <th style="width:240px">Status</th>
+                    <th style="width:120px">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+              </table>
+            </div>
+
+            <div class="alert">
+              <strong>Obs.:</strong> “Mudar auditor da semana” é uma <strong>sobreposição local</strong> (salva no navegador) e não altera auditorias já lançadas.
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal Visualizar -->
+  <div class="backdrop" id="backdrop">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-h">
+        <div>
+          <h3 id="modalTitle">Detalhes da auditoria</h3>
+          <p id="modalSub">—</p>
+        </div>
+        <button class="btn ghost mini" id="btnFecharModal">Fechar</button>
+      </div>
+      <div class="modal-b" id="modalBody"></div>
+      <div class="modal-f">
+        <button class="btn ghost mini" id="btnCopiarId">Copiar ID</button>
+        <button class="btn mini" id="btnAbrirNoAtlas" disabled title="Apenas informativo (não abre link direto)">(Demo) OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Mudar Auditor -->
+  <div class="backdrop" id="backdropAuditor">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-h">
+        <div>
+          <h3>Mudar auditor da semana</h3>
+          <p>Se o auditor automático não estiver presente, selecione outro para esta semana (salva no navegador).</p>
+        </div>
+        <button class="btn ghost mini" id="btnFecharAuditor">Fechar</button>
+      </div>
+      <div class="modal-b">
+        <div class="row">
+          <div class="field">
+            <label>Semana</label>
+            <input id="audSemana" readonly />
+          </div>
+          <div class="field">
+            <label>Auditor automático</label>
+            <input id="audAutoInput" readonly />
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:10px">
+          <div class="field" style="flex:1 1 100%">
+            <label>Novo auditor</label>
+            <select id="audNovo"></select>
+          </div>
+        </div>
+
+        <div class="alert">
+          <strong>Regras:</strong> auditor é automático por semana, mas aqui temos opção de troca via gestor (local).
+        </div>
+      </div>
+      <div class="modal-f">
+        <button class="btn danger mini" id="btnRemoverOverride">Remover troca</button>
+        <button class="btn mini" id="btnSalvarOverride">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const NOMES_5S = [
+      "ALLAN DO NASCIMENTO MORAES",
+      "ANDRE DA CONCEICAO ALVES",
+      "ANGLA RAKEL SILVA ALMEIDA",
+      "ANTONY CHE GUEVARA CAVALCANTE DOS SANTOS",
+      "CLEITON DE PAULA BATISTA",
+      "DEIVIANE CONCEICAO PEREIRA",
+      "EDUARDO DE SOUSA",
+      "FERNANDO QUEIROZ DA SILVA",
+      "HELIO BARBOSA DOS SANTOS",
+      "HERACLITO HENRIQUE SANTANA LOPES",
+      "JANAINA KETLEY ANDRADE RIBEIRO",
+      "JEOVANE DOS SANTOS SILVA",
+      "JORGE MOUZINHO CARVALHO",
+      "LUCRECIA SANTOS DO NASCIMENTO",
+      "LUIS ANTONIO FELIX DE VASCONCELLOS",
+      "MARCELO MONTANDON MARCAL JUNIOR",
+      "MARCOS OLIVEIRA MENEZES",
+      "RAFAEL HENRIQUE ALVES RIBEIRO",
+      "RAPHAEL JOSE PEREIRA DA SILVA",
+      "RODRIGO BARBOSA DA SILVA",
+      "MARCOS VINICUS BATISTA RIBEIRO",
+      "TAINARA BERTUNES DOS SANTOS",
+      "VERONICA LUIZA GOMES DE MENEZES",
+      "WILDSON DA SILVA BARROS"
+    ];
+
+    const $ = (id) => document.getElementById(id);
+
+    let semanaAtual = null;
+    let auditorAuto = null;
+    let registrosAll = [];
+    let selectedDocId = null;
+
+    const selectedIds = new Set();
+
+    function updateBulkUI(){
+      const n = selectedIds.size;
+      $("bulkInfo").textContent = `${n} selecionado(s)`;
+      $("btnExcluirSelecionados").disabled = n === 0;
+
+      const visibleIds = Array.from($("tbody").querySelectorAll("input[data-sel]")).map(i => i.getAttribute("data-sel"));
+      const allVisibleChecked = visibleIds.length > 0 && visibleIds.every(id => selectedIds.has(id));
+      $("chkAll").checked = allVisibleChecked;
+      $("chkAll").indeterminate = !allVisibleChecked && n > 0 && visibleIds.some(id => selectedIds.has(id));
+    }
+
+    // ====== Semana ISO (prazo Seg–Sáb) ======
+    function parseSemanaId(semanaId){
+      const [y, w] = String(semanaId).split("-W");
+      return { year: Number(y), week: Number(w) };
+    }
+    function startOfISOWeek(year, week){
+      const simple = new Date(Date.UTC(year, 0, 4));
+      const dow = simple.getUTCDay() || 7;
+      const week1Monday = new Date(simple);
+      week1Monday.setUTCDate(simple.getUTCDate() - (dow - 1));
+      const monday = new Date(week1Monday);
+      monday.setUTCDate(week1Monday.getUTCDate() + (week - 1) * 7);
+      return monday; // Monday 00:00 UTC
+    }
+    function endOfISOSaturday(year, week){
+      const monday = startOfISOWeek(year, week);
+      const sat = new Date(monday);
+      sat.setUTCDate(monday.getUTCDate() + 5); // Saturday
+      sat.setUTCHours(23,59,59,999);
+      return sat;
+    }
+    function daysToClose(semanaId){
+      if(!semanaId) return 0;
+      const { year, week } = parseSemanaId(semanaId);
+      const end = endOfISOSaturday(year, week);
+      const now = new Date();
+      const ms = end.getTime() - now.getTime();
+      return Math.ceil(ms / 86400000);
+    }
+
+    function hasOpenDeviations(doc){
+      const itens = Array.isArray(doc.itens) ? doc.itens : [];
+      for(const it of itens){
+        if(it.status !== "NC") continue;
+        const desv = Array.isArray(it.desvios) ? it.desvios : [];
+        for(const d of desv){
+          const baixado = !!(d?.baixa?.dataHora || (Array.isArray(d?.baixa?.fotosResolucao) && d.baixa.fotosResolucao.length));
+          if(!baixado) return true;
+        }
+      }
+      return false;
+    }
+
+    function auditoriaStatus(doc){
+      const open = hasOpenDeviations(doc);
+      const d = daysToClose(doc.semanaId);
+
+      if(!open){
+        return { key:"Fechada", label:"Fechada", cls:"ok", dias: Math.max(d, 0), within:true, canBaixa:false };
+      }
+
+      if(d >= 0){
+        if(d === 0) return { key:"Aberta", label:"Aberta — fecha hoje (Sáb)", cls:"warn", dias:d, within:true, canBaixa:true };
+        return { key:"Aberta", label:"Aberta", cls:"warn", dias:d, within:true, canBaixa:true };
+      }
+
+      return { key:"Fechada", label:"Fechada", cls:"danger", dias:d, within:false, canBaixa:false };
+    }
+
+    // ====== Auditor override local (somente semana atual) ======
+    function lsKey(semanaId){ return `5s_auditor_override_${semanaId}`; }
+    function getAuditorSemanaAtual(semanaId, auditorAuto){
+      const o = localStorage.getItem(lsKey(semanaId));
+      return o || auditorAuto || "—";
+    }
+
+    function fillSelectNomes(selectEl, selected){
+      selectEl.innerHTML = NOMES_5S.map(n => `<option value="${escapeHtml(n)}" ${n===selected?'selected':''}>${escapeHtml(n)}</option>`).join("");
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function getImageUrl(file){
+      if(!file) return null;
+      if(typeof file === "string"){
+        if(file.startsWith("http")) return file;
+        return `/uploads/${encodeURIComponent(file)}`;
+      }
+      if(file.url && typeof file.url === "string") return file.url;
+      if(file.secure_url && typeof file.secure_url === "string") return file.secure_url;
+      if(file.path && typeof file.path === "string") return file.path;
+      if(file.name) return `/uploads/${encodeURIComponent(file.name)}`;
+      return null;
+    }
+
+    // ====== Maturidade (garantir que aparece mesmo se vier com outro nome) ======
+   function getTipoAuditoria(doc){
+  // tenta inferir pelo total de itens (15 = ADM, 17 = CAMPO)
+  const n = Array.isArray(doc?.itens) ? doc.itens.length : 0;
+  if(n === 15) return "ADM";
+  if(n === 17) return "CAMPO";
+  // fallback: se você tiver doc.tipo, melhor ainda:
+  return (doc?.tipo || "").toUpperCase() || (n > 15 ? "CAMPO" : "ADM");
+}
+
+function nivelItem(tipo, itemId){
+  const id = Number(itemId);
+
+  if(tipo === "ADM"){
+    if(id >= 1 && id <= 7) return 1;
+    if(id >= 8 && id <= 11) return 2;
+    if(id >= 12 && id <= 14) return 3;
+    if(id === 15) return 4;
+    return null;
+  }
+
+  // CAMPO (com a correção da sobreposição do 14)
+  if(id >= 1 && id <= 9) return 1;
+  if(id >= 10 && id <= 13) return 2;
+  if(id >= 14 && id <= 15) return 3;
+  if(id >= 16 && id <= 17) return 4;
+  return null;
+}
+
+function getMaturidade(doc){
+  // 1) se o backend mandou, sempre respeita
+  const direct =
+    doc?.maturidade ??
+    doc?.maturidadeNivel ??
+    doc?.nivelMaturidade ??
+    doc?.maturidade5s ??
+    null;
+
+  if(direct !== null && direct !== undefined && String(direct).trim() !== ""){
+    return direct;
+  }
+
+  // 2) fallback (cálculo correto)
+  const itens = Array.isArray(doc?.itens) ? doc.itens : [];
+  if(!itens.length) return "—";
+
+  const tipo = getTipoAuditoria(doc);
+  let maturidadeFinal = 4; // se não houver NC, fica 4
+
+  for(const it of itens){
+    if(it.status !== "NC") continue; // NA e C não derrubam
+    const id = it.itemId ?? null;
+    const nivel = nivelItem(tipo, id);
+    if(nivel == null) continue;
+
+    const resultado = nivel - 1;       // REGRA PRINCIPAL
+    if(resultado < maturidadeFinal) maturidadeFinal = resultado;
+    if(maturidadeFinal === 0) break;   // não dá pra cair mais
+  }
+
+  return maturidadeFinal;
+}
+    // ====== KPIs ======
+    function calcKPIs(list){
+      let totalItens = 0;
+      let c = 0, nc = 0, na = 0;
+      let desviosTotal = 0;
+      let desviosFechados = 0;
+      let desviosAbertos = 0;
+
+      for(const doc of list){
+        const itens = Array.isArray(doc.itens) ? doc.itens : [];
+        totalItens += itens.length;
+
+        const stAud = auditoriaStatus(doc);
+
+        for(const it of itens){
+          if(it.status === "C") c++;
+          else if(it.status === "NC") nc++;
+          else if(it.status === "NA") na++;
+
+          if(it.status === "NC"){
+            const desvios = Array.isArray(it.desvios) ? it.desvios : [];
+            for(const d of desvios){
+              desviosTotal++;
+              const baixado = !!(d?.baixa?.dataHora || (Array.isArray(d?.baixa?.fotosResolucao) && d.baixa.fotosResolucao.length));
+              if(!stAud.canBaixa){
+                desviosFechados++;
+              }else{
+                if(baixado) desviosFechados++;
+                else desviosAbertos++;
+              }
+            }
+          }
+        }
+      }
+
+      const denom = (c + nc);
+      const pct = denom > 0 ? (c / denom) * 100 : 0;
+
+      return {
+        registros: list.length,
+        totalItens,
+        desviosTotal,
+        pctConformidade: pct,
+        fechadas: desviosFechados,
+        abertas: desviosAbertos,
+        breakdown: { c, nc, na }
+      };
+    }
+
+    function setKPIs(list, semanaId){
+      const k = calcKPIs(list);
+      $("kpiRegistros").textContent = String(k.registros);
+      $("kpiRegistrosSub").textContent = semanaId ? `Semana: ${semanaId}` : "—";
+      $("kpiItens").textContent = String(k.totalItens);
+      $("kpiNC").textContent = String(k.desviosTotal);
+      $("kpiPct").textContent = `${k.pctConformidade.toFixed(1)}%`;
+      $("kpiAB").textContent = `${k.abertas} / ${k.fechadas}`;
+    }
+
+    // ====== Filtros ======
+    function matchesFilter(doc){
+      const semanaSel = $("fSemana").value;
+      const statusSel = $("fStatus").value;
+      const auditorTxt = ($("fAuditor").value || "").trim().toLowerCase();
+      const buscaTxt = ($("fBusca").value || "").trim().toLowerCase();
+
+      if(semanaSel && semanaSel !== "Todas" && doc.semanaId !== semanaSel) return false;
+
+      const stAud = auditoriaStatus(doc);
+      if(statusSel === "Abertas" && stAud.key !== "Aberta") return false;
+      if(statusSel === "Fechadas" && stAud.key !== "Fechada") return false;
+
+      const auditor = String(doc.auditorSemana || "").toLowerCase();
+      if(auditorTxt && !auditor.includes(auditorTxt)) return false;
+
+      if(buscaTxt){
+        const id = String(doc._id || "").toLowerCase();
+        const data = String(doc.dataHora || "").toLowerCase();
+        const mat = String(getMaturidade(doc) ?? "").toLowerCase();
+
+        let found = false;
+        const itens = Array.isArray(doc.itens) ? doc.itens : [];
+        for(const it of itens){
+          const t = (it.texto || "").toLowerCase();
+          const g = (it.grupo || "").toLowerCase();
+          if(t.includes(buscaTxt) || g.includes(buscaTxt)) { found = true; break; }
+
+          if(it.status === "NC"){
+            const desv = Array.isArray(it.desvios) ? it.desvios : [];
+            for(const d of desv){
+              const r = (d.responsavel || "").toLowerCase();
+              if(r.includes(buscaTxt)) { found = true; break; }
+            }
+            if(found) break;
+          }
+        }
+
+        if(!(id.includes(buscaTxt) || data.includes(buscaTxt) || auditor.includes(buscaTxt) || mat.includes(buscaTxt) || found)){
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    function renderTable(){
+      const tbody = $("tbody");
+      tbody.innerHTML = "";
+
+      const list = registrosAll.filter(matchesFilter);
+
+      if(!list.length){
+        tbody.innerHTML = `<tr><td colspan="8" style="color:var(--muted)">Nenhum registro encontrado com os filtros atuais.</td></tr>`;
+        setKPIs(list, $("fSemana").value === "Todas" ? null : $("fSemana").value);
+        updateBulkUI();
+        return;
+      }
+
+      setKPIs(list, $("fSemana").value === "Todas" ? null : $("fSemana").value);
+
+      for(const doc of list){
+        const stAud = auditoriaStatus(doc);
+        const auditor = doc.auditorSemana || "—";
+        const diasTxt = String(stAud.dias);
+        const maturidade = getMaturidade(doc);
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="checkcell">
+            <input class="check" type="checkbox" data-sel="${escapeHtml(doc._id)}" ${selectedIds.has(String(doc._id)) ? "checked" : ""} />
+          </td>
+
+          <td><span class="link" data-open="${escapeHtml(doc._id)}">${escapeHtml(String(doc._id).slice(0,8))}...</span></td>
+          <td>${escapeHtml(doc.dataHora || "—")}</td>
+          <td>${escapeHtml(auditor)}</td>
+          <td><strong>${escapeHtml(String(maturidade ?? "—"))}</strong></td>
+          <td><strong>${diasTxt}</strong></td>
+          <td><span class="badge ${stAud.cls === "ok" ? "ok" : stAud.cls === "warn" ? "warn" : "danger"}">${escapeHtml(stAud.label)}</span></td>
+          <td><button class="btn ghost mini" data-open="${escapeHtml(doc._id)}">Visualizar</button></td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      tbody.querySelectorAll("[data-open]").forEach(el=>{
+        el.addEventListener("click", ()=> openDetails(el.getAttribute("data-open")));
+      });
+
+      tbody.querySelectorAll("input[data-sel]").forEach(chk=>{
+        chk.addEventListener("change", ()=>{
+          const id = chk.getAttribute("data-sel");
+          if(chk.checked) selectedIds.add(String(id));
+          else selectedIds.delete(String(id));
+          updateBulkUI();
+        });
+      });
+
+      updateBulkUI();
+    }
+
+    // ====== Modal detalhes ======
+    function openBackdrop(on=true){
+      $("backdrop").classList.toggle("on", on);
+    }
+    function closeDetails(){
+      selectedDocId = null;
+      openBackdrop(false);
+      $("modalBody").innerHTML = "";
+      $("modalSub").textContent = "—";
+    }
+
+    function normalizeFotos(value){
+      if(!value) return [];
+      if(Array.isArray(value)) return value.filter(Boolean);
+      return [value].filter(Boolean);
+    }
+
+    function deviationBaixado(d){
+      return !!(d?.baixa?.dataHora || (Array.isArray(d?.baixa?.fotosResolucao) && d.baixa.fotosResolucao.length));
+    }
+
+    function getFotosNCFromDeviation(d){
+      // suporta: d.fotos (array), d.foto (string), d.fotosNC, d.files
+      const a =
+        normalizeFotos(d?.fotos)
+        .concat(normalizeFotos(d?.foto))
+        .concat(normalizeFotos(d?.fotosNC))
+        .concat(normalizeFotos(d?.files));
+      return a.filter(Boolean);
+    }
+
+    function getFotosBaixaFromDeviation(d){
+      return normalizeFotos(d?.baixa?.fotosResolucao);
+    }
+
+    function renderThumbGrid(files){
+      const arr = Array.isArray(files) ? files : [];
+      if(!arr.length) return "";
+
+      const thumbs = arr.map((f) => {
+        const url = getImageUrl(f);
+        const name = (typeof f === "string") ? f : (f?.name || "imagem");
+        if(!url){
+          return `<div class="thumb"><div class="cap">${escapeHtml(name)} (sem URL)</div></div>`;
+        }
+        return `
+          <div class="thumb">
+            <a href="${escapeHtml(url)}" target="_blank" rel="noopener">
+              <img src="${escapeHtml(url)}" alt="${escapeHtml(name)}"/>
+            </a>
+            <div class="cap">${escapeHtml(name)}</div>
+          </div>
+        `;
+      }).join("");
+
+      return `<div class="evid-grid">${thumbs}</div>`;
+    }
+
+    function renderDeviationBlock({docId, itemId, index, d, canBaixa}){
+      const respDesvio = d?.responsavel || d?.responsavelDesvio || "—";
+      const desc = d?.descricao || d?.texto || d?.observacao || "";
+      const baixado = deviationBaixado(d);
+
+      const fotosNC = getFotosNCFromDeviation(d);
+      const fotosBaixa = getFotosBaixaFromDeviation(d);
+
+      const baixaInfo = baixado
+        ? `<span class="badge ok">Baixado</span>`
+        : `<span class="badge danger">Pendente</span>`;
+
+      const baixaHtml = (canBaixa && !baixado)
+        ? `
+          <div class="baixaBox">
+            <div class="dev-head">
+              <div class="dev-title">
+                <div class="line">
+                  <span class="badge soft">Baixa do desvio</span>
+                  <span class="badge warn">1 foto obrigatória</span>
+                </div>
+                <div class="help">Preencha e clique em <strong>Dar baixa</strong> para registrar a correção deste desvio.</div>
+              </div>
+              <button class="btn mini" data-baixar="${escapeHtml(docId)}" data-item="${escapeHtml(itemId)}" data-index="${escapeHtml(index)}">Dar baixa</button>
+            </div>
+
+            <div class="baixaGrid" style="margin-top:10px">
+              <div class="field">
+                <label>Responsável pela correção</label>
+                <select data-resp-corr="${escapeHtml(docId)}_${escapeHtml(itemId)}_${escapeHtml(index)}">
+                  ${NOMES_5S.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("")}
+                </select>
+              </div>
+              <div class="field">
+                <label>Foto da correção (obrigatória)</label>
+                <input type="file" accept="image/*" data-foto-corr="${escapeHtml(docId)}_${escapeHtml(itemId)}_${escapeHtml(index)}" />
+                <div class="help">Envie 1 foto que comprove a regularização.</div>
+              </div>
+            </div>
+
+            <div class="field" style="margin-top:10px">
+              <label>Comentário da baixa</label>
+              <textarea placeholder="Descreva o que foi feito para corrigir o desvio..." data-coment="${escapeHtml(docId)}_${escapeHtml(itemId)}_${escapeHtml(index)}"></textarea>
+            </div>
+          </div>
+        `
+        : (!canBaixa && !baixado)
+          ? `<div class="alert" style="margin-top:10px"><strong>Baixa bloqueada:</strong> auditoria fechada (prazo encerrado).</div>`
+          : "";
+
+      return `
+        <div class="dev">
+          <div class="dev-head">
+            <div class="dev-title">
+              <div class="line">
+                <span class="badge danger">NC</span>
+                ${baixaInfo}
+              </div>
+              <div class="line">
+                <span>Responsável pelo desvio:</span> <strong>${escapeHtml(respDesvio)}</strong>
+              </div>
+            </div>
+          </div>
+
+          ${desc ? `<p class="dev-desc">${escapeHtml(desc)}</p>` : ""}
+
+          ${fotosNC.length ? `<div class="miniLine"><strong>Evidência (NC)</strong></div>${renderThumbGrid(fotosNC)}` : ""}
+          ${fotosBaixa.length ? `<div class="miniLine" style="margin-top:10px"><strong>Evidência da correção</strong></div>${renderThumbGrid(fotosBaixa)}` : ""}
+
+          ${baixaHtml}
+        </div>
+      `;
+    }
+
+    async function postBaixa({docId, itemId, index}){
+      const key = `${docId}_${itemId}_${index}`;
+      const sel = document.querySelector(`[data-resp-corr="${CSS.escape(key)}"]`);
+      const ta = document.querySelector(`[data-coment="${CSS.escape(key)}"]`);
+      const fi = document.querySelector(`[data-foto-corr="${CSS.escape(key)}"]`);
+
+      const responsavelCorrecao = sel ? sel.value : "";
+      const comentario = ta ? ta.value : "";
+      const file = fi && fi.files && fi.files[0] ? fi.files[0] : null;
+
+      if(!responsavelCorrecao){
+        alert("Selecione o responsável pela correção.");
+        return;
+      }
+      if(!file){
+        alert("Envie a foto da correção (obrigatória).");
+        return;
+      }
+
+      const ok = confirm("Confirmar baixa deste desvio?");
+      if(!ok) return;
+
+      const fd = new FormData();
+      // campos mais comuns (backend pode esperar 'responsavel' e 'comentario')
+      fd.append("responsavel", responsavelCorrecao);
+      fd.append("responsavelCorrecao", responsavelCorrecao);
+      fd.append("comentario", comentario || "");
+      // arquivo (backend pode esperar 'foto' ou 'fotoResolucao')
+      fd.append("foto", file);
+      fd.append("fotoResolucao", file);
+
+      const url = `/api/5s/auditorias/${encodeURIComponent(docId)}/itens/${encodeURIComponent(itemId)}/desvios/${encodeURIComponent(index)}/baixa`;
+
+      try{
+        const btn = document.querySelector(`[data-baixar="${CSS.escape(docId)}"][data-item="${CSS.escape(itemId)}"][data-index="${CSS.escape(index)}"]`);
+        if(btn){ btn.disabled = true; btn.textContent = "Enviando..."; }
+
+        const res = await fetch(url, { method:"POST", body: fd });
+        if(!res.ok){
+          let msg = "Falha ao dar baixa.";
+          try{
+            const j = await res.json();
+            msg = j?.message || j?.error || msg;
+          }catch{}
+          throw new Error(msg);
+        }
+
+        alert("Baixa registrada com sucesso.");
+        // Recarrega modal e tabela (maturidade/indicadores atualizam na hora)
+        await loadRegistros();
+        await openDetails(docId);
+      }catch(err){
+        alert(`Erro: ${err?.message || err}`);
+      }
+    }
+
+    async function openDetails(id){
+      selectedDocId = id;
+      openBackdrop(true);
+      $("modalBody").innerHTML = `<span class="loading on"><span class="dot"></span>Carregando detalhes...</span>`;
+
+      try{
+        const res = await fetch(`/api/5s/auditorias/${encodeURIComponent(id)}`);
+        if(!res.ok) throw new Error("Falha ao buscar detalhes.");
+        const doc = await res.json();
+
+        const stAud = auditoriaStatus(doc);
+        const auditor = doc.auditorSemana || "—";
+        const maturidade = getMaturidade(doc);
+
+        $("modalTitle").textContent = `Auditoria 5S — ${String(doc._id).slice(0,8)}...`;
+        $("modalSub").innerHTML = `
+          Semana: <strong>${escapeHtml(doc.semanaId)}</strong> ·
+          Auditor: <strong>${escapeHtml(auditor)}</strong> ·
+          Maturidade: <strong>${escapeHtml(String(maturidade ?? "—"))}</strong> ·
+          Status: <strong>${escapeHtml(stAud.label)}</strong> ·
+          Data/Hora: <strong>${escapeHtml(doc.dataHora || "—")}</strong>
+        `;
+
+        let html = `<div class="items">`;
+
+        (doc.itens || []).forEach((it, idx) => {
+          const itemId = it.itemId ?? (idx + 1);
+
+          const statusBadge =
+            it.status === "C"  ? `<span class="badge ok">Conforme</span>` :
+            it.status === "NC" ? `<span class="badge danger">Não Conforme</span>` :
+            it.status === "NA" ? `<span class="badge warn">Não Aplica</span>` :
+            `<span class="badge">—</span>`;
+
+          // Conforme: suporta it.conformeFotos (array) ou it.evidencias.conforme
+          const conformeFotos =
+            (Array.isArray(it.conformeFotos) ? it.conformeFotos : [])
+              .concat(Array.isArray(it?.evidencias?.conforme) ? it.evidencias.conforme : []);
+
+          const desvios = Array.isArray(it.desvios) ? it.desvios : [];
+
+          html += `
+            <div class="item">
+              <div class="item-top" data-toggle="${idx}">
+                <div class="item-left">
+                  <div class="num">${escapeHtml(String(itemId))}</div>
+                  <div class="txt">
+                   <div class="tag">${escapeHtml(it.grupo || "—")}</div>
+                   <p class="q">${escapeHtml(it.texto || "—")}</p>
+
+               ${
+                     it.status === "NA" && it.justificativa
+                   ? `<p class="miniLine"><strong>Justificativa:</strong> ${escapeHtml(it.justificativa)}</p>`
+                     : ""
+                               }
+                </div>
+                </div>
+                ${statusBadge}
+              </div>
+
+              <div class="evid-wrap" data-ev="${idx}">
+                ${
+                  conformeFotos.length
+                    ? `<div class="miniLine"><strong>Evidência (Conforme)</strong></div>${renderThumbGrid(conformeFotos)}`
+                    : ``
+                }
+
+                ${
+                  it.status === "NC"
+                    ? `
+                      <div class="miniLine" style="margin-top:10px"><strong>Desvios (NC)</strong></div>
+                      ${desvios.length
+                        ? desvios.map((d, dIndex) => renderDeviationBlock({
+                            docId: doc._id,
+                            itemId,
+                            index: dIndex,
+                            d,
+                            canBaixa: stAud.canBaixa
+                          })).join("")
+                        : `<div class="alert" style="margin-top:10px">Nenhum desvio detalhado encontrado neste item (sem responsável/descrição/foto).</div>`
+                      }
+                    `
+                    : ``
+                }
+
+                ${
+                  (!stAud.canBaixa && it.status === "NC")
+                    ? `<div class="help" style="margin-top:10px">Prazo encerrado: não é possível dar baixa após o fechamento semanal.</div>`
+                    : ``
+                }
+              </div>
+            </div>
+          `;
+        });
+
+        html += `</div>`;
+        $("modalBody").innerHTML = html;
+
+        // toggle de itens
+        $("modalBody").querySelectorAll("[data-toggle]").forEach(el => {
+          el.addEventListener("click", () => {
+            const idx = el.getAttribute("data-toggle");
+            const box = $("modalBody").querySelector(`[data-ev="${idx}"]`);
+            if(box) box.classList.toggle("on");
+          });
+        });
+
+        // binds de baixa
+        $("modalBody").querySelectorAll("[data-baixar]").forEach(btn=>{
+          btn.addEventListener("click", (e)=>{
+            e.stopPropagation();
+            const docId = btn.getAttribute("data-baixar");
+            const itemId = btn.getAttribute("data-item");
+            const index = btn.getAttribute("data-index");
+            postBaixa({docId, itemId, index});
+          });
+        });
+
+      }catch(err){
+        $("modalBody").innerHTML = `<div class="alert"><strong>Erro:</strong> ${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    // ====== Carregamento ======
+    async function loadSemanaAtual(){
+      try{
+        const res = await fetch("/api/5s/semana-atual");
+        if(!res.ok) throw new Error("Falha ao buscar semana atual.");
+        const data = await res.json();
+        semanaAtual = data.semanaId || null;
+        auditorAuto = data.auditorSemana || null;
+
+        $("semanaAtual").textContent = semanaAtual || "—";
+        $("auditorAuto").textContent = getAuditorSemanaAtual(semanaAtual, auditorAuto);
+
+        $("audSemana").value = semanaAtual || "";
+        $("audAutoInput").value = auditorAuto || "";
+        fillSelectNomes($("audNovo"), getAuditorSemanaAtual(semanaAtual, auditorAuto));
+      }catch{
+        $("semanaAtual").textContent = "erro";
+        $("auditorAuto").textContent = "erro";
+      }
+    }
+
+    function fillSemanaOptions(weeks){
+      const sel = $("fSemana");
+      const current = sel.value;
+      const opts = ["Todas", ...weeks];
+      sel.innerHTML = opts.map(w => `<option value="${escapeHtml(w)}">${escapeHtml(w)}</option>`).join("");
+      sel.value = current && opts.includes(current) ? current : (semanaAtual || "Todas");
+    }
+
+    async function loadRegistros(){
+      $("loadingTabela").classList.add("on");
+      $("loadingKpi").classList.add("on");
+
+      try{
+        const res = await fetch("/api/5s/auditorias");
+        if(!res.ok) throw new Error("Falha ao carregar auditorias.");
+        const list = await res.json();
+        registrosAll = Array.isArray(list) ? list : [];
+
+        const weeks = Array.from(new Set(registrosAll.map(d => d.semanaId).filter(Boolean))).sort().reverse();
+        fillSemanaOptions(weeks);
+
+        renderTable();
+      }catch(err){
+        $("tbody").innerHTML = `<tr><td colspan="8" style="color:var(--muted)">Erro ao carregar: ${escapeHtml(err?.message || err)}</td></tr>`;
+      }finally{
+        $("loadingTabela").classList.remove("on");
+        $("loadingKpi").classList.remove("on");
+      }
+    }
+
+    // ====== Mudar auditor (local override) ======
+    function openAuditorModal(on=true){
+      $("backdropAuditor").classList.toggle("on", on);
+    }
+    function closeAuditorModal(){
+      openAuditorModal(false);
+    }
+    function refreshAuditorPills(){
+      $("auditorAuto").textContent = getAuditorSemanaAtual(semanaAtual, auditorAuto);
+    }
+
+    // ====== Excluir selecionados ======
+    async function excluirSelecionados(){
+      const ids = Array.from(selectedIds);
+      if(!ids.length) return;
+
+      const ok = confirm(`Tem certeza que deseja excluir ${ids.length} registro(s)?\nEssa ação NÃO pode ser desfeita.`);
+      if(!ok) return;
+
+      try{
+        let batchOk = false;
+        try{
+          const r = await fetch("/api/5s/auditorias/bulk-delete", {
+            method:"POST",
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify({ ids })
+          });
+          if(r.ok) batchOk = true;
+        }catch{}
+
+        if(!batchOk){
+          for(const id of ids){
+            const r = await fetch(`/api/5s/auditorias/${encodeURIComponent(id)}`, { method:"DELETE" });
+            if(!r.ok) throw new Error(`Falha ao excluir ID ${id}`);
+          }
+        }
+
+        ids.forEach(id => selectedIds.delete(id));
+        alert("Exclusão concluída.");
+        await loadRegistros();
+        updateBulkUI();
+      }catch(err){
+        alert(`Erro ao excluir: ${err?.message || err}`);
+      }
+    }
+
+    // ====== Eventos ======
+    $("btnFecharModal").addEventListener("click", closeDetails);
+    $("backdrop").addEventListener("click", (e)=>{ if(e.target === $("backdrop")) closeDetails(); });
+
+    $("btnRecarregar").addEventListener("click", loadRegistros);
+
+    ["fSemana","fStatus","fAuditor","fBusca"].forEach(id=>{
+      $(id).addEventListener("input", renderTable);
+      $(id).addEventListener("change", renderTable);
+    });
+
+    $("btnAbrirAvaliacao").addEventListener("click", ()=>{
+      window.location.href = "/avaliacao.html";
+    });
+
+    $("btnMudarAuditor").addEventListener("click", ()=>{
+      $("audSemana").value = semanaAtual || "";
+      $("audAutoInput").value = auditorAuto || "";
+      fillSelectNomes($("audNovo"), getAuditorSemanaAtual(semanaAtual, auditorAuto));
+      openAuditorModal(true);
+    });
+
+    $("btnFecharAuditor").addEventListener("click", closeAuditorModal);
+    $("backdropAuditor").addEventListener("click", (e)=>{ if(e.target === $("backdropAuditor")) closeAuditorModal(); });
+
+    $("btnSalvarOverride").addEventListener("click", ()=>{
+      const novo = $("audNovo").value;
+      if(!semanaAtual) return alert("Semana atual não carregada.");
+      if(!novo) return alert("Selecione um auditor.");
+      localStorage.setItem(lsKey(semanaAtual), novo);
+      refreshAuditorPills();
+      renderTable();
+      closeAuditorModal();
+      alert("Auditor da semana atualizado (local).");
+    });
+
+    $("btnRemoverOverride").addEventListener("click", ()=>{
+      if(!semanaAtual) return alert("Semana atual não carregada.");
+      localStorage.removeItem(lsKey(semanaAtual));
+      refreshAuditorPills();
+      renderTable();
+      closeAuditorModal();
+      alert("Troca removida. Voltou para o auditor automático.");
+    });
+
+    $("chkAll").addEventListener("change", ()=>{
+      const visibleChecks = Array.from($("tbody").querySelectorAll("input[data-sel]"));
+      if($("chkAll").checked){
+        visibleChecks.forEach(c => selectedIds.add(String(c.getAttribute("data-sel"))));
+      }else{
+        visibleChecks.forEach(c => selectedIds.delete(String(c.getAttribute("data-sel"))));
+      }
+      renderTable();
+    });
+
+    $("btnExcluirSelecionados").addEventListener("click", excluirSelecionados);
+
+    // Copiar ID
+    $("btnCopiarId").addEventListener("click", async ()=>{
+      if(!selectedDocId) return;
+      try{
+        await navigator.clipboard.writeText(String(selectedDocId));
+        alert("ID copiado!");
+      }catch{
+        alert("Não foi possível copiar automaticamente.");
+      }
+    });
+
+    // Init
+    (async function init(){
+      await loadSemanaAtual();
+      await loadRegistros();
+      updateBulkUI();
+    })();
+  </script>
+</body>
+</html>

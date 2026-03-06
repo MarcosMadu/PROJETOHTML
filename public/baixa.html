@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Baixa de Notificação</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+  <!-- Font Awesome (para ícones) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    body {
+      margin: 0;
+      background: #f4f4f7;
+      font-family: "Arial", sans-serif;
+    }
+
+    /* CONTEÚDO (layout anterior, sem sidebar) */
+    .content {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 25px 15px;
+      transition: padding 0.3s ease;
+    }
+
+    .page-title {
+      font-size: 26px;
+      font-weight: bold;
+    }
+
+    .card-main {
+      border-radius: 14px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    }
+
+    .card-success-icon {
+      font-size: 3rem;
+      color: #2E7D32;
+    }
+
+    @media (max-width: 768px) {
+      .content {
+        padding: 18px 10px;
+      }
+
+      .page-title {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- CONTEÚDO ----------------------------------------------------------- -->
+<div class="content">
+
+  <!-- Header com logo + título + botões -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
+    <div class="d-flex align-items-center mb-2 mb-md-0">
+      <!-- LOGO NO CANTO SUPERIOR ESQUERDO -->
+      <img src="/img/logo.jpg" alt="Logo" class="me-2" style="height:40px; width:auto;">
+      <div>
+        <div class="page-title">Baixa de Notificação</div>
+        <small class="text-muted">Registre a resolução das notificações em aberto</small>
+      </div>
+    </div>
+
+    <!-- Botões Voltar + Nova Notificação -->
+    <div class="d-flex gap-2 align-self-start align-self-md-center">
+      <button class="btn btn-outline-secondary" onclick="window.location.href='/dashboard.html'">
+         Voltar ao Painel
+      </button>
+      <button class="btn btn-success px-3" onclick="window.location.href='/index.html'">
+        + Nova Notificação
+      </button>
+    </div>
+  </div>
+
+  <!-- CARD FORM / CONFIRMAÇÃO -->
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+
+      <!-- SEÇÃO DE FORMULÁRIO -->
+      <div class="card card-main mb-3" id="form-section">
+        <div class="card-body">
+          <h5 class="mb-3">Dados da Baixa</h5>
+
+          <form id="baixa-form">
+            <div class="mb-3">
+              <label for="id" class="form-label">Selecione a Notificação (Abertas)</label>
+              <select id="id" name="id" class="form-select" required>
+                <option value="">Carregando notificações...</option>
+              </select>
+              <div class="form-text">
+                Apenas notificações com status <strong>Aberta</strong> são exibidas.  
+                As mais recentes já aparecem com o <strong>ID sequencial</strong>.
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="resolvidoPor" class="form-label">Responsável pela Baixa</label>
+              <input type="text" id="resolvidoPor" name="resolvidoPor" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="resolucaoComentario" class="form-label">Comentário da Resolução</label>
+              <textarea id="resolucaoComentario" name="resolucaoComentario" rows="4" class="form-control" required></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="resolucaoFotos" class="form-label">Fotos da Resolução</label>
+              <input type="file" id="resolucaoFotos" name="resolucaoFotos" class="form-control" multiple accept="image/*">
+              <div class="form-text">
+                Envie fotos da condição após a correção (opcional, mas recomendado).
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-success">
+              Enviar Baixa
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- SEÇÃO DE CONFIRMAÇÃO -->
+      <div class="card card-main text-center py-5" id="confirm-section" style="display:none;">
+        <div class="card-body">
+          <i class="fas fa-check-circle card-success-icon mb-3"></i>
+          <h3 class="mb-2">Baixa registrada com sucesso!</h3>
+          <p class="mb-4">A notificação foi enviada ao gestor e está <strong>pendente de aprovação</strong>.</p>
+
+          <button class="btn btn-outline-secondary me-2" onclick="window.location.href='/gestor.html'">
+            Ir para o Painel do Gestor
+          </button>
+          <button class="btn btn-success" onclick="window.location.href='/baixa.html'">
+            Registrar nova baixa
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- SCRIPTS ----------------------------------------------------------- -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  // ---------- Carregar notificações abertas (apenas status 'Aberta') ----------
+  async function carregarNotificacoesAbertas() {
+    const select = document.getElementById('id');
+    try {
+      const resp  = await fetch('/api/notificacoes-abertas');
+      const lista = await resp.json();
+
+      select.innerHTML = '<option value="">Selecione uma notificação</option>';
+
+      if (!lista.length) {
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = 'Não há notificações em aberto';
+        select.appendChild(opt);
+        select.disabled = true;
+        return;
+      }
+
+      lista.forEach(n => {
+        const opt = document.createElement('option');
+        opt.value = n._id;
+
+        // Monta o rótulo: "#5 – João Silva · SALOBO III · Notificação"
+        const idLabel       = (n.idSequencial != null) ? `#${n.idSequencial}` : n._id;
+        const tecnicoLabel  = n.tecnico || 'Sem técnico';
+        const areaLabel     = n.area || 'Sem área';
+        const classLabel    = n.classificacao || 'Sem classificação';
+
+        opt.textContent = `${idLabel} – ${tecnicoLabel} · ${areaLabel} · ${classLabel}`;
+
+        select.appendChild(opt);
+      });
+      select.disabled = false;
+    } catch (err) {
+      console.error(err);
+      select.innerHTML = '<option value="">Erro ao carregar notificações</option>';
+      select.disabled = true;
+    }
+  }
+
+  // ---------- Envio da baixa ----------
+  document.getElementById('baixa-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const form = e.target;
+    const data = new FormData(form);
+
+    try {
+      const resp = await fetch('/baixa', { method: 'POST', body: data });
+      if (!resp.ok) throw new Error('Status ' + resp.status);
+
+      // Exibe tela de confirmação
+      document.getElementById('form-section').style.display    = 'none';
+      document.getElementById('confirm-section').style.display = 'block';
+    } catch (err) {
+      console.error(err);
+      alert('Erro ao registrar baixa. Tente novamente.');
+    }
+  });
+
+  // ---------- Inicialização ----------
+  window.addEventListener('DOMContentLoaded', () => {
+    carregarNotificacoesAbertas();
+  });
+</script>
+
+</body>
+</html>

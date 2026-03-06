@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Inspeção em Veículos - PLANGECON</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Font Awesome -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    body {
+      margin: 0;
+      background: #f4f4f7;
+      font-family: "Arial", sans-serif;
+    }
+
+    .content {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px 15px 30px;
+    }
+
+    .card-main {
+      border-radius: 14px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #0E6835;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title i {
+      color: #0E6835;
+    }
+
+    .small-muted {
+      font-size: 12px;
+      color: #666;
+    }
+
+    @media (max-width: 768px) {
+      .content {
+        padding: 16px 10px 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="content">
+
+  <!-- Topo com logo + título + voltar -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
+    <div class="d-flex align-items-center mb-2 mb-md-0">
+      <img src="/img/logo.jpg" alt="Logo" class="me-2" style="height:42px; width:auto;">
+      <div>
+        <h1 class="h4 mb-0">Inspeção em Veículos</h1>
+        <small class="text-muted">PLANGECON • Check list para inspeção em automóveis</small>
+      </div>
+    </div>
+
+    <button class="btn btn-outline-secondary align-self-start align-self-md-center"
+            onclick="window.location.href='/dashboard.html'">
+      Voltar ao Painel
+    </button>
+  </div>
+
+  <div class="card card-main">
+    <div class="card-body">
+
+      <form action="/inspecao" method="POST" enctype="multipart/form-data">
+        <!-- DADOS GERAIS -->
+        <div class="mb-3 border-bottom pb-3">
+          <div class="section-title">
+            <i class="fas fa-car"></i> Dados gerais da inspeção
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">TAG do veículo</label>
+              <input type="text" name="tag" class="form-control" required>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Data da inspeção</label>
+              <input type="date" name="dataInspecao" class="form-control" required>
+            </div>
+
+            
+
+            <div class="col-md-6">
+              <label class="form-label">Vistoriador (Responsável pelo Check List)</label>
+              <input type="text" name="responsavelChecklist" class="form-control">
+              <div class="small-muted">Empregado da Gerência que realizou a avaliação do veículo</div>
+            </div>
+
+           
+
+            <div class="col-md-6">
+              <label class="form-label">Gerente / Supervisor / Gestor de Contrato</label>
+              <input type="text" name="gestorContrato" class="form-control">
+            </div>
+
+
+        <!-- PARECER -->
+     
+        <!-- ITENS OBRIGATÓRIOS / RAC 02 -->
+        <div class="mb-3 border-bottom pb-3">
+          <div class="section-title">
+            <i class="fas fa-list-check"></i> Checklist de segurança (RAC/PNR)
+          </div>
+          <div class="small-muted mb-2">Para cada item, marque: Conforme, Não conforme ou Não se aplica.</div>
+
+          <!-- Helper para selects -->
+          <!-- Cada item com <select> Simples -->
+
+          <div class="row g-3">
+
+            <!-- (*) Itens obrigatórios nos veículos de balção -->
+            <div class="col-12">
+              <label class="form-label">(*) Itens obrigatórios nos veículos de balção (verificar atendimento geral)</label>
+              <select name="itensObrigatoriosBalcao" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+                <option value="Não se aplica">Não se aplica</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Possui alerta sonoro de ré acoplado ao sistema de acionamento de marcha ré?</label>
+              <select name="alertaRe" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+                <option value="Não se aplica">Não se aplica</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Possui sensor ou câmera de ré?</label>
+              <select name="sensorCameraRe" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+                <option value="Não se aplica">Não se aplica</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">(*) Está disponível o Kit Obrigatório (Triângulo, Chave de roda, Macaco Hidráulico)?</label>
+              <select name="kitObrigatorio" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+                <option value="Não se aplica">Não se aplica</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Possui sensor de sonolência?</label>
+              <select name="sensorSonolencia" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+                <option value="Não se aplica">Não se aplica</option>
+              </select>
+            </div>
+
+            <!-- Veículos que acessam mina -->
+            <div class="col-12">
+              <label class="form-label">
+                Veículos que acessam mina devem possuir (Tração 4x4, DIPs, Luz giroscópica, bandeirola com LED, adesivos refletivos em todos os lados, rádio de comunicação, EBD, controle de estabilidade e tração, sensor de proximidade).
+              </label>
+              <select name="requisitosAcessoMina" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme (todos requisitos atendidos)</option>
+                <option value="Não conforme">Não conforme (requisitos ausentes/parciais)</option>
+                <option value="Não se aplica">Não se aplica</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Possui teste de Fumaça Preta para veículos à Diesel?</label>
+              <select name="fumacaPretaDiesel" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+                <option value="Não se aplica">Não se aplica</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">O veículo/equipamento possui modificações? (Projeto/laudo/ART e Gestão de mudanças local)</label>
+              <select name="modificacoesComART" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme (modificações regularizadas)</option>
+                <option value="Não conforme">Não conforme (irregularidades/modificações sem ART)</option>
+                <option value="Não se aplica">Não se aplica</option>
+              </select>
+            </div>
+
+            <!-- Itens marcados com (*) -->
+            <div class="col-md-6">
+              <label class="form-label">(*) Cinto de segurança tipo 3 pontos para todos os ocupantes?</label>
+              <select name="cinto3Pontos" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">(*) Encosto de cabeça para todos os ocupantes (ou banco biposto)?</label>
+              <select name="encostoCabeca" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">(*) Airbag frontal para motorista e passageiro do banco dianteiro?</label>
+              <select name="airbagFrontal" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">(*) Sistema antibloqueio de frenagem (ABS) nas quatro rodas?</label>
+              <select name="abs4Rodas" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Possui sistema de monitoramento de localização e velocidade (Telemetria)?</label>
+              <select name="telemetria" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+                <option value="Não se aplica">Não se aplica</option>
+              </select>
+            </div>
+
+            <!-- Condições gerais do veículo -->
+            <div class="col-md-6">
+              <label class="form-label">Retrovisores íntegros?</label>
+              <select name="retrovisoresInteiros" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Para-choques em boas condições?</label>
+              <select name="parachoques" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Portas abrem e fecham normalmente?</label>
+              <select name="portasFuncionando" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Partida do motor conforme?</label>
+              <select name="partidaMotor" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Quebra-sol em bom estado?</label>
+              <select name="quebraSol" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Freio de mão e freio de serviço eficazes?</label>
+              <select name="freiosEficazes" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Luzes do painel visíveis e condição de bateria conforme?</label>
+              <select name="luzesPainelBateria" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">
+                Condições dos pneus e estepe favoráveis ao uso (TWI - Tread Wear Indicador)?
+              </label>
+              <select name="pneusEstepe" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Logomarca da empresa e TAG visíveis?</label>
+              <select name="logomarcaTagVisiveis" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Lataria e cabine em boas condições?</label>
+              <select name="latariaCabine" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Para-brisa sem trincas &gt; 2,5 cm?</label>
+              <select name="parabrisaSemTrincas" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Todos os parafusos nas rodas?</label>
+              <select name="parafusosRodas" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Banco do motorista com regulagem?</label>
+              <select name="bancoMotoristaRegulagem" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Buzina audível?</label>
+              <select name="buzinaAudivel" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Sistema isento de vazamentos aparentes de óleo?</label>
+              <select name="semVazamentosOleo" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Possui proteção do polo positivo da bateria?</label>
+              <select name="protecaoPoloPositivo" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">
+                Limpadores de para-brisa funcionando e abastecidos com água?
+              </label>
+              <select name="limpadoresParabrisa" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">
+                Luz de freio, setas, farol (baixo e alto), luz de ré, pisca alerta e buzina funcionando?
+              </label>
+              <select name="sistemaIluminacaoSinalizacao" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+              </select>
+            </div>
+
+            <div class="col-md-12">
+              <label class="form-label">
+                Documentação do veículo (Licenciamento, IPVA, Seguro Obrigatório) em dia e data de fabricação
+                dentro das regras estabelecidas?
+              </label>
+              <select name="documentacaoVeiculo" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Conforme">Conforme</option>
+                <option value="Não conforme">Não conforme</option>
+              </select>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- OBSERVAÇÕES GERAIS -->
+        <div class="mb-3 border-bottom pb-3">
+          <div class="section-title">
+            <i class="fas fa-pen"></i> Observações gerais
+          </div>
+          <textarea name="observacoesGerais" rows="3" class="form-control"></textarea>
+        </div>
+
+        <!-- RESULTADO ATENDE / NÃO ATENDE -->
+        <div class="mb-3 border-bottom pb-3">
+          <div class="section-title">
+            <i class="fas fa-flag-checkered"></i> Resultado geral
+          </div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Resultado da avaliação</label>
+              <select name="resultadoGeral" class="form-select">
+                <option value="">Selecione</option>
+                <option value="Nao_atende_PNR_normas">( ) O veículo não atende a PNR 00069 (RAC) e Normas</option>
+                <option value="Atende_PNR_normas">( ) O veículo atende a PNR 00069 (RAC) e Normas</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- EVIDÊNCIAS FOTOGRÁFICAS -->
+        <div class="mb-3">
+          <div class="section-title">
+            <i class="fas fa-camera"></i> Evidências fotográficas
+          </div>
+          <label class="form-label">Fotos da inspeção (situação do veículo)</label>
+          <input type="file" name="fotosInspecao" class="form-control" multiple accept="image/*" />
+          <div class="small-muted">
+            Envie fotos que evidenciem a condição do veículo (obrigatório ou recomendado, conforme procedimento interno).
+          </div>
+        </div>
+
+        <!-- DESVIO EXTRA / COMPLEMENTOS -->
+        <div class="mb-4">
+          <label class="form-label">Desvios / Comentários adicionais</label>
+          <textarea name="desvioExtra" rows="3" class="form-control"></textarea>
+        </div>
+
+        <div class="d-flex justify-content-end">
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-save me-1"></i> Salvar Inspeção
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

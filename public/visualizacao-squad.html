@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Visualização — SQUAD (Mapa de Profissionais)</title>
+<style>
+  :root{
+    --brand:#27a9dc;        /* azul cabeçalho das faixas */
+    --bg:#0b1222;           /* fundo escuro */
+    --paper:#ffffff;        /* cartões brancos */
+    --ink:#0f172a;          /* texto escuro */
+    --muted:#64748b;        /* texto fraco */
+    --dash:#0ea5b7;         /* tracejado das caixas */
+    --ok:#16a34a; --warn:#f59e0b; --off:#ef4444;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,#0b1222,#0f172a);color:#fff;font:14px/1.45 Inter,system-ui,Segoe UI,Roboto,Arial}
+  .page{max-width:1200px;margin:0 auto;padding:18px}
+  /* header */
+  .header{
+    display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;
+    margin-bottom:14px
+  }
+  .badge{
+    display:grid;grid-template-columns:46px 1fr;gap:8px;align-items:center;
+    background:#ffffff; color:var(--ink); border-radius:8px; padding:8px 10px; width:max-content;
+    box-shadow:0 10px 30px rgba(0,0,0,.25)
+  }
+  .badge img{width:46px;height:46px;border-radius:6px;object-fit:cover;border:1px solid #e2e8f0}
+  .badge .n{font-weight:800;font-size:13px;margin-bottom:2px}
+  .badge .e{font-size:12px;color:#0369a1}
+  .badge .t{font-size:12px;color:var(--muted)}
+  .title{
+    text-align:center;
+  }
+  .title .sup{font-weight:700;letter-spacing:.3px;opacity:.9}
+  .title .big{
+    font-size:28px;font-weight:900;margin-top:4px;background:linear-gradient(180deg,#56d0ff,var(--brand));
+    -webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:.6px
+  }
+  .logo{
+    display:flex;align-items:center;justify-content:flex-end
+  }
+  .logo .mark{
+    height:40px; width:140px;
+    background:linear-gradient(90deg,#56d0ff 0,#82f1ff 100%); -webkit-mask:linear-gradient(#000,#000), radial-gradient(14px 14px at 12px 12px,#0000 11px,#000 12px);
+    mask:linear-gradient(#000,#000);
+    border-radius:8px; opacity:.9
+  }
+
+  /* grid 3x2 */
+  .grid{
+    display:grid; gap:16px; grid-template-columns:repeat(1,minmax(0,1fr));
+  }
+  @media (min-width:860px){ .grid{ grid-template-columns:repeat(3,minmax(0,1fr)); } }
+  .cell{
+    background:rgba(255,255,255,.04); border-radius:12px; overflow:hidden; box-shadow:0 12px 28px rgba(0,0,0,.35);
+    min-height:260px; display:flex; flex-direction:column;
+  }
+  .cell .bar{
+    background:var(--brand); color:#062d3a; font-weight:800; letter-spacing:.3px;
+    padding:10px 14px; font-size:15px; display:flex; justify-content:space-between; align-items:center
+  }
+  .cell .inner{
+    padding:12px; border:2px dashed var(--dash); border-radius:12px; margin:12px; background:rgba(255,255,255,.03);
+    min-height:180px; display:grid; gap:8px
+  }
+  .empty{
+    color:#b6c2d1; border:1px dashed rgba(255,255,255,.25); border-radius:10px; text-align:center; padding:18px
+  }
+
+  /* cards */
+  .card{
+    background:var(--paper); color:var(--ink); border-radius:12px; padding:10px 12px; box-shadow:0 6px 16px rgba(0,0,0,.22);
+    display:grid; gap:6px
+  }
+  .row{display:flex;justify-content:space-between;gap:8px;align-items:center}
+  .name{font-weight:800}
+  .tag{font-size:11px;border-radius:999px;border:1px solid #e5e7eb;padding:2px 8px;background:#f8fafc}
+  .ok{background:#ecfdf5;border-color:#86efac;color:#065f46}
+  .warn{background:#fffbeb;border-color:#fde68a;color:#92400e}
+  .off{background:#fef2f2;border-color:#fecaca;color:#991b1b}
+  .meta{display:flex;flex-wrap:wrap;gap:6px;color:#334155;font-size:12px}
+  .meta .pill{border:1px solid #e5e7eb;border-radius:999px;padding:3px 8px;background:#f8fafc}
+
+  /* toolbar */
+  .tools{display:flex;gap:8px;justify-content:flex-end;margin:12px 0}
+  .btn{background:rgba(255,255,255,.08);color:#e2f6ff;border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer}
+  .btn:hover{transform:translateY(-1px)}
+  .legend{display:flex;gap:8px;align-items:center;color:#b6c2d1;font-size:12px}
+  .legend .chip{display:inline-flex;align-items:center;gap:6px}
+  .chip .dot{width:10px;height:10px;border-radius:999px}
+  .dot.ok{background:var(--ok)} .dot.warn{background:var(--warn)} .dot.off{background:var(--off)}
+
+  /* impressão */
+  @media print{
+    body{background:#fff}
+    .page{max-width:none;padding:0}
+    .tools{display:none}
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <!-- Cabeçalho -->
+    <div class="header">
+      <!-- Cartão de contato (edite à vontade) -->
+      <div class="badge" id="contactCard">
+        <img src="" alt="Foto" id="contactPhoto" />
+        <div>
+          <div class="n" id="contactName">Vanessa Rodrigues</div>
+          <div class="e"><a href="mailto:vanessa.barros@plangecon.com.br">vanessa.barros@plangecon.com.br</a></div>
+          <div class="t">(98) 99150-6787</div>
+        </div>
+      </div>
+
+      <div class="title">
+        <div class="sup">TST de Área</div>
+        <div class="big">SQUAD</div>
+      </div>
+
+      <div class="logo"><div class="mark" title="Logo"></div></div>
+    </div>
+
+    <div class="tools">
+      <div class="legend">
+        <span class="chip"><span class="dot ok"></span> Disponível</span>
+        <span class="chip"><span class="dot warn"></span> Em atividade</span>
+        <span class="chip"><span class="dot off"></span> De folga</span>
+      </div>
+      <button class="btn" onclick="window.location.reload()">Atualizar</button>
+      <button class="btn" onclick="window.print()">Imprimir</button>
+    </div>
+
+    <!-- Grade 3x2 de SQUADs -->
+    <div class="grid" id="grid">
+      <!-- células são geradas via JS -->
+    </div>
+  </div>
+
+<script>
+/* ==========================
+   VÍNCULO COM O SEU MAPA
+   ==========================
+   - Lê o mesmo localStorage do seu HTML de mapeamento.
+   - Ajuste o SQUAD_MAP para dizer qual Local cai em qual SQUAD.
+*/
+const KEY = 'mapa_profissionais_v1';
+
+/* Mapeie o NOME DO LOCAL -> NOME DO SQUAD
+   Dica: use exatamente os nomes dos "Locais" cadastrados no outro HTML.
+   Você pode repetir várias entradas apontando para o mesmo squad. */
+const SQUAD_MAP = {
+  // EXEMPLOS — ajuste para os seus locais reais:
+  'Usina I': 'SQUAD USINA I e II',
+  'Usina II': 'SQUAD USINA I e II',
+  'Oficina Mecânica': 'SQUAD USINA I e II',
+  'Britagem': 'SQUAD BRITAGEM',
+  'Pátio de Minério': 'SQUAD MINA',
+  'Almoxarifado': 'SQUAD GARAPÉ BAHIA',
+  // Tudo que não casar cairá no "SQUAD / FÉRIAS / APOIO"
+};
+
+const SQUADS = [
+  'SQUAD USINA I e II',
+  'SQUAD BRITAGEM',
+  'SQUAD SALOBO I, II e III',
+  'SQUAD GARAPÉ BAHIA',
+  'SQUAD MINA',
+  'SQUAD / FÉRIAS / APOIO',
+];
+
+function loadState(){
+  try{ return JSON.parse(localStorage.getItem(KEY)) || {locais:[], profissionais:[]}; }
+  catch{ return {locais:[], profissionais:[]}; }
+}
+const state = loadState();
+
+/* Util */
+function byId(id){ return state.locais.find(l => l.id===id) || null; }
+function localName(id){ return byId(id)?.nome || ''; }
+
+/* Decide o SQUAD do profissional a partir do LOCAL */
+function resolveSquad(prof){
+  const loc = localName(prof.localId);
+  if(!loc) return 'SQUAD / FÉRIAS / APOIO';
+  // casa exata
+  if(SQUAD_MAP[loc]) return SQUAD_MAP[loc];
+
+  // tentativas por inclusão (se você usou nomes compostos p.ex. "Usina II - Turno A")
+  for(const [k,v] of Object.entries(SQUAD_MAP)){
+    if(loc.toLowerCase().includes(k.toLowerCase())) return v;
+  }
+  // fallback
+  return 'SQUAD / FÉRIAS / APOIO';
+}
+
+/* Render */
+const grid = document.getElementById('grid');
+function tagStatus(s){
+  const t = document.createElement('span'); t.className='tag';
+  if(s==='Disponível') t.classList.add('ok');
+  else if(s==='Em atividade') t.classList.add('warn');
+  else if(s==='De folga') t.classList.add('off');
+  t.textContent = s || '—';
+  return t;
+}
+
+function render(){
+  grid.innerHTML = '';
+  // bucketiza
+  const buckets = Object.fromEntries(SQUADS.map(s => [s, []]));
+  for(const p of state.profissionais){
+    buckets[resolveSquad(p)].push(p);
+  }
+  // monta células
+  for(const squad of SQUADS){
+    const cell = document.createElement('section'); cell.className='cell';
+    const bar = document.createElement('div'); bar.className='bar';
+    bar.innerHTML = `<span>${squad}</span><span>${buckets[squad].length}</span>`;
+    const inner = document.createElement('div'); inner.className='inner';
+
+    if(buckets[squad].length===0){
+      const empty = document.createElement('div'); empty.className='empty';
+      empty.textContent = 'Sem profissionais alocados.';
+      inner.appendChild(empty);
+    }else{
+      // ordena por nome
+      buckets[squad].sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+      for(const p of buckets[squad]){
+        const card = document.createElement('article'); card.className='card';
+
+        const top = document.createElement('div'); top.className='row';
+        const nm = document.createElement('div'); nm.className='name'; nm.textContent = p.nome || '—';
+        top.appendChild(nm); top.appendChild(tagStatus(p.status));
+
+        const meta = document.createElement('div'); meta.className='meta';
+        if(p.funcao) meta.appendChild(pill('Função: '+p.funcao));
+        if(p.matricula) meta.appendChild(pill('ID: '+p.matricula));
+        if(p.turno) meta.appendChild(pill('Turno: '+p.turno));
+        const loc = localName(p.localId); if(loc) meta.appendChild(pill('Local: '+loc));
+        if(p.contato) meta.appendChild(pill(p.contato));
+        if(p.obs) meta.appendChild(pill(p.obs));
+
+        card.append(top, meta);
+        inner.appendChild(card);
+      }
+    }
+
+    cell.append(bar, inner);
+    grid.appendChild(cell);
+  }
+}
+
+function pill(txt){
+  const s = document.createElement('span'); s.className='pill'; s.textContent = txt; return s;
+}
+
+render();
+
+/* Opcional: defina foto no cartão do topo (se tiver um link) */
+(function setContactPhoto(){
+  const el = document.getElementById('contactPhoto');
+  // coloque o caminho da foto se desejar:
+  const fotoURL = ''; // ex.: 'https://…/vanessa.jpg'
+  if(fotoURL) el.src = fotoURL;
+  else{
+    // pequeno avatar neutro
+    const svg = 'data:image/svg+xml;utf8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#67e8f9"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs><rect width="64" height="64" rx="10" fill="url(#g)"/><circle cx="32" cy="26" r="12" fill="#fff"/><rect x="12" y="40" width="40" height="16" rx="8" fill="#fff"/></svg>`);
+    el.src = svg;
+  }
+})();
+</script>
+</body>
+</html>

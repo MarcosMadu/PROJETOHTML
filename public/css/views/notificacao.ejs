@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Notificação <%= notif._id %></title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .field-label {
+      font-weight: bold;
+      margin-top: 15px;
+    }
+    .field-value {
+      margin-bottom: 10px;
+    }
+    .section {
+      margin-bottom: 20px;
+      page-break-inside: avoid;
+    }
+    .images {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .images img {
+      max-width: 150px;
+      max-height: 150px;
+      border: 1px solid #ccc;
+    }
+    footer {
+      position: fixed;
+      bottom: 20px;
+      width: 100%;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Notificação de Risco</h1>
+
+  <div class="section">
+    <div class="field-label">Técnico Responsável:</div>
+    <div class="field-value"><%= notif.tecnico %></div>
+
+    <div class="field-label">Encarregado Responsável:</div>
+    <div class="field-value"><%= notif.encarregado %></div>
+
+    <div class="field-label">Data da Notificação:</div>
+    <div class="field-value"><%= notif.data.toLocaleDateString('pt-BR') %></div>
+
+    <div class="field-label">Classificação:</div>
+    <div class="field-value"><%= notif.classificacao %></div>
+
+    <div class="field-label">Área / Local:</div>
+    <div class="field-value"><%= notif.area %></div>
+  </div>
+
+  <div class="section">
+    <div class="field-label">Descrição da Condição de Risco:</div>
+    <div class="field-value"><%= notif.descricao %></div>
+
+    <div class="field-label">NR Relacionada:</div>
+    <div class="field-value"><%= notif.nr %></div>
+
+    <div class="field-label">Ações Recomendadas:</div>
+    <div class="field-value"><%= notif.acao %></div>
+
+    <div class="field-label">Prazo para Resolução:</div>
+    <div class="field-value"><%= notif.prazo.toLocaleDateString('pt-BR') %></div>
+  </div>
+
+  <% if (notif.notificacaoFotos && notif.notificacaoFotos.length) { %>
+    <div class="section">
+      <div class="field-label">Evidências Fotográficas:</div>
+      <div class="images">
+        <% notif.notificacaoFotos.forEach(function(img) { %>
+          <img src="<%= path.join(__dirname, '../uploads', img) %>" alt="Foto de evidência">
+        <% }) %>
+      </div>
+    </div>
+  <% } %>
+
+  <footer>
+    Gerado em <%= new Date().toLocaleString('pt-BR') %>
+  </footer>
+
+</body>
+</html>

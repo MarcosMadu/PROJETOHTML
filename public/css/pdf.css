@@ -1,0 +1,48 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+}
+.pdf-header {
+  text-align: center;
+  border-bottom: 2px solid #444;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+.pdf-header .logo {
+  float: left;
+  width: 100px;
+  margin-right: 20px;
+}
+.pdf-header h1 {
+  font-size: 18px;
+  margin: 0;
+}
+.dados-principais table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.dados-principais th,
+.dados-principais td {
+  border: 1px solid #666;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+.evidencia {
+  margin-top: 20px;
+}
+.evidencia h2 {
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+.fotos img {
+  width: 180px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+}
+.pdf-footer {
+  font-size: 10px;
+  text-align: right;
+  margin-top: 30px;
+  color: #666;
+}

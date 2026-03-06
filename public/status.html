@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Verificação de Status</title>
+  <style>
+    :root {
+      --green-main: #0E6835;
+      --green-dark: #1b5e20;
+      --yellow-main: #F2C438;
+      --blue-main: #1E4C9A;
+      --bg-light: #F5F5F5;
+      --border-soft: #C8E6C9;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      color: #333;
+      background: var(--bg-light);
+    }
+
+    /* ===== HEADER COM LOGO ===== */
+    .top-header {
+      width: 100%;
+      background: var(--green-main);
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 12px;
+      border-bottom: 4px solid var(--yellow-main);
+    }
+
+    .top-header img {
+      height: 44px;
+      object-fit: contain;
+    }
+
+    .top-header-text {
+      display: flex;
+      flex-direction: column;
+      color: #fff;
+    }
+
+    .top-header-text .title-main {
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .top-header-text .title-sub {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    /* ===== CONTEÚDO ===== */
+    .page-container {
+      max-width: 1100px;
+      margin: 18px auto 24px;
+      padding: 0 12px;
+    }
+
+    .card-panel {
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      padding: 18px 18px 22px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .page-title {
+      margin: 0 0 16px;
+      font-size: 20px;
+      font-weight: bold;
+      color: var(--green-main);
+      text-align: left;
+    }
+
+    /* ===== BOTÃO VOLTAR ===== */
+    .back-container {
+      margin-bottom: 12px;
+      text-align: left;
+    }
+
+    .btn-back {
+      display: inline-block;
+      padding: 8px 14px;
+      background: var(--green-main);
+      color: #fff;
+      border-radius: 4px;
+      font-weight: 500;
+      text-decoration: none;
+      font-size: 13px;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn-back:hover {
+      background: var(--green-dark);
+      transform: translateY(-1px);
+    }
+
+    /* ===== FILTROS ===== */
+    .filtros {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .filtros label {
+      flex: 1 1 210px;
+      display: flex;
+      flex-direction: column;
+      font-weight: bold;
+      font-size: 13px;
+    }
+
+    .filtros input {
+      padding: 7px;
+      margin-top: 4px;
+      font-size: 14px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    #btn-buscar {
+      align-self: flex-end;
+      padding: 9px 18px;
+      background: var(--green-main);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      margin-top: 22px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      white-space: nowrap;
+    }
+
+    #btn-buscar:hover {
+      background: var(--green-dark);
+    }
+
+    /* ===== TABELA ===== */
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 800px;
+      margin-top: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px 6px;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background: #e8f5e9;
+      font-weight: bold;
+      color: #2E7D32;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #fafafa;
+    }
+
+    tbody tr:hover {
+      background: #f1f8e9;
+    }
+
+    /* ===== RESPONSIVIDADE ===== */
+    @media (max-width: 768px) {
+      .top-header {
+        padding: 8px 12px;
+      }
+
+      .top-header img {
+        height: 36px;
+      }
+
+      .top-header-text .title-main {
+        font-size: 16px;
+      }
+
+      .top-header-text .title-sub {
+        font-size: 11px;
+      }
+
+      .page-container {
+        margin-top: 14px;
+      }
+
+      .card-panel {
+        padding: 14px 12px 18px;
+      }
+
+      .page-title {
+        font-size: 18px;
+        text-align: center;
+      }
+
+      .back-container {
+        text-align: center;
+      }
+
+      .filtros {
+        flex-direction: column;
+      }
+
+      .filtros label {
+        flex: 1 1 100%;
+      }
+
+      #btn-buscar {
+        width: 100%;
+        margin-top: 6px;
+      }
+
+      table {
+        font-size: 12px;
+        min-width: 600px;
+      }
+
+      th, td {
+        padding: 6px 4px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER COM LOGO NO CANTO ESQUERDO -->
+  <header class="top-header">
+    <img src="/img/logo.jpg" alt="PLANGECON">
+    <div class="top-header-text">
+      <div class="title-sub">Verificação de Status de Notificações</div>
+    </div>
+  </header>
+
+  <div class="page-container">
+    <div class="back-container">
+      <a href="/dashboard.html" class="btn-back">
+         Voltar ao Painel Inicial
+      </a>
+    </div>
+
+    <div class="card-panel">
+      <h2 class="page-title">Verificação de Status de Notificações</h2>
+
+      <div class="filtros">
+        <label>
+          ID da Notificação
+          <input type="text" id="filter-id" placeholder="Digite o ID">
+        </label>
+        <label>
+          Encarregado
+          <input type="text" id="filter-encarregado" placeholder="Nome do encarregado">
+        </label>
+        <label>
+          Técnico Emitente
+          <input type="text" id="filter-tecnico" placeholder="Nome do técnico">
+        </label>
+        <label>
+          Área
+          <input type="text" id="filter-area" placeholder="Área/Local">
+        </label>
+        <button id="btn-buscar">Buscar</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Técnico</th>
+              <th>Encarregado</th>
+              <th>Área</th>
+              <th>Prazo</th>
+              <th>Status</th>
+              <th>Justificativa</th>
+              <th>Data</th>
+            </tr>
+          </thead>
+          <tbody id="result-body">
+            <tr><td colspan="8" style="text-align:center;">Nenhum resultado</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Lógica de busca (a mesma que você já tinha)
+    document.getElementById('btn-buscar').addEventListener('click', async () => {
+      const id          = document.getElementById('filter-id').value.trim();
+      const encarregado = document.getElementById('filter-encarregado').value.trim();
+      const tecnico     = document.getElementById('filter-tecnico').value.trim();
+      const area        = document.getElementById('filter-area').value.trim();
+
+      const params = new URLSearchParams();
+      if (id)          params.append('id', id);
+      if (encarregado) params.append('encarregado', encarregado);
+      if (tecnico)     params.append('tecnico', tecnico);
+      if (area)        params.append('area', area);
+
+      try {
+        const res  = await fetch('/api/notificacoes?' + params);
+        const data = await res.json();
+        const tbody = document.getElementById('result-body');
+        tbody.innerHTML = '';
+
+        if (!Array.isArray(data) || data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Nenhum resultado</td></tr>';
+          return;
+        }
+
+        data.forEach(n => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${n._id}</td>
+            <td>${n.tecnico || '—'}</td>
+            <td>${n.encarregado || '—'}</td>
+            <td>${n.area || '—'}</td>
+            <td>${n.prazo ? new Date(n.prazo).toLocaleDateString() : '—'}</td>
+            <td>${n.status}</td>
+            <td>${n.comentarioAprovacao || '—'}</td>
+            <td>${new Date(n.dataRegistro).toLocaleString()}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        console.error('Erro ao buscar:', err);
+      }
+    });
+  </script>
+</body>
+</html>
