@@ -331,13 +331,15 @@ app.post('/api/5s/auditorias', upload5S.any(), async (req, res) => {
       itens: itensOut
     };
 
-    const doc = await Auditoria5S.create(docToSave);
+   const doc = await Auditoria5S.create(docToSave);
 
-// envia o e-mail automático após salvar
-    try {
+console.log('📩 Tentando enviar e-mail da auditoria 5S...', String(doc._id));
+
+try {
   await sendAuditoriaCreatedEmail(doc);
+  console.log('✅ E-mail da auditoria 5S enviado com sucesso.');
 } catch (emailErr) {
-  console.error('❌ Erro ao enviar e-mail da auditoria 5S:', emailErr.message);
+  console.error('❌ Erro ao enviar e-mail da auditoria 5S:', emailErr);
 }
 
 return res.status(201).json({
