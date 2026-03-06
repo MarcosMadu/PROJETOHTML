@@ -6,7 +6,7 @@
   <title>Avaliação 5S Tecnosonda — Auditoria</title>
   <style>
     :root{
-      --bg:#f2f4f7;          /* cinza gelo */
+      --bg:#f2f4f7;
       --card:#ffffff;
       --text:#101828;
       --muted:#667085;
@@ -236,7 +236,6 @@
       50%{transform:scale(1.2);opacity:1}
     }
 
-    /* ====== Card de maturidade (automática enquanto preenche) ====== */
     .maturidade-card{
       border:1px solid var(--border);
       border-radius:14px;
@@ -280,9 +279,8 @@
       color:var(--text);
     }
 
-    /* ====== ADICIONADO: Card RESULTADO (pós-envio) ====== */
     .resultado-card{
-      display:none; /* aparece só após envio */
+      display:none;
       border:1px solid var(--border);
       border-radius:14px;
       padding:14px;
@@ -331,7 +329,6 @@
       color: rgba(16,24,40,.78);
     }
 
-    /* cores por maturidade (0..4) */
     .result-0{ border-color: rgba(220,38,38,.35); background: rgba(220,38,38,.08); }
     .result-0 .big-num, .result-0 .big-label{ color: #dc2626; }
 
@@ -348,16 +345,15 @@
     .result-4 .big-num, .result-4 .big-label{ color: #2563eb; }
   
     @media (max-width: 420px){
-  .wrap{padding:14px 12px}
-  .topbar{flex-direction:column; align-items:flex-start}
-  .pill{white-space:normal; line-height:1.2}
-  .meta{grid-template-columns:1fr}
-  .btn{width:100%}
-  .choices{gap:8px}
-  .radio{width:100%}
-  .big-num{font-size:44px}
-}
-
+      .wrap{padding:14px 12px}
+      .topbar{flex-direction:column; align-items:flex-start}
+      .pill{white-space:normal; line-height:1.2}
+      .meta{grid-template-columns:1fr}
+      .btn{width:100%}
+      .choices{gap:8px}
+      .radio{width:100%}
+      .big-num{font-size:44px}
+    }
   </style>
 </head>
 
@@ -369,7 +365,9 @@
           <h1>Avaliação 5S Tecnosonda</h1>
           <p>Auditoria semanal — Conforme / Não Conforme / Não Aplica</p>
         </div>
-        <div class="pill" id="pillSemana">Semana: <strong id="semanaId">—</strong> · Auditor: <strong id="auditorSemana">—</strong></div>
+        <div class="pill" id="pillSemana">
+          Semana: <strong id="semanaId">—</strong> · Auditor programado: <strong id="auditorSemana">—</strong>
+        </div>
       </div>
     </div>
   </header>
@@ -378,7 +376,6 @@
     <div class="wrap">
       <div class="grid">
 
-        <!-- Checklist -->
         <section class="card">
           <div class="card-h">
             <div>
@@ -392,7 +389,7 @@
             <div class="items" id="listaItens"></div>
 
             <div class="alert">
-              <strong>Validação:</strong> você só consegue enviar quando todos os itens tiverem status definido e as evidências obrigatórias estiverem anexadas.
+              <strong>Validação:</strong> você só consegue enviar quando todos os itens tiverem status definido, a área/local estiver selecionada e as evidências obrigatórias estiverem anexadas.
             </div>
           </div>
 
@@ -402,18 +399,15 @@
           </div>
         </section>
 
-        <!-- Metadados -->
         <aside class="card">
           <div class="card-h">
             <div>
               <h2>Informações do registro</h2>
-              <p class="sub">Semana e auditor são automáticos (alterável no gestor).</p>
+              <p class="sub">Auditor programado vem automaticamente da semana. Se outra pessoa realizar a auditoria, selecione o auditor realizador abaixo.</p>
             </div>
           </div>
 
           <div class="card-b">
-
-            <!-- ====== ADICIONADO: Card RESULTADO (após envio) ====== -->
             <div class="resultado-card" id="resultadoCard">
               <div class="resultado-head">
                 <div>
@@ -432,7 +426,6 @@
               </div>
             </div>
 
-            <!-- ====== Card de Maturidade (automática) ====== -->
             <div class="maturidade-card" id="maturidadeCard">
               <div class="maturidade-top">
                 <h3>Maturidade 5S (automática)</h3>
@@ -454,14 +447,26 @@
                 <label>ID (gerado no envio)</label>
                 <input id="auditoriaId" type="text" placeholder="—" readonly />
               </div>
+
               <div class="field" style="grid-column:1 / -1;">
-                <label>Área / Setor (opcional)</label>
-                <input id="setor" type="text" placeholder="Ex.: Pátio / Sonda / Almoxarifado..." />
+                <label>Área / Local <strong style="color:var(--danger)">*</strong></label>
+                <select id="setor" required>
+                  <option value="">Selecione...</option>
+                  <option value="Canteiro PA 071">Canteiro PA 071</option>
+                  <option value="Canteiro Aeroporto">Canteiro Aeroporto</option>
+                </select>
+              </div>
+
+              <div class="field" style="grid-column:1 / -1;">
+                <label>Auditor realizador (opcional)</label>
+                <select id="auditorRealizador">
+                  <option value="">Mesmo auditor programado</option>
+                </select>
               </div>
             </div>
 
             <div class="alert" style="margin-top:14px">
-              <strong>Obs.:</strong> Agora está conectado ao backend para buscar semana/auditor e salvar no MongoDB (agora com upload real de fotos no Cloudinary).
+              <strong>Obs.:</strong> Agora está conectado ao backend para buscar semana/auditor e salvar no MongoDB, com upload real de fotos no Cloudinary.
             </div>
           </div>
         </aside>
@@ -471,7 +476,6 @@
   </main>
 
   <script>
-    // Lista real (auditor automático e responsável da tratativa)
     const RESPONSAVEIS = [
       "Selecione...",
       "ALLAN DO NASCIMENTO MORAES",
@@ -500,7 +504,6 @@
       "WILDSON DA SILVA BARROS"
     ];
 
-    // Itens (15) com grupos por faixa de maturidade
     const ITENS = [
       { id: 1,  grupo: "Maturidade 1", texto: "A área está livre de objetos obsoletos, improvisados ou sucateados, sem identificação?" },
       { id: 2,  grupo: "Maturidade 1", texto: "A área está limpa, sem resíduos espalhados pelo chão?" },
@@ -522,8 +525,7 @@
       { id: 15, grupo: "Maturidade 4", texto: "A área é referência de 5S para outras áreas? Possui pelo menos três meses consecutivos de notas de maturidade igual ou superior a 3?" }
     ];
 
-    // Estado em memória
-    const state = new Map(); // itemId -> { status, naJustificativa, conformeFotos: File[], desvios: [{foto:File, responsavel}] }
+    const state = new Map();
 
     function nowBR(){
       const d = new Date();
@@ -536,16 +538,38 @@
         const res = await fetch("/api/5s/semana-atual");
         if(!res.ok) throw new Error("Falha ao buscar semana atual.");
         const data = await res.json();
-        document.getElementById("semanaId").textContent = data.semanaId || "—";
-        document.getElementById("auditorSemana").textContent = data.auditorSemana || "—";
+
+        const semanaId = data.semanaId || "—";
+        const auditorProgramado = data.auditorSemana || "—";
+
+        document.getElementById("semanaId").textContent = semanaId;
+        document.getElementById("auditorSemana").textContent = auditorProgramado;
+
+        fillAuditorRealizadorSelect(auditorProgramado);
       }catch(e){
         document.getElementById("semanaId").textContent = "erro";
         document.getElementById("auditorSemana").textContent = "erro";
+        fillAuditorRealizadorSelect("");
       }
     }
 
     function buildResponsaveisOptions(selected="Selecione..."){
       return RESPONSAVEIS.map(n => `<option value="${escapeHtml(n)}" ${n===selected?'selected':''}>${escapeHtml(n)}</option>`).join("");
+    }
+
+    function fillAuditorRealizadorSelect(){
+      const sel = document.getElementById("auditorRealizador");
+      if(!sel) return;
+
+      sel.innerHTML = `
+        <option value="">Mesmo auditor programado</option>
+        ${RESPONSAVEIS
+          .filter(n => n !== "Selecione...")
+          .map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`)
+          .join("")}
+      `;
+
+      sel.value = "";
     }
 
     function escapeHtml(str){
@@ -564,7 +588,6 @@
       return state.get(itemId);
     }
 
-    /* ====== cálculo de maturidade (automática) ====== */
     function getItemById(id){
       return ITENS.find(x => x.id === id);
     }
@@ -577,7 +600,6 @@
     }
 
     function itemAtende(status){
-      // “Atende” = C | “Neutro” = NA (não derruba) | “Não atende” = NC
       if(status === "NA") return true;
       return status === "C";
     }
@@ -590,7 +612,6 @@
     }
 
     function computeMaturidade(){
-      // Se ainda tem item sem status, mostramos pendente
       if(!allHaveStatus()){
         return {
           ready: false,
@@ -600,13 +621,11 @@
         };
       }
 
-      // Faixas:
       const m1 = [1,2,3,4,5,6,7];
       const m2 = [8,9,10,11];
       const m3 = [12,13,14];
       const m4 = [15];
 
-      // 1) Se qualquer item 1-7 NÃO atender => maturidade 0
       for(const id of m1){
         const st = ensureItemState(id);
         if(!itemAtende(st.status)){
@@ -620,7 +639,6 @@
         }
       }
 
-      // 2) Itens 8-11: se algum NÃO atender => maturidade 1
       for(const id of m2){
         const st = ensureItemState(id);
         if(!itemAtende(st.status)){
@@ -634,7 +652,6 @@
         }
       }
 
-      // 3) Itens 12-14: se algum NÃO atender => maturidade 2
       for(const id of m3){
         const st = ensureItemState(id);
         if(!itemAtende(st.status)){
@@ -648,7 +665,6 @@
         }
       }
 
-      // 4) Item 15: se NÃO atender => maturidade 3; se atender => 4
       for(const id of m4){
         const st = ensureItemState(id);
         const it = getItemById(id);
@@ -662,7 +678,6 @@
         }
       }
 
-      // Se chegou aqui, tudo atende até o 15 => 4
       return {
         ready: true,
         maturidade: 4,
@@ -688,7 +703,6 @@
 
       v.textContent = String(r.maturidade);
 
-      // cor da pill (simples e útil)
       pill.classList.remove("ok","warn","danger");
       if(r.maturidade >= 3) pill.classList.add("ok");
       else if(r.maturidade === 2) pill.classList.add("warn");
@@ -719,7 +733,6 @@
       }
     }
 
-    /* ====== ADICIONADO: Card RESULTADO (pós-envio) ====== */
     function maturidadeTexto(m){
       if(m === 0) return { titulo:"Inexistência", desc:"Há falhas básicas nos itens iniciais. Priorize estabilizar os itens 1–7." };
       if(m === 1) return { titulo:"Fraco", desc:"Base atendida, mas há gaps em itens 8–11. Reforce padronização e organização visual." };
@@ -745,8 +758,6 @@
       des.textContent = t.desc;
 
       pill.textContent = "Enviado ✅";
-
-      // rola suavemente pra mostrar o resultado
       card.scrollIntoView({ behavior:"smooth", block:"nearest" });
     }
 
@@ -795,14 +806,12 @@
           </div>
         `;
 
-        // toggle
         el.querySelector(".item-top").addEventListener("click", () => {
           const open = el.classList.toggle("open");
           el.querySelector(".item-top").setAttribute("aria-expanded", String(open));
           el.querySelector(".chev").textContent = open ? "▲" : "▼";
         });
 
-        // status change
         el.querySelectorAll(`input[name="status-${it.id}"]`).forEach(r => {
           r.addEventListener("change", (e) => {
             st.status = e.target.value;
@@ -811,8 +820,6 @@
             if(st.status !== "NC") st.desvios = [];
             updateItemPanel(it.id);
             el.querySelector(`#note-${it.id}`).textContent = getNoteText(st.status);
-
-            // atualizar maturidade ao mudar status
             updateMaturidadeCard();
           });
         });
@@ -821,7 +828,6 @@
         updateItemPanel(it.id);
       });
 
-      // atualizar maturidade após render inicial
       updateMaturidadeCard();
     }
 
@@ -881,7 +887,6 @@
         return;
       }
 
-      // NC
       const desviosHtml = st.desvios.map((d, i) => `
         <div class="deviation">
           <div class="head">
@@ -950,6 +955,11 @@
     function validateAll(){
       const errors = [];
 
+      const setor = document.getElementById("setor").value;
+      if(!setor){
+        errors.push("Selecione a Área / Local.");
+      }
+
       ITENS.forEach(it=>{
         const st = ensureItemState(it.id);
         if(!st.status){
@@ -981,8 +991,12 @@
       return errors;
     }
 
-    // buildPayload com fieldnames batendo com os arquivos
     function buildPayloadWithFields(){
+      const auditorProgramado = document.getElementById("auditorSemana").textContent;
+      const auditorRealizadorSelecionado = document.getElementById("auditorRealizador").value;
+      const auditorRealizador = auditorRealizadorSelecionado || auditorProgramado;
+      const setor = document.getElementById("setor").value || null;
+
       const itens = ITENS.map(it=>{
         const st = ensureItemState(it.id);
 
@@ -1018,21 +1032,23 @@
         };
       });
 
-      // incluir maturidade calculada no payload (opcional e útil pro backend)
       const mat = computeMaturidade();
       const maturidadeFinal = mat.ready ? mat.maturidade : null;
 
       return {
         semanaId: document.getElementById("semanaId").textContent,
-        auditorSemana: document.getElementById("auditorSemana").textContent,
+        auditorProgramado,
+        auditorSemana: auditorRealizador,
+        auditorRealizador,
         dataHora: document.getElementById("dataHora").value,
-        setor: document.getElementById("setor").value || null,
+        setor,
+        local: setor,
+        tipoAuditoria: "Administrativa",
         maturidade: maturidadeFinal,
         itens
       };
     }
 
-    // Eventos
     document.getElementById("btnExpandir").addEventListener("click", ()=>{
       const items = document.querySelectorAll(".item");
       const anyClosed = Array.from(items).some(i=>!i.classList.contains("open"));
@@ -1044,7 +1060,6 @@
       document.getElementById("btnExpandir").textContent = anyClosed ? "Recolher tudo" : "Expandir tudo";
     });
 
-    // ENVIO
     document.getElementById("btnEnviar").addEventListener("click", async ()=>{
       const btn = document.getElementById("btnEnviar");
       const loading = document.getElementById("loadingEnvio");
@@ -1061,7 +1076,6 @@
       try{
         const fd = new FormData();
 
-        // anexar arquivos reais
         ITENS.forEach((it) => {
           const st = ensureItemState(it.id);
 
@@ -1094,7 +1108,6 @@
         const data = await res.json().catch(()=> ({}));
         document.getElementById("auditoriaId").value = data.auditoriaId || "OK";
 
-        // ====== MOSTRAR CARD DE RESULTADO (pós-envio) ======
         const mat = computeMaturidade();
         const maturidadeFinal = mat.ready ? mat.maturidade : (payload.maturidade ?? 0);
         showResultadoMaturidade(maturidadeFinal);
@@ -1108,7 +1121,6 @@
       }
     });
 
-    // Init
     document.getElementById("dataHora").value = nowBR();
     initSemanaMock();
     render();
