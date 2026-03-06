@@ -1357,6 +1357,23 @@
 
       Object.values(charts).forEach(chart => chart.destroy());
     }
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+<aside class="drawer" id="detailDrawer">
+  <div class="drawer-header">
+    <div>
+      <h3 id="drawerTitle">Detalhamento</h3>
+      <p id="drawerSubtitle">Registros encontrados</p>
+    </div>
+    <button class="drawer-close" id="drawerClose">✕</button>
+  </div>
+
+  <div class="drawer-body">
+    <div class="drawer-summary" id="drawerSummary"></div>
+    <div class="drawer-list" id="drawerList"></div>
+  </div>
+</aside>
+  
   </script>
 </body>
 </html>
