@@ -338,11 +338,15 @@ app.post('/api/5s/auditorias', upload5S.any(), async (req, res) => {
     });
 
     const docToSave = {
-      semanaId: payload.semanaId,
-      auditorSemana: payload.auditorSemana,
-      dataHora: payload.dataHora,
-      setor: payload.setor || null,
-      itens: itensOut
+       semanaId: payload.semanaId,
+  auditorSemana: payload.auditorSemana,
+  auditorProgramado: payload.auditorProgramado || getAuditorAutomatico(payload.semanaId),
+  dataHora: payload.dataHora,
+  setor: payload.setor || payload.local || null,
+  local: payload.local || payload.setor || null,
+  maturidade: payload.maturidade ?? null,
+  tipoAuditoria: payload.tipoAuditoria || null,
+  itens: itensOut
     };
 
    console.log('🧾 Preparando para salvar auditoria 5S...');
