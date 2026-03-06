@@ -1,0 +1,1394 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Painel de Gestão de Notificações</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root{
+      --bg:#f3f6fb;
+      --panel:#ffffff;
+      --panel-2:#f8fafc;
+      --text:#0f172a;
+      --muted:#64748b;
+      --line:#e2e8f0;
+      --primary:#2563eb;
+      --primary-2:#1d4ed8;
+      --success:#16a34a;
+      --danger:#dc2626;
+      --warning:#f59e0b;
+      --info:#0ea5e9;
+      --shadow:0 10px 30px rgba(15,23,42,.08);
+      --radius:18px;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font: 14px/1.45 "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    .container{
+      width:min(1500px, calc(100% - 32px));
+      margin:24px auto 40px;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:18px;
+      flex-wrap:wrap;
+    }
+
+    .title-wrap h1{
+      margin:0;
+      font-size:30px;
+      line-height:1.1;
+      letter-spacing:-.02em;
+    }
+
+    .title-wrap p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .btn{
+      border:none;
+      background:var(--primary);
+      color:#fff;
+      padding:10px 14px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:600;
+      box-shadow:var(--shadow);
+    }
+    .btn:hover{background:var(--primary-2)}
+
+    .btn.secondary{
+      background:#fff;
+      color:var(--text);
+      border:1px solid var(--line);
+      box-shadow:none;
+    }
+
+    .panel{
+      background:var(--panel);
+      border:1px solid rgba(226,232,240,.8);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+
+    .upload-box{
+      padding:16px;
+      display:grid;
+      grid-template-columns: 1.2fr 1fr auto auto;
+      gap:12px;
+      align-items:end;
+      margin-bottom:18px;
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width:0;
+    }
+
+    .field label{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
+
+    .field input[type="file"],
+    .field select,
+    .field input[type="text"]{
+      width:100%;
+      height:42px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#fff;
+      color:var(--text);
+      padding:0 12px;
+      outline:none;
+    }
+
+    .field select[multiple]{
+      min-height:110px;
+      padding:10px;
+    }
+
+    .status-note{
+      font-size:13px;
+      color:var(--muted);
+      margin-top:6px;
+    }
+
+    .filters{
+      padding:16px;
+      margin-bottom:18px;
+    }
+
+    .filters-grid{
+      display:grid;
+      grid-template-columns: repeat(7, minmax(150px, 1fr));
+      gap:12px;
+      align-items:end;
+    }
+
+    .period-chip{
+      margin-top:10px;
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      padding:8px 12px;
+      border-radius:999px;
+      background:#eff6ff;
+      color:#1d4ed8;
+      font-size:13px;
+      font-weight:600;
+    }
+
+    .cards{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:14px;
+      margin-bottom:18px;
+    }
+
+    .card{
+      padding:18px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .card .kpi-label{
+      color:var(--muted);
+      font-size:12px;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+      margin-bottom:10px;
+    }
+
+    .card .kpi-value{
+      font-size:32px;
+      font-weight:800;
+      line-height:1;
+      letter-spacing:-.02em;
+      margin-bottom:8px;
+    }
+
+    .card .kpi-sub{
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .accent-primary::before,
+    .accent-success::before,
+    .accent-danger::before,
+    .accent-warning::before,
+    .accent-info::before{
+      content:"";
+      position:absolute;
+      top:0; left:0;
+      width:100%;
+      height:4px;
+    }
+
+    .accent-primary::before{background:var(--primary)}
+    .accent-success::before{background:var(--success)}
+    .accent-danger::before{background:var(--danger)}
+    .accent-warning::before{background:var(--warning)}
+    .accent-info::before{background:var(--info)}
+
+    .charts-grid{
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap:16px;
+      margin-bottom:18px;
+    }
+
+    .chart-card{
+      padding:16px;
+      min-height:360px;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .chart-card.tall{
+      min-height:420px;
+    }
+
+    .chart-header{
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      align-items:flex-start;
+      margin-bottom:8px;
+    }
+
+    .chart-header h3{
+      margin:0;
+      font-size:16px;
+      line-height:1.2;
+    }
+
+    .chart-header span{
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .chart-wrap{
+      position:relative;
+      flex:1;
+      min-height:260px;
+    }
+
+    .table-card{
+      padding:16px;
+    }
+
+    .table-toolbar{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+      margin-bottom:12px;
+      flex-wrap:wrap;
+    }
+
+    .table-toolbar h3{
+      margin:0;
+      font-size:16px;
+    }
+
+    .table-scroll{
+      overflow:auto;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#fff;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:1100px;
+    }
+
+    thead th{
+      position:sticky;
+      top:0;
+      background:#f8fafc;
+      z-index:1;
+      text-align:left;
+      font-size:12px;
+      color:#334155;
+      padding:12px 10px;
+      border-bottom:1px solid var(--line);
+      white-space:nowrap;
+    }
+
+    tbody td{
+      padding:11px 10px;
+      border-bottom:1px solid #edf2f7;
+      font-size:13px;
+      white-space:nowrap;
+    }
+
+    tbody tr:hover{
+      background:#f8fbff;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:92px;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .badge.resolvido{ background:#dcfce7; color:#166534; }
+    .badge.atraso{ background:#fef3c7; color:#92400e; }
+    .badge.aberto{ background:#dbeafe; color:#1d4ed8; }
+    .badge.vencido{ background:#fee2e2; color:#991b1b; }
+    .badge.prazo{ background:#ecfeff; color:#155e75; }
+
+    .empty{
+      padding:20px;
+      text-align:center;
+      color:var(--muted);
+      border:1px dashed var(--line);
+      border-radius:14px;
+      background:#fff;
+    }
+
+    @media (max-width: 1200px){
+      .filters-grid{ grid-template-columns: repeat(4, 1fr); }
+      .cards{ grid-template-columns: repeat(2, 1fr); }
+      .charts-grid{ grid-template-columns: 1fr; }
+      .upload-box{ grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 780px){
+      .container{ width:min(100% - 20px, 100%); }
+      .filters-grid{ grid-template-columns: repeat(2, 1fr); }
+      .cards{ grid-template-columns: 1fr; }
+      .upload-box{ grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="title-wrap">
+        <h1>Painel de Gestão de Notificações</h1>
+        <p>Análise interna dinâmica do extratificado de notificações, interdições e intervenções.</p>
+      </div>
+
+      <div class="actions">
+        <button class="btn secondary" id="btnLimparFiltros">Limpar filtros</button>
+      </div>
+    </div>
+
+    <section class="panel upload-box">
+      <div class="field">
+        <label for="fileInput">Planilha Excel (.xlsx)</label>
+        <input type="file" id="fileInput" accept=".xlsx,.xls" />
+        <div class="status-note" id="fileStatus">Selecione a planilha para carregar os dados.</div>
+      </div>
+
+      <div class="field">
+        <label for="sheetNameInput">Nome da aba</label>
+        <input type="text" id="sheetNameInput" value="Export" />
+      </div>
+
+      <button class="btn" id="btnCarregar">Carregar planilha</button>
+      <button class="btn secondary" id="btnUsarPrimeiraAba">Usar 1ª aba</button>
+    </section>
+
+    <section class="panel filters">
+      <div class="filters-grid">
+        <div class="field">
+          <label for="fAno">Ano</label>
+          <select id="fAno"></select>
+        </div>
+
+        <div class="field">
+          <label for="fMes">Mês</label>
+          <select id="fMes"></select>
+        </div>
+
+        <div class="field">
+          <label for="fSemana">Semana</label>
+          <select id="fSemana"></select>
+        </div>
+
+        <div class="field">
+          <label for="fArea">Área</label>
+          <select id="fArea">
+            <option value="">Todas</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="fTipo">Tipo de Registro</label>
+          <select id="fTipo">
+            <option value="">Todos</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="fStatus">Status</label>
+          <select id="fStatus">
+            <option value="">Todos</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="fEmissor">Emissor</label>
+          <select id="fEmissor">
+            <option value="">Todos</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="period-chip" id="periodoLabel">Período analisado: base completa</div>
+    </section>
+
+    <section class="cards">
+      <div class="panel card accent-primary">
+        <div class="kpi-label">Total de Registros</div>
+        <div class="kpi-value" id="kpiTotal">0</div>
+        <div class="kpi-sub">Quantidade no período filtrado</div>
+      </div>
+
+      <div class="panel card accent-success">
+        <div class="kpi-label">Resolvidas</div>
+        <div class="kpi-value" id="kpiResolvidas">0</div>
+        <div class="kpi-sub">Resolvido + resolvido com atraso</div>
+      </div>
+
+      <div class="panel card accent-warning">
+        <div class="kpi-label">Resolvidas com Atraso</div>
+        <div class="kpi-value" id="kpiResolvidasAtraso">0</div>
+        <div class="kpi-sub">Concluídas fora do prazo</div>
+      </div>
+
+      <div class="panel card accent-info">
+        <div class="kpi-label">Em Aberto</div>
+        <div class="kpi-value" id="kpiAberto">0</div>
+        <div class="kpi-sub">Registros ainda não concluídos</div>
+      </div>
+
+      <div class="panel card accent-danger">
+        <div class="kpi-label">Vencidas</div>
+        <div class="kpi-value" id="kpiVencido">0</div>
+        <div class="kpi-sub">Pendentes vencidos</div>
+      </div>
+
+      <div class="panel card accent-primary">
+        <div class="kpi-label">No Prazo</div>
+        <div class="kpi-value" id="kpiNoPrazo">0</div>
+        <div class="kpi-sub">Pendentes dentro do prazo</div>
+      </div>
+
+      <div class="panel card accent-success">
+        <div class="kpi-label">% de Resolução</div>
+        <div class="kpi-value" id="kpiPctResolucao">0%</div>
+        <div class="kpi-sub">Resolvidas / total</div>
+      </div>
+
+      <div class="panel card accent-primary">
+        <div class="kpi-label">Tempo Médio de Resolução</div>
+        <div class="kpi-value" id="kpiTempoMedio">0</div>
+        <div class="kpi-sub">Dias médios para concluir</div>
+      </div>
+    </section>
+
+    <section class="charts-grid">
+      <div class="panel chart-card tall">
+        <div class="chart-header">
+          <div>
+            <h3>Evolução de Registros</h3>
+            <span>Mês, semana ou dia, conforme o nível do filtro</span>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="chartEvolucao"></canvas></div>
+      </div>
+
+      <div class="panel chart-card tall">
+        <div class="chart-header">
+          <div>
+            <h3>Evolução da Taxa de Resolução</h3>
+            <span>Percentual resolvido ao longo do tempo</span>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="chartTaxaResolucao"></canvas></div>
+      </div>
+
+      <div class="panel chart-card">
+        <div class="chart-header">
+          <div>
+            <h3>Distribuição por Status</h3>
+            <span>Saúde geral da carteira filtrada</span>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="chartStatus"></canvas></div>
+      </div>
+
+      <div class="panel chart-card">
+        <div class="chart-header">
+          <div>
+            <h3>Distribuição por Tipo de Registro</h3>
+            <span>Interdição, notificação e intervenção</span>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="chartTipo"></canvas></div>
+      </div>
+
+      <div class="panel chart-card tall">
+        <div class="chart-header">
+          <div>
+            <h3>Ranking de Áreas com Mais Registros</h3>
+            <span>Top 10 áreas</span>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="chartAreas"></canvas></div>
+      </div>
+
+      <div class="panel chart-card tall">
+        <div class="chart-header">
+          <div>
+            <h3>Ranking de Emissores</h3>
+            <span>Top 10 emissores</span>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="chartEmissores"></canvas></div>
+      </div>
+
+      <div class="panel chart-card tall">
+        <div class="chart-header">
+          <div>
+            <h3>Áreas com Mais Vencidas</h3>
+            <span>Top 10 áreas críticas</span>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="chartAreasVencidas"></canvas></div>
+      </div>
+
+      <div class="panel chart-card tall">
+        <div class="chart-header">
+          <div>
+            <h3>Gestão de Prazo</h3>
+            <span>Comparativo entre os principais estados de prazo</span>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="chartPrazo"></canvas></div>
+      </div>
+    </section>
+
+    <section class="panel table-card">
+      <div class="table-toolbar">
+        <h3>Tabela Analítica</h3>
+        <div class="field" style="min-width:280px;">
+          <label for="searchTable">Buscar</label>
+          <input type="text" id="searchTable" placeholder="Buscar por ID, área, emissor, status..." />
+        </div>
+      </div>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Data Emissão</th>
+              <th>Tipo Registro</th>
+              <th>Área</th>
+              <th>Emissor</th>
+              <th>Status</th>
+              <th>Prazo</th>
+              <th>Data Conclusão</th>
+              <th>Dias Resolução</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr><td colspan="9"><div class="empty">Carregue a planilha para visualizar os dados.</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // =========================
+    // ESTADO GLOBAL
+    // =========================
+    let rawRows = [];
+    let normalizedData = [];
+    let filteredData = [];
+    let loadedWorkbook = null;
+    let useFirstSheet = false;
+
+    const charts = {};
+
+    const monthNames = [
+      "", "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+      "Jul", "Ago", "Set", "Out", "Nov", "Dez"
+    ];
+
+    // =========================
+    // ELEMENTOS
+    // =========================
+    const fileInput = document.getElementById("fileInput");
+    const btnCarregar = document.getElementById("btnCarregar");
+    const btnUsarPrimeiraAba = document.getElementById("btnUsarPrimeiraAba");
+    const btnLimparFiltros = document.getElementById("btnLimparFiltros");
+    const fileStatus = document.getElementById("fileStatus");
+    const sheetNameInput = document.getElementById("sheetNameInput");
+    const periodoLabel = document.getElementById("periodoLabel");
+    const searchTable = document.getElementById("searchTable");
+
+    const filterEls = {
+      ano: document.getElementById("fAno"),
+      mes: document.getElementById("fMes"),
+      semana: document.getElementById("fSemana"),
+      area: document.getElementById("fArea"),
+      tipo: document.getElementById("fTipo"),
+      status: document.getElementById("fStatus"),
+      emissor: document.getElementById("fEmissor")
+    };
+
+    // KPIs
+    const kpiTotal = document.getElementById("kpiTotal");
+    const kpiResolvidas = document.getElementById("kpiResolvidas");
+    const kpiResolvidasAtraso = document.getElementById("kpiResolvidasAtraso");
+    const kpiAberto = document.getElementById("kpiAberto");
+    const kpiVencido = document.getElementById("kpiVencido");
+    const kpiNoPrazo = document.getElementById("kpiNoPrazo");
+    const kpiPctResolucao = document.getElementById("kpiPctResolucao");
+    const kpiTempoMedio = document.getElementById("kpiTempoMedio");
+
+    // =========================
+    // EVENTOS
+    // =========================
+    btnCarregar.addEventListener("click", loadExcelFromInput);
+    btnUsarPrimeiraAba.addEventListener("click", () => {
+      useFirstSheet = true;
+      loadExcelFromInput();
+    });
+
+    btnLimparFiltros.addEventListener("click", () => {
+      clearFilters();
+      applyFiltersAndRender();
+    });
+
+    Object.values(filterEls).forEach(el => {
+      el.addEventListener("change", applyFiltersAndRender);
+    });
+
+    searchTable.addEventListener("input", renderTable);
+
+    // =========================
+    // INICIALIZAÇÃO DOS FILTROS
+    // =========================
+    initDefaultFilters();
+
+    function initDefaultFilters(){
+      setOptions(filterEls.ano, [{value:"", label:"Todos"}]);
+      setOptions(filterEls.mes, [{value:"", label:"Todos"}]);
+      setOptions(filterEls.semana, [{value:"", label:"Todas"}]);
+      setOptions(filterEls.area, [{value:"", label:"Todas"}]);
+      setOptions(filterEls.tipo, [{value:"", label:"Todos"}]);
+      setOptions(filterEls.status, [{value:"", label:"Todos"}]);
+      setOptions(filterEls.emissor, [{value:"", label:"Todos"}]);
+    }
+
+    function clearFilters(){
+      filterEls.ano.value = "";
+      filterEls.mes.value = "";
+      filterEls.semana.value = "";
+      filterEls.area.value = "";
+      filterEls.tipo.value = "";
+      filterEls.status.value = "";
+      filterEls.emissor.value = "";
+      searchTable.value = "";
+    }
+
+    // =========================
+    // LEITURA DO EXCEL
+    // =========================
+    async function loadExcelFromInput(){
+      const file = fileInput.files[0];
+      if(!file){
+        alert("Selecione a planilha antes de carregar.");
+        return;
+      }
+
+      fileStatus.textContent = "Carregando planilha...";
+      try{
+        const data = await file.arrayBuffer();
+        loadedWorkbook = XLSX.read(data, { type: "array" });
+
+        const targetSheetName = resolveSheetName(loadedWorkbook);
+        if(!targetSheetName){
+          throw new Error("Não foi possível localizar a aba informada.");
+        }
+
+        const sheet = loadedWorkbook.Sheets[targetSheetName];
+        rawRows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+        if(!rawRows.length){
+          throw new Error("A aba selecionada não possui dados.");
+        }
+
+        normalizedData = rawRows
+          .map(normalizeRow)
+          .filter(r => r.dataEmissao instanceof Date && !isNaN(r.dataEmissao));
+
+        if(!normalizedData.length){
+          throw new Error("Nenhuma linha válida com Data Emissão foi encontrada.");
+        }
+
+        populateFilters(normalizedData);
+        applyFiltersAndRender();
+
+        fileStatus.textContent = `Planilha carregada com sucesso. Aba: ${targetSheetName} | Registros válidos: ${normalizedData.length}`;
+      }catch(err){
+        console.error(err);
+        fileStatus.textContent = "Erro ao carregar a planilha.";
+        alert("Erro ao carregar a planilha: " + err.message);
+      }finally{
+        useFirstSheet = false;
+      }
+    }
+
+    function resolveSheetName(workbook){
+      if(useFirstSheet){
+        return workbook.SheetNames[0];
+      }
+
+      const desired = (sheetNameInput.value || "").trim().toLowerCase();
+      const exact = workbook.SheetNames.find(name => name.trim().toLowerCase() === desired);
+      if(exact) return exact;
+
+      const contains = workbook.SheetNames.find(name => name.trim().toLowerCase().includes(desired));
+      if(contains) return contains;
+
+      return workbook.SheetNames[0] || null;
+    }
+
+    // =========================
+    // NORMALIZAÇÃO
+    // =========================
+    function normalizeRow(row){
+      const id = getCell(row, ["ID", "Id", "id"]);
+      const tipo = normalizeText(getCell(row, ["Tipo Registro", "Tipo de Registro", "TIPO REGISTRO"]));
+      const area = normalizeArea(getCell(row, ["Área", "AREA", "Area"]));
+      const emissor = normalizePerson(getCell(row, ["Emissor", "EMISSOR"]));
+      const status = normalizeStatus(getCell(row, ["Status Geral", "Status", "STATUS GERAL"]));
+      const dataEmissao = parseExcelDate(getCell(row, ["Data Emissão", "Data Emissao", "DATA EMISSÃO", "DATA EMISSAO"]));
+      const prazo = parseExcelDate(getCell(row, ["Prazo", "PRAZO"]));
+      const dataConclusao = parseExcelDate(getCell(row, ["Data Conclusão", "Data Conclusao", "DATA CONCLUSÃO", "DATA CONCLUSAO"]));
+
+      const ano = dataEmissao ? dataEmissao.getFullYear() : "";
+      const mes = dataEmissao ? dataEmissao.getMonth() + 1 : "";
+      const semana = dataEmissao ? getISOWeek(dataEmissao) : "";
+      const dia = dataEmissao ? dataEmissao.getDate() : "";
+
+      const resolvida = ["Resolvido", "Resolvido com atraso"].includes(status);
+      const vencida = status === "Vencido";
+      const aberta = status === "Em aberto";
+      const noPrazo = status === "No prazo";
+      const resolvidaAtraso = status === "Resolvido com atraso";
+
+      const diasResolucao =
+        (dataEmissao && dataConclusao)
+          ? diffDays(dataEmissao, dataConclusao)
+          : null;
+
+      return {
+        id: String(id || "").trim(),
+        tipoRegistro: tipo || "Não informado",
+        area: area || "Não informada",
+        emissor: emissor || "Não informado",
+        status: status || "Não informado",
+        dataEmissao,
+        prazo,
+        dataConclusao,
+        anoEmissao: ano,
+        mesEmissao: mes,
+        semanaEmissao: semana,
+        diaEmissao: dia,
+        resolvida,
+        resolvidaAtraso,
+        vencida,
+        aberta,
+        noPrazo,
+        diasResolucao
+      };
+    }
+
+    function getCell(row, aliases){
+      for(const key of aliases){
+        if(Object.prototype.hasOwnProperty.call(row, key)) return row[key];
+      }
+      return "";
+    }
+
+    function normalizeText(value){
+      return String(value || "").trim().replace(/\s+/g, " ");
+    }
+
+    function normalizePerson(value){
+      const v = normalizeText(value);
+      if(!v) return "";
+      return v.toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+    }
+
+    function normalizeArea(value){
+      let v = normalizeText(value).toUpperCase();
+      if(!v) return "";
+
+      const fixes = {
+        "USINA I": "USINA 1",
+        "USINA 01": "USINA 1",
+        "MORRO I": "MORRO 1"
+      };
+
+      if(fixes[v]) v = fixes[v];
+      return v;
+    }
+
+    function normalizeStatus(value){
+      const raw = normalizeText(value).toLowerCase();
+
+      if(raw === "resolvido") return "Resolvido";
+      if(raw === "resolvido com atraso") return "Resolvido com atraso";
+      if(raw === "em aberto") return "Em aberto";
+      if(raw === "vencido") return "Vencido";
+      if(raw === "no prazo") return "No prazo";
+
+      return normalizeText(value);
+    }
+
+    function parseExcelDate(value){
+      if(value === null || value === undefined || value === "") return null;
+
+      // serial excel
+      if(typeof value === "number"){
+        const parsed = XLSX.SSF.parse_date_code(value);
+        if(!parsed) return null;
+        return new Date(parsed.y, parsed.m - 1, parsed.d);
+      }
+
+      // data em texto
+      if(value instanceof Date && !isNaN(value)) return value;
+
+      const str = String(value).trim();
+      if(!str) return null;
+
+      // dd/mm/yyyy
+      const br = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if(br){
+        const d = Number(br[1]);
+        const m = Number(br[2]) - 1;
+        const y = Number(br[3]);
+        return new Date(y, m, d);
+      }
+
+      // yyyy-mm-dd
+      const iso = new Date(str);
+      if(!isNaN(iso)) return new Date(iso.getFullYear(), iso.getMonth(), iso.getDate());
+
+      return null;
+    }
+
+    function diffDays(start, end){
+      const ms = end.setHours(0,0,0,0) - start.setHours(0,0,0,0);
+      return Math.round(ms / 86400000);
+    }
+
+    function getISOWeek(date){
+      const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+      d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+      const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+      return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    }
+
+    function formatDate(date){
+      if(!(date instanceof Date) || isNaN(date)) return "";
+      const dd = String(date.getDate()).padStart(2, "0");
+      const mm = String(date.getMonth() + 1).padStart(2, "0");
+      const yyyy = date.getFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    }
+
+    function formatNumber(num){
+      return new Intl.NumberFormat("pt-BR").format(num || 0);
+    }
+
+    function formatPercent(val){
+      return `${(val || 0).toFixed(1).replace(".", ",")}%`;
+    }
+
+    // =========================
+    // FILTROS
+    // =========================
+    function populateFilters(data){
+      const anos = uniqueSorted(data.map(r => r.anoEmissao)).sort((a,b) => a-b);
+      const areas = uniqueSorted(data.map(r => r.area));
+      const tipos = uniqueSorted(data.map(r => r.tipoRegistro));
+      const status = uniqueSorted(data.map(r => r.status));
+      const emissores = uniqueSorted(data.map(r => r.emissor));
+
+      setOptions(filterEls.ano, [{value:"", label:"Todos"}, ...anos.map(v => ({value:String(v), label:String(v)}))]);
+      setOptions(filterEls.mes, [{value:"", label:"Todos"}, ...monthNames.slice(1).map((m, i) => ({value:String(i+1), label:m}))]);
+      setOptions(filterEls.semana, [{value:"", label:"Todas"}]);
+      setOptions(filterEls.area, [{value:"", label:"Todas"}, ...areas.map(v => ({value:v, label:v}))]);
+      setOptions(filterEls.tipo, [{value:"", label:"Todos"}, ...tipos.map(v => ({value:v, label:v}))]);
+      setOptions(filterEls.status, [{value:"", label:"Todos"}, ...status.map(v => ({value:v, label:v}))]);
+      setOptions(filterEls.emissor, [{value:"", label:"Todos"}, ...emissores.map(v => ({value:v, label:v}))]);
+
+      updateWeekOptions();
+    }
+
+    function updateWeekOptions(){
+      const selectedYear = filterEls.ano.value;
+      const selectedMonth = filterEls.mes.value;
+
+      let base = [...normalizedData];
+      if(selectedYear) base = base.filter(r => String(r.anoEmissao) === selectedYear);
+      if(selectedMonth) base = base.filter(r => String(r.mesEmissao) === selectedMonth);
+
+      const semanas = uniqueSorted(base.map(r => r.semanaEmissao)).sort((a,b) => a-b);
+      const currentValue = filterEls.semana.value;
+
+      setOptions(filterEls.semana, [{value:"", label:"Todas"}, ...semanas.map(v => ({value:String(v), label:`Semana ${v}`}))]);
+
+      if(semanas.map(String).includes(currentValue)){
+        filterEls.semana.value = currentValue;
+      }
+    }
+
+    function setOptions(select, items){
+      select.innerHTML = "";
+      items.forEach(item => {
+        const opt = document.createElement("option");
+        opt.value = item.value;
+        opt.textContent = item.label;
+        select.appendChild(opt);
+      });
+    }
+
+    function uniqueSorted(arr){
+      return [...new Set(arr.filter(Boolean))].sort((a,b) => String(a).localeCompare(String(b), "pt-BR"));
+    }
+
+    function applyFiltersAndRender(){
+      if(!normalizedData.length){
+        renderEmptyState();
+        return;
+      }
+
+      updateWeekOptions();
+
+      filteredData = normalizedData.filter(r => {
+        if(filterEls.ano.value && String(r.anoEmissao) !== filterEls.ano.value) return false;
+        if(filterEls.mes.value && String(r.mesEmissao) !== filterEls.mes.value) return false;
+        if(filterEls.semana.value && String(r.semanaEmissao) !== filterEls.semana.value) return false;
+        if(filterEls.area.value && r.area !== filterEls.area.value) return false;
+        if(filterEls.tipo.value && r.tipoRegistro !== filterEls.tipo.value) return false;
+        if(filterEls.status.value && r.status !== filterEls.status.value) return false;
+        if(filterEls.emissor.value && r.emissor !== filterEls.emissor.value) return false;
+        return true;
+      });
+
+      updatePeriodLabel();
+      renderKPIs();
+      renderAllCharts();
+      renderTable();
+    }
+
+    function updatePeriodLabel(){
+      const parts = [];
+
+      if(filterEls.ano.value) parts.push(`Ano ${filterEls.ano.value}`);
+      if(filterEls.mes.value) parts.push(monthNames[Number(filterEls.mes.value)]);
+      if(filterEls.semana.value) parts.push(`Semana ${filterEls.semana.value}`);
+      if(filterEls.area.value) parts.push(`Área: ${filterEls.area.value}`);
+      if(filterEls.tipo.value) parts.push(`Tipo: ${filterEls.tipo.value}`);
+      if(filterEls.status.value) parts.push(`Status: ${filterEls.status.value}`);
+      if(filterEls.emissor.value) parts.push(`Emissor: ${filterEls.emissor.value}`);
+
+      periodoLabel.textContent = "Período analisado: " + (parts.length ? parts.join(" | ") : "base completa");
+    }
+
+    // =========================
+    // KPIs
+    // =========================
+    function renderKPIs(){
+      const total = filteredData.length;
+      const resolvidas = filteredData.filter(r => r.resolvida).length;
+      const resolvidasAtraso = filteredData.filter(r => r.resolvidaAtraso).length;
+      const abertas = filteredData.filter(r => r.aberta).length;
+      const vencidas = filteredData.filter(r => r.vencida).length;
+      const noPrazo = filteredData.filter(r => r.noPrazo).length;
+      const pctResolucao = total ? (resolvidas / total) * 100 : 0;
+
+      const tempos = filteredData
+        .map(r => r.diasResolucao)
+        .filter(v => Number.isFinite(v) && v >= 0);
+
+      const tempoMedio = tempos.length
+        ? tempos.reduce((a,b) => a+b, 0) / tempos.length
+        : 0;
+
+      kpiTotal.textContent = formatNumber(total);
+      kpiResolvidas.textContent = formatNumber(resolvidas);
+      kpiResolvidasAtraso.textContent = formatNumber(resolvidasAtraso);
+      kpiAberto.textContent = formatNumber(abertas);
+      kpiVencido.textContent = formatNumber(vencidas);
+      kpiNoPrazo.textContent = formatNumber(noPrazo);
+      kpiPctResolucao.textContent = formatPercent(pctResolucao);
+      kpiTempoMedio.textContent = `${tempoMedio.toFixed(1).replace(".", ",")} d`;
+    }
+
+    // =========================
+    // CHART HELPERS
+    // =========================
+    function renderAllCharts(){
+      renderChartEvolucao();
+      renderChartTaxaResolucao();
+      renderChartStatus();
+      renderChartTipo();
+      renderChartAreas();
+      renderChartEmissores();
+      renderChartAreasVencidas();
+      renderChartPrazo();
+    }
+
+    function upsertChart(key, ctx, config){
+      if(charts[key]){
+        charts[key].destroy();
+      }
+      charts[key] = new Chart(ctx, config);
+    }
+
+    function topNMap(dataMap, limit = 10){
+      return [...dataMap.entries()]
+        .sort((a,b) => b[1] - a[1])
+        .slice(0, limit);
+    }
+
+    function groupCount(data, getter){
+      const map = new Map();
+      data.forEach(item => {
+        const key = getter(item);
+        map.set(key, (map.get(key) || 0) + 1);
+      });
+      return map;
+    }
+
+    function getTemporalMode(){
+      if(filterEls.semana.value) return "day";
+      if(filterEls.mes.value) return "week";
+      return "month";
+    }
+
+    function buildTemporalAggregation(data){
+      const mode = getTemporalMode();
+      const mapTotal = new Map();
+      const mapRateBase = new Map();
+
+      data.forEach(r => {
+        let key = "";
+        let order = "";
+
+        if(mode === "day"){
+          key = `${String(r.diaEmissao).padStart(2, "0")}/${String(r.mesEmissao).padStart(2, "0")}`;
+          order = `${r.anoEmissao}-${String(r.mesEmissao).padStart(2, "0")}-${String(r.diaEmissao).padStart(2, "0")}`;
+        } else if(mode === "week"){
+          key = `Sem ${r.semanaEmissao}`;
+          order = `${r.anoEmissao}-${String(r.semanaEmissao).padStart(2, "0")}`;
+        } else {
+          key = `${monthNames[r.mesEmissao]}/${r.anoEmissao}`;
+          order = `${r.anoEmissao}-${String(r.mesEmissao).padStart(2, "0")}`;
+        }
+
+        if(!mapTotal.has(order)){
+          mapTotal.set(order, { label:key, total:0 });
+          mapRateBase.set(order, { label:key, total:0, resolvidas:0 });
+        }
+
+        mapTotal.get(order).total += 1;
+        mapRateBase.get(order).total += 1;
+        if(r.resolvida) mapRateBase.get(order).resolvidas += 1;
+      });
+
+      const sortedKeys = [...mapTotal.keys()].sort();
+      const labels = sortedKeys.map(k => mapTotal.get(k).label);
+      const totals = sortedKeys.map(k => mapTotal.get(k).total);
+      const rates = sortedKeys.map(k => {
+        const item = mapRateBase.get(k);
+        return item.total ? Number(((item.resolvidas / item.total) * 100).toFixed(1)) : 0;
+      });
+
+      return { labels, totals, rates };
+    }
+
+    // =========================
+    // GRÁFICOS
+    // =========================
+    function renderChartEvolucao(){
+      const ctx = document.getElementById("chartEvolucao");
+      const agg = buildTemporalAggregation(filteredData);
+
+      upsertChart("evolucao", ctx, {
+        type: "bar",
+        data: {
+          labels: agg.labels,
+          datasets: [{
+            label: "Registros",
+            data: agg.totals,
+            borderWidth: 1
+          }]
+        },
+        options: baseChartOptions({
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{ legend:{display:false} }
+        })
+      });
+    }
+
+    function renderChartTaxaResolucao(){
+      const ctx = document.getElementById("chartTaxaResolucao");
+      const agg = buildTemporalAggregation(filteredData);
+
+      upsertChart("taxaResolucao", ctx, {
+        type: "line",
+        data: {
+          labels: agg.labels,
+          datasets: [{
+            label: "% Resolução",
+            data: agg.rates,
+            tension:.28,
+            fill:false
+          }]
+        },
+        options: baseChartOptions({
+          responsive:true,
+          maintainAspectRatio:false,
+          scales:{
+            y:{ beginAtZero:true, max:100, ticks:{ callback:v => v + "%" } }
+          }
+        })
+      });
+    }
+
+    function renderChartStatus(){
+      const ctx = document.getElementById("chartStatus");
+      const labels = ["Resolvido", "Resolvido com atraso", "Em aberto", "Vencido", "No prazo"];
+      const values = labels.map(label => filteredData.filter(r => r.status === label).length);
+
+      upsertChart("status", ctx, {
+        type: "doughnut",
+        data: {
+          labels,
+          datasets: [{ data: values }]
+        },
+        options: baseChartOptions({
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{ legend:{ position:"bottom" } }
+        })
+      });
+    }
+
+    function renderChartTipo(){
+      const ctx = document.getElementById("chartTipo");
+      const map = groupCount(filteredData, r => r.tipoRegistro);
+      const entries = [...map.entries()].sort((a,b) => b[1] - a[1]);
+
+      upsertChart("tipo", ctx, {
+        type: "doughnut",
+        data: {
+          labels: entries.map(e => e[0]),
+          datasets: [{ data: entries.map(e => e[1]) }]
+        },
+        options: baseChartOptions({
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{ legend:{ position:"bottom" } }
+        })
+      });
+    }
+
+    function renderChartAreas(){
+      const ctx = document.getElementById("chartAreas");
+      const map = groupCount(filteredData, r => r.area);
+      const top = topNMap(map, 10);
+
+      upsertChart("areas", ctx, {
+        type: "bar",
+        data: {
+          labels: top.map(x => x[0]),
+          datasets: [{ label:"Registros", data: top.map(x => x[1]) }]
+        },
+        options: baseHorizontalBarOptions()
+      });
+    }
+
+    function renderChartEmissores(){
+      const ctx = document.getElementById("chartEmissores");
+      const map = groupCount(filteredData, r => r.emissor);
+      const top = topNMap(map, 10);
+
+      upsertChart("emissores", ctx, {
+        type: "bar",
+        data: {
+          labels: top.map(x => x[0]),
+          datasets: [{ label:"Registros", data: top.map(x => x[1]) }]
+        },
+        options: baseHorizontalBarOptions()
+      });
+    }
+
+    function renderChartAreasVencidas(){
+      const ctx = document.getElementById("chartAreasVencidas");
+      const vencidas = filteredData.filter(r => r.vencida);
+      const map = groupCount(vencidas, r => r.area);
+      const top = topNMap(map, 10);
+
+      upsertChart("areasVencidas", ctx, {
+        type: "bar",
+        data: {
+          labels: top.map(x => x[0]),
+          datasets: [{ label:"Vencidas", data: top.map(x => x[1]) }]
+        },
+        options: baseHorizontalBarOptions()
+      });
+    }
+
+    function renderChartPrazo(){
+      const ctx = document.getElementById("chartPrazo");
+
+      const data = {
+        "No prazo": filteredData.filter(r => r.noPrazo).length,
+        "Vencido": filteredData.filter(r => r.vencida).length,
+        "Resolvido": filteredData.filter(r => r.status === "Resolvido").length,
+        "Resolvido com atraso": filteredData.filter(r => r.resolvidaAtraso).length
+      };
+
+      upsertChart("prazo", ctx, {
+        type: "bar",
+        data: {
+          labels: Object.keys(data),
+          datasets: [{
+            label:"Quantidade",
+            data: Object.values(data)
+          }]
+        },
+        options: baseChartOptions({
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{ legend:{display:false} }
+        })
+      });
+    }
+
+    function baseChartOptions(extra = {}){
+      return {
+        responsive:true,
+        maintainAspectRatio:false,
+        interaction:{ mode:"index", intersect:false },
+        plugins:{
+          legend:{ labels:{ usePointStyle:true } },
+          tooltip:{ enabled:true }
+        },
+        scales:{
+          x:{
+            grid:{ display:false },
+            ticks:{ color:"#475569" }
+          },
+          y:{
+            beginAtZero:true,
+            ticks:{ color:"#475569" },
+            grid:{ color:"rgba(148,163,184,.18)" }
+          }
+        },
+        ...extra
+      };
+    }
+
+    function baseHorizontalBarOptions(){
+      return baseChartOptions({
+        indexAxis:"y",
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins:{ legend:{display:false} }
+      });
+    }
+
+    // =========================
+    // TABELA
+    // =========================
+    function renderTable(){
+      const tbody = document.getElementById("tableBody");
+      const search = normalizeText(searchTable.value).toLowerCase();
+
+      let data = [...filteredData];
+
+      if(search){
+        data = data.filter(r => {
+          const blob = [
+            r.id, formatDate(r.dataEmissao), r.tipoRegistro, r.area,
+            r.emissor, r.status, formatDate(r.prazo), formatDate(r.dataConclusao)
+          ].join(" ").toLowerCase();
+
+          return blob.includes(search);
+        });
+      }
+
+      data.sort((a,b) => b.dataEmissao - a.dataEmissao);
+
+      if(!data.length){
+        tbody.innerHTML = `<tr><td colspan="9"><div class="empty">Nenhum registro encontrado com os filtros atuais.</div></td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = data.slice(0, 500).map(r => `
+        <tr>
+          <td>${escapeHtml(r.id)}</td>
+          <td>${formatDate(r.dataEmissao)}</td>
+          <td>${escapeHtml(r.tipoRegistro)}</td>
+          <td>${escapeHtml(r.area)}</td>
+          <td>${escapeHtml(r.emissor)}</td>
+          <td>${statusBadge(r.status)}</td>
+          <td>${formatDate(r.prazo)}</td>
+          <td>${formatDate(r.dataConclusao)}</td>
+          <td>${r.diasResolucao ?? "-"}</td>
+        </tr>
+      `).join("");
+    }
+
+    function statusBadge(status){
+      const cls =
+        status === "Resolvido" ? "resolvido" :
+        status === "Resolvido com atraso" ? "atraso" :
+        status === "Em aberto" ? "aberto" :
+        status === "Vencido" ? "vencido" :
+        status === "No prazo" ? "prazo" : "";
+
+      return `<span class="badge ${cls}">${escapeHtml(status)}</span>`;
+    }
+
+    function escapeHtml(str){
+      return String(str ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function renderEmptyState(){
+      kpiTotal.textContent = "0";
+      kpiResolvidas.textContent = "0";
+      kpiResolvidasAtraso.textContent = "0";
+      kpiAberto.textContent = "0";
+      kpiVencido.textContent = "0";
+      kpiNoPrazo.textContent = "0";
+      kpiPctResolucao.textContent = "0%";
+      kpiTempoMedio.textContent = "0 d";
+
+      const tbody = document.getElementById("tableBody");
+      tbody.innerHTML = `<tr><td colspan="9"><div class="empty">Carregue a planilha para visualizar os dados.</div></td></tr>`;
+
+      Object.values(charts).forEach(chart => chart.destroy());
+    }
+  </script>
+</body>
+</html>
