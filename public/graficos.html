@@ -1041,15 +1041,15 @@
     // CHART HELPERS
     // =========================
     function renderAllCharts(){
-      renderChartEvolucao();
-      renderChartTaxaResolucao();
-      renderChartStatus();
-      renderChartTipo();
-      renderChartAreas();
-      renderChartEmissores();
-      renderChartAreasVencidas();
-      renderChartPrazo();
-    }
+  renderChartCategoria();
+  renderChartTaxaResolucao();
+  renderChartStatus();
+  renderChartTipo();
+  renderChartAreas();
+  renderChartEmissores();
+  renderChartAreasVencidas();
+  renderChartPrazo();
+}
 
     function upsertChart(key, ctx, config){
       if(charts[key]){
