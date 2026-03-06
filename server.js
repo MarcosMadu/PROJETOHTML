@@ -187,6 +187,9 @@ const upload5S = multer({ storage: storage5S });
 // POST salvar auditoria 5S (multipart/form-data + fotos no Cloudinary)
 app.post('/api/5s/auditorias', upload5S.any(), async (req, res) => {
   try {
+
+    console.log('📥 POST /api/5s/auditorias acionado');
+    
     // O avaliacao.html manda FormData com:
     // - payload (JSON string)
     // - conf_<itemId>_<idx> (fotos Conforme)
