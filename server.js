@@ -189,7 +189,7 @@ app.post('/api/5s/auditorias', upload5S.any(), async (req, res) => {
   try {
 
     console.log('📥 POST /api/5s/auditorias acionado');
-    
+
     // O avaliacao.html manda FormData com:
     // - payload (JSON string)
     // - conf_<itemId>_<idx> (fotos Conforme)
@@ -334,6 +334,7 @@ app.post('/api/5s/auditorias', upload5S.any(), async (req, res) => {
       itens: itensOut
     };
 
+   console.log('🧾 Preparando para salvar auditoria 5S...');
    const doc = await Auditoria5S.create(docToSave);
 
 console.log('📩 Tentando enviar e-mail da auditoria 5S...', String(doc._id));
