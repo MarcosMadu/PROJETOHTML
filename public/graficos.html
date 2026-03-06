@@ -762,53 +762,55 @@
     // =========================
     // NORMALIZAÇÃO
     // =========================
-    function normalizeRow(row){
-      const id = getCell(row, ["ID", "Id", "id"]);
-      const tipo = normalizeText(getCell(row, ["Tipo Registro", "Tipo de Registro", "TIPO REGISTRO"]));
-      const area = normalizeArea(getCell(row, ["Área", "AREA", "Area"]));
-      const emissor = normalizePerson(getCell(row, ["Emissor", "EMISSOR"]));
-      const status = normalizeStatus(getCell(row, ["Status Geral", "Status", "STATUS GERAL"]));
-      const dataEmissao = parseExcelDate(getCell(row, ["Data Emissão", "Data Emissao", "DATA EMISSÃO", "DATA EMISSAO"]));
-      const prazo = parseExcelDate(getCell(row, ["Prazo", "PRAZO"]));
-      const dataConclusao = parseExcelDate(getCell(row, ["Data Conclusão", "Data Conclusao", "DATA CONCLUSÃO", "DATA CONCLUSAO"]));
+   function normalizeRow(row){
+  const id = getCell(row, ["ID", "Id", "id"]);
+  const tipo = normalizeText(getCell(row, ["Tipo Registro", "Tipo de Registro", "TIPO REGISTRO"]));
+  const categoria = normalizeText(getCell(row, ["Categoria", "CATEGORIA", "Categoria Registro", "Classificação", "CLASSIFICAÇÃO"]));
+  const area = normalizeArea(getCell(row, ["Área", "AREA", "Area"]));
+  const emissor = normalizePerson(getCell(row, ["Emissor", "EMISSOR"]));
+  const status = normalizeStatus(getCell(row, ["Status Geral", "Status", "STATUS GERAL"]));
+  const dataEmissao = parseExcelDate(getCell(row, ["Data Emissão", "Data Emissao", "DATA EMISSÃO", "DATA EMISSAO"]));
+  const prazo = parseExcelDate(getCell(row, ["Prazo", "PRAZO"]));
+  const dataConclusao = parseExcelDate(getCell(row, ["Data Conclusão", "Data Conclusao", "DATA CONCLUSÃO", "DATA CONCLUSAO"]));
 
-      const ano = dataEmissao ? dataEmissao.getFullYear() : "";
-      const mes = dataEmissao ? dataEmissao.getMonth() + 1 : "";
-      const semana = dataEmissao ? getISOWeek(dataEmissao) : "";
-      const dia = dataEmissao ? dataEmissao.getDate() : "";
+  const ano = dataEmissao ? dataEmissao.getFullYear() : "";
+  const mes = dataEmissao ? dataEmissao.getMonth() + 1 : "";
+  const semana = dataEmissao ? getISOWeek(dataEmissao) : "";
+  const dia = dataEmissao ? dataEmissao.getDate() : "";
 
-      const resolvida = ["Resolvido", "Resolvido com atraso"].includes(status);
-      const vencida = status === "Vencido";
-      const aberta = status === "Em aberto";
-      const noPrazo = status === "No prazo";
-      const resolvidaAtraso = status === "Resolvido com atraso";
+  const resolvida = ["Resolvido", "Resolvido com atraso"].includes(status);
+  const vencida = status === "Vencido";
+  const aberta = status === "Em aberto";
+  const noPrazo = status === "No prazo";
+  const resolvidaAtraso = status === "Resolvido com atraso";
 
-      const diasResolucao =
-        (dataEmissao && dataConclusao)
-          ? diffDays(dataEmissao, dataConclusao)
-          : null;
+  const diasResolucao =
+    (dataEmissao && dataConclusao)
+      ? diffDays(dataEmissao, dataConclusao)
+      : null;
 
-      return {
-        id: String(id || "").trim(),
-        tipoRegistro: tipo || "Não informado",
-        area: area || "Não informada",
-        emissor: emissor || "Não informado",
-        status: status || "Não informado",
-        dataEmissao,
-        prazo,
-        dataConclusao,
-        anoEmissao: ano,
-        mesEmissao: mes,
-        semanaEmissao: semana,
-        diaEmissao: dia,
-        resolvida,
-        resolvidaAtraso,
-        vencida,
-        aberta,
-        noPrazo,
-        diasResolucao
-      };
-    }
+  return {
+    id: String(id || "").trim(),
+    tipoRegistro: tipo || "Não informado",
+    categoria: categoria || "Não informada",
+    area: area || "Não informada",
+    emissor: emissor || "Não informado",
+    status: status || "Não informado",
+    dataEmissao,
+    prazo,
+    dataConclusao,
+    anoEmissao: ano,
+    mesEmissao: mes,
+    semanaEmissao: semana,
+    diaEmissao: dia,
+    resolvida,
+    resolvidaAtraso,
+    vencida,
+    aberta,
+    noPrazo,
+    diasResolucao
+  };
+}
 
     function getCell(row, aliases){
       for(const key of aliases){
