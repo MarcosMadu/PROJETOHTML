@@ -201,7 +201,7 @@ app.post('/api/5s/auditorias', upload5S.any(), async (req, res) => {
     }
 
     let payload;
-    try { console.log('📥 POST /api/5s/auditorias acionado');
+    try { 
       payload = JSON.parse(raw);
     } catch {
       return res.status(400).json({ error: 'Campo "payload" inválido (JSON malformado).' });
