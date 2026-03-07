@@ -545,11 +545,11 @@
         document.getElementById("semanaId").textContent = semanaId;
         document.getElementById("auditorSemana").textContent = auditorProgramado;
 
-        fillAuditorRealizadorSelect(auditorProgramado);
+        fillAuditorRealizadorSelect();
       }catch(e){
         document.getElementById("semanaId").textContent = "erro";
         document.getElementById("auditorSemana").textContent = "erro";
-        fillAuditorRealizadorSelect("");
+        fillAuditorRealizadorSelect();
       }
     }
 
