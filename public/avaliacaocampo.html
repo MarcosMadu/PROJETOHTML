@@ -6,7 +6,7 @@
   <title>Avaliação 5S Tecnosonda — Auditoria (Campo)</title>
   <style>
     :root{
-      --bg:#f2f4f7;          /* cinza gelo */
+      --bg:#f2f4f7;
       --card:#ffffff;
       --text:#101828;
       --muted:#667085;
@@ -236,7 +236,6 @@
       50%{transform:scale(1.2);opacity:1}
     }
 
-    /* ====== Card de maturidade (automática enquanto preenche) ====== */
     .maturidade-card{
       border:1px solid var(--border);
       border-radius:14px;
@@ -280,9 +279,8 @@
       color:var(--text);
     }
 
-    /* ====== Card RESULTADO (pós-envio) ====== */
     .resultado-card{
-      display:none; /* aparece só após envio */
+      display:none;
       border:1px solid var(--border);
       border-radius:14px;
       padding:14px;
@@ -331,7 +329,6 @@
       color: rgba(16,24,40,.78);
     }
 
-    /* cores por maturidade (0..4) */
     .result-0{ border-color: rgba(220,38,38,.35); background: rgba(220,38,38,.08); }
     .result-0 .big-num, .result-0 .big-label{ color: #dc2626; }
 
@@ -347,7 +344,6 @@
     .result-4{ border-color: rgba(37,99,235,.35); background: rgba(37,99,235,.10); }
     .result-4 .big-num, .result-4 .big-label{ color: #2563eb; }
 
-    /* ajuste mobile */
     @media (max-width: 420px){
       .wrap{padding:14px 12px}
       .topbar{flex-direction:column; align-items:flex-start}
@@ -369,7 +365,9 @@
           <h1>Avaliação 5S Tecnosonda — Campo</h1>
           <p>Auditoria semanal — Conforme / Não Conforme / Não Aplica</p>
         </div>
-        <div class="pill" id="pillSemana">Semana: <strong id="semanaId">—</strong> · Auditor: <strong id="auditorSemana">—</strong></div>
+        <div class="pill" id="pillSemana">
+          Semana: <strong id="semanaId">—</strong> · Auditor programado: <strong id="auditorSemana">—</strong>
+        </div>
       </div>
     </div>
   </header>
@@ -378,7 +376,6 @@
     <div class="wrap">
       <div class="grid">
 
-        <!-- Checklist -->
         <section class="card">
           <div class="card-h">
             <div>
@@ -392,7 +389,7 @@
             <div class="items" id="listaItens"></div>
 
             <div class="alert">
-              <strong>Validação:</strong> você só consegue enviar quando todos os itens tiverem status definido e as evidências obrigatórias estiverem anexadas.
+              <strong>Validação:</strong> você só consegue enviar quando todos os itens tiverem status definido, a área/local estiver selecionada e as evidências obrigatórias estiverem anexadas.
             </div>
           </div>
 
@@ -402,18 +399,15 @@
           </div>
         </section>
 
-        <!-- Metadados -->
         <aside class="card">
           <div class="card-h">
             <div>
               <h2>Informações do registro</h2>
-              <p class="sub">Semana e auditor são automáticos (alterável no gestor).</p>
+              <p class="sub">Auditor programado vem automaticamente da semana. Se outra pessoa realizar a auditoria, selecione o auditor realizador abaixo.</p>
             </div>
           </div>
 
           <div class="card-b">
-
-            <!-- Card RESULTADO (após envio) -->
             <div class="resultado-card" id="resultadoCard">
               <div class="resultado-head">
                 <div>
@@ -432,7 +426,6 @@
               </div>
             </div>
 
-            <!-- Card Maturidade (automática) -->
             <div class="maturidade-card" id="maturidadeCard">
               <div class="maturidade-top">
                 <h3>Maturidade 5S (automática)</h3>
@@ -454,14 +447,28 @@
                 <label>ID (gerado no envio)</label>
                 <input id="auditoriaId" type="text" placeholder="—" readonly />
               </div>
+
               <div class="field" style="grid-column:1 / -1;">
-                <label>Área / Setor (opcional)</label>
-                <input id="setor" type="text" placeholder="Ex.: Frente / Pátio / Mina / Oficina..." />
+                <label>Área / Local <strong style="color:var(--danger)">*</strong></label>
+                <select id="setor" required>
+                  <option value="">Selecione...</option>
+                  <option value="RAP 05">RAP 05</option>
+                  <option value="KM 09 Raimundo Mascarenhas">KM 09 Raimundo Mascarenhas</option>
+                  <option value="CT 12">CT 12</option>
+                  <option value="KM 09 Raimundo Mascarenhas Noturno">KM 09 Raimundo Mascarenhas Noturno</option>
+                </select>
+              </div>
+
+              <div class="field" style="grid-column:1 / -1;">
+                <label>Auditor realizador (opcional)</label>
+                <select id="auditorRealizador">
+                  <option value="">Mesmo auditor programado</option>
+                </select>
               </div>
             </div>
 
             <div class="alert" style="margin-top:14px">
-              <strong>Obs.:</strong> Conectado ao backend para buscar semana/auditor e salvar no MongoDB (com upload de fotos).
+              <strong>Obs.:</strong> Conectado ao backend para buscar semana/auditor e salvar no MongoDB, com upload de fotos.
             </div>
           </div>
         </aside>
@@ -471,39 +478,62 @@
   </main>
 
   <script>
-    // Lista real (auditor automático e responsável da tratativa)
     const RESPONSAVEIS = [
       "Selecione...",
-      "ALLAN DO NASCIMENTO MORAES",
-      "ANDRE DA CONCEICAO ALVES",
-      "ANGLA RAKEL SILVA ALMEIDA",
-      "ANTONY CHE GUEVARA CAVALCANTE DOS SANTOS",
-      "CLEITON DE PAULA BATISTA",
-      "DEIVIANE CONCEICAO PEREIRA",
-      "EDUARDO DE SOUSA",
-      "FERNANDO QUEIROZ DA SILVA",
-      "HELIO BARBOSA DOS SANTOS",
-      "HERACLITO HENRIQUE SANTANA LOPES",
-      "JANAINA KETLEY ANDRADE RIBEIRO",
-      "JEOVANE DOS SANTOS SILVA",
-      "JORGE MOUZINHO CARVALHO",
-      "LUCRECIA SANTOS DO NASCIMENTO",
-      "LUIS ANTONIO FELIX DE VASCONCELLOS",
-      "MARCELO MONTANDON MARCAL JUNIOR",
-      "MARCOS OLIVEIRA MENEZES",
-      "RAFAEL HENRIQUE ALVES RIBEIRO",
-      "RAPHAEL JOSE PEREIRA DA SILVA",
-      "RODRIGO BARBOSA DA SILVA",
-      "MARCOS VINICUS BATISTA RIBEIRO",
-      "TAINARA BERTUNES DOS SANTOS",
-      "VERONICA LUIZA GOMES DE MENEZES",
-      "WILDSON DA SILVA BARROS"
+      "ADELMO PIRES GOMES",
+"ALCINEIA QUADROS DE OLIVEIRA SILVA",
+"ALLAN DO NASCIMENTO MORAES",
+"ANA PAULA DA SILVA PIAZERA",
+"ANDRE DA CONCEICAO ALVES",
+"ANTONIO HYAGO",
+"ANTONY CHE GUEVARA CAVALCANTE DOS SANTOS",
+"BRUNA SANTOS DOS REIS",
+"EDILEI BELTRAO DE SOUSA",
+"EDIONES DE ALMEIDA SILVA",
+"EDUARDO RAMOS ALVARENGA",
+"FERNANDO QUEIROZ DA SILVA",
+"FREDERICO SILVEIRO RIBEIRO",
+"GILVAN DE NAZARE BARROS CASTRO",
+"HELIO BARBOSA DOS SANTOS",
+"HERACLITO HENRIQUE SANTANA LOPES",
+"HUGO DELLEON RAMOS DA SILVA",
+"IRIANE DA SILVA LIMA",
+"JANAINA KETLEY ANDRADE RIBEIRO",
+"JARDEL DE BRITO CARMO",
+"JEFERSON LEITE ALVES",
+"JOAO DE SOUSA FERREIRA JUNIOR",
+"JORGE CERQUEIRA JUNIOR",
+"JORGE MOUZINHO CARVALHO",
+"JOSE VITOR SILVA COSTA",
+"KARLA MARIA VIEIRA DA SILVA",
+"LEANDRO LOPES DA SILVA",
+"LEONILDO DA SILVA FERRAZ",
+"LUCAS DA SILVA SANTOS",
+"LUIS ANTONIO FELIX DE VASCONCELLOS",
+"MANOANO JOSE VICENTE DA SILVA BASTOS",
+"MARCELINO ALENCAR DA SILVA",
+"MARCELO DOS SANTOS CONCEIÇÃO",
+"MARCOS AUGUSTO MENDONÇA GONÇALVES",
+"MARCOS OLIVEIRA MENEZES",
+"MARCOS VINICIUS BATISTA RIBEIRO",
+"RAFAEL HENRIQUE ALVES RIBEIRO",
+"RAPHAEL JOSE PEREIRA DA SILVA",
+"RODRIGO DOS SANTOS SILVA",
+"SANDY HORTENCIA SANTOS DE SOUZA",
+"SIDNEY MACHADO LIBERATO DE MATTOS",
+"SUEANE SOUZA DUTRA",
+"TAINARA BERTUNES DOS SANTOS",
+"TATIANA SIMAN MAGALHÃES",
+"THIAGO DE OLIVEIRA JUNQUEIRA",
+"THIAGO PEDRO TORRES",
+"UILSON SANTANA DE ALMEIDA",
+"WALASON DA VEIGA LIMA",
+"WALLISON DOS SANTOS SOUSA",
+"WELLINGTON PEREIRA GOMES",
+"WILDSON DA SILVA BARROS",
     ];
-
-    // ========= ITENS (CAMPO) =========
-    // Total: 17 itens (M1=1..9, M2=10..13, M3=14..15, M4=16..17)
+    
     const ITENS = [
-      // Maturidade 1 (1..9)
       { id: 1,  grupo: "Maturidade 1", texto: "O LOCAL DE TRABALHO está adequado, com recursos básicos disponíveis (Ex.: água, papel, lixeiras, copos, etc.), com mobiliários e em condições ergonômicas adequadas?" },
       { id: 2,  grupo: "Maturidade 1", texto: "Os RECURSOS NECESSÁRIOS para realização das atividades estão disponíveis, adequados, em boas condições e sem IMPROVISAÇÕES? (Ex.: EPIs, maleiros, ferramentas, materiais, etc.)" },
       { id: 3,  grupo: "Maturidade 1", texto: "A ÁREA ESTÁ LIMPA, livre de excesso de vegetação e acúmulo de materiais? (Ex.: resíduos, sucatas, peças, mato alto e andaimes não utilizados)." },
@@ -514,23 +544,19 @@
       { id: 8,  grupo: "Maturidade 1", texto: "Os BANHEIROS E VESTIÁRIOS disponíveis atendem as necessidades dos empregados? (Ex.: folha de controle de limpeza atualizada; sanitários compatíveis; identidade de gênero; higiene e água; iluminação, etc.)." },
       { id: 9,  grupo: "Maturidade 1", texto: "A ILUMINAÇÃO E VENTILAÇÃO/climatização estão adequadas?" },
 
-      // Maturidade 2 (10..13)
       { id: 10, grupo: "Maturidade 2", texto: "Os RESÍDUOS perigosos e PRODUTOS QUÍMICOS estão acondicionados, identificados, possuem FDS/FISPQ e estão devidamente segregados? (Ex.: sem recipientes improvisados; baias organizadas e sinalizadas, etc.)" },
       { id: 11, grupo: "Maturidade 2", texto: "Os LOCAIS DE ARMAZENAMENTO de peças, ferramentas, materiais, insumos, matéria-prima e outros, estão definidos, organizados e identificados?" },
       { id: 12, grupo: "Maturidade 2", texto: "Existem REFERÊNCIAS VISUAIS e CONDIÇÃO NORMAL X ANORMAL em implantação na área? (Ex.: placas de sinalização; identificação e informações obrigatórias; níveis de estoque mínimo; limite de empilhamento, etc.)" },
       { id: 13, grupo: "Maturidade 2", texto: "Existe indicação visual do dono ou responsável da área, com contato e nota?" },
 
-      // Maturidade 3 (14..15)
       { id: 14, grupo: "Maturidade 3", texto: "As referências visuais e condições normais citadas anteriormente ESTÃO IMPLANTADAS e estão SENDO RESPEITADAS pelo time de trabalho?" },
       { id: 15, grupo: "Maturidade 3", texto: "Os QUADROS DE GESTÃO VISUAL existem e estão atualizados?" },
 
-      // Maturidade 4 (16..17)
       { id: 16, grupo: "Maturidade 4", texto: "É considerado como REFERÊNCIA DE 5S PARA AS DEMAIS ÁREAS, possui trabalhos e INICIATIVAS REGISTRADAS como boas práticas?" },
       { id: 17, grupo: "Maturidade 4", texto: "Possui pelo menos 3 meses seguidos notas de maturidade igual ou acima de 3?" }
     ];
 
-    // Estado em memória
-    const state = new Map(); // itemId -> { status, naJustificativa, conformeFotos: File[], desvios: [{foto:File, responsavel}] }
+    const state = new Map();
 
     function nowBR(){
       const d = new Date();
@@ -543,16 +569,38 @@
         const res = await fetch("/api/5s/semana-atual");
         if(!res.ok) throw new Error("Falha ao buscar semana atual.");
         const data = await res.json();
-        document.getElementById("semanaId").textContent = data.semanaId || "—";
-        document.getElementById("auditorSemana").textContent = data.auditorSemana || "—";
+
+        const semanaId = data.semanaId || "—";
+        const auditorProgramado = data.auditorSemana || "—";
+
+        document.getElementById("semanaId").textContent = semanaId;
+        document.getElementById("auditorSemana").textContent = auditorProgramado;
+
+        fillAuditorRealizadorSelect();
       }catch(e){
         document.getElementById("semanaId").textContent = "erro";
         document.getElementById("auditorSemana").textContent = "erro";
+        fillAuditorRealizadorSelect();
       }
     }
 
     function buildResponsaveisOptions(selected="Selecione..."){
       return RESPONSAVEIS.map(n => `<option value="${escapeHtml(n)}" ${n===selected?'selected':''}>${escapeHtml(n)}</option>`).join("");
+    }
+
+    function fillAuditorRealizadorSelect(){
+      const sel = document.getElementById("auditorRealizador");
+      if(!sel) return;
+
+      sel.innerHTML = `
+        <option value="">Mesmo auditor programado</option>
+        ${RESPONSAVEIS
+          .filter(n => n !== "Selecione...")
+          .map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`)
+          .join("")}
+      `;
+
+      sel.value = "";
     }
 
     function escapeHtml(str){
@@ -571,7 +619,6 @@
       return state.get(itemId);
     }
 
-    /* ====== cálculo de maturidade (automática) ====== */
     function getItemById(id){
       return ITENS.find(x => x.id === id);
     }
@@ -584,7 +631,6 @@
     }
 
     function itemAtende(status){
-      // “Atende” = C | “Neutro” = NA (não derruba) | “Não atende” = NC
       if(status === "NA") return true;
       return status === "C";
     }
@@ -601,13 +647,11 @@
         return { ready:false, maturidade:null, regra:"Preencha os itens para calcular.", derrubou:null };
       }
 
-      // Faixas (campo):
       const m1 = [1,2,3,4,5,6,7,8,9];
       const m2 = [10,11,12,13];
       const m3 = [14,15];
       const m4 = [16,17];
 
-      // 1) Se qualquer item m1 NÃO atender => maturidade 0
       for(const id of m1){
         const st = ensureItemState(id);
         if(!itemAtende(st.status)){
@@ -621,7 +665,6 @@
         }
       }
 
-      // 2) Se qualquer item m2 NÃO atender => maturidade 1
       for(const id of m2){
         const st = ensureItemState(id);
         if(!itemAtende(st.status)){
@@ -635,7 +678,6 @@
         }
       }
 
-      // 3) Se qualquer item m3 NÃO atender => maturidade 2
       for(const id of m3){
         const st = ensureItemState(id);
         if(!itemAtende(st.status)){
@@ -649,7 +691,6 @@
         }
       }
 
-      // 4) Se qualquer item m4 NÃO atender => maturidade 3; se ambos atenderem => 4
       for(const id of m4){
         const st = ensureItemState(id);
         if(!itemAtende(st.status)){
@@ -718,11 +759,10 @@
       }
     }
 
-    /* ====== Card RESULTADO (pós-envio) ====== */
     function maturidadeTexto(m){
       if(m === 0) return { titulo:"Inexistência", desc:"Falhas nos itens básicos de campo. Priorize estabilizar a base (Maturidade 1)." };
-      if(m === 1) return { titulo:"Fraco", desc:"Base OK, mas há gaps nos itens de organização/segregação e padronização (Maturidade 2)." };
-      if(m === 2) return { titulo:"Em implantação", desc:"Padrões existem, porém ainda não sustentados/atualizados (Maturidade 3)." };
+      if(m === 1) return { titulo:"Fraco", desc:"Base OK, mas há gaps nos itens de organização, segregação e padronização (Maturidade 2)." };
+      if(m === 2) return { titulo:"Em implantação", desc:"Padrões existem, porém ainda não sustentados ou atualizados (Maturidade 3)." };
       if(m === 3) return { titulo:"Implantado", desc:"Boa consistência. Falta consolidar requisitos de referência e histórico (Maturidade 4)." };
       return { titulo:"Excelência", desc:"Área referência em 5S. Manter rotina e evidências para sustentar o padrão." };
     }
@@ -792,14 +832,12 @@
           </div>
         `;
 
-        // toggle
         el.querySelector(".item-top").addEventListener("click", () => {
           const open = el.classList.toggle("open");
           el.querySelector(".item-top").setAttribute("aria-expanded", String(open));
           el.querySelector(".chev").textContent = open ? "▲" : "▼";
         });
 
-        // status change
         el.querySelectorAll(`input[name="status-${it.id}"]`).forEach(r => {
           r.addEventListener("change", (e) => {
             st.status = e.target.value;
@@ -875,7 +913,6 @@
         return;
       }
 
-      // NC
       const desviosHtml = st.desvios.map((d, i) => `
         <div class="deviation">
           <div class="head">
@@ -944,6 +981,11 @@
     function validateAll(){
       const errors = [];
 
+      const setor = document.getElementById("setor").value;
+      if(!setor){
+        errors.push("Selecione a Área / Local.");
+      }
+
       ITENS.forEach(it=>{
         const st = ensureItemState(it.id);
         if(!st.status){
@@ -975,8 +1017,12 @@
       return errors;
     }
 
-    // buildPayload com fieldnames batendo com os arquivos
     function buildPayloadWithFields(){
+      const auditorProgramado = document.getElementById("auditorSemana").textContent;
+      const auditorRealizadorSelecionado = document.getElementById("auditorRealizador").value;
+      const auditorRealizador = auditorRealizadorSelecionado || auditorProgramado;
+      const setor = document.getElementById("setor").value || null;
+
       const itens = ITENS.map(it=>{
         const st = ensureItemState(it.id);
 
@@ -1017,15 +1063,18 @@
 
       return {
         semanaId: document.getElementById("semanaId").textContent,
-        auditorSemana: document.getElementById("auditorSemana").textContent,
+        auditorProgramado,
+        auditorSemana: auditorRealizador,
+        auditorRealizador,
         dataHora: document.getElementById("dataHora").value,
-        setor: document.getElementById("setor").value || null,
+        setor,
+        local: setor,
+        tipoAuditoria: "Campo",
         maturidade: maturidadeFinal,
         itens
       };
     }
 
-    // Eventos
     document.getElementById("btnExpandir").addEventListener("click", ()=>{
       const items = document.querySelectorAll(".item");
       const anyClosed = Array.from(items).some(i=>!i.classList.contains("open"));
@@ -1037,7 +1086,6 @@
       document.getElementById("btnExpandir").textContent = anyClosed ? "Recolher tudo" : "Expandir tudo";
     });
 
-    // ENVIO
     document.getElementById("btnEnviar").addEventListener("click", async ()=>{
       const btn = document.getElementById("btnEnviar");
       const loading = document.getElementById("loadingEnvio");
@@ -1054,7 +1102,6 @@
       try{
         const fd = new FormData();
 
-        // anexar arquivos reais
         ITENS.forEach((it) => {
           const st = ensureItemState(it.id);
 
@@ -1087,7 +1134,6 @@
         const data = await res.json().catch(()=> ({}));
         document.getElementById("auditoriaId").value = data.auditoriaId || "OK";
 
-        // mostrar card de resultado (pós-envio)
         const mat = computeMaturidade();
         const maturidadeFinal = mat.ready ? mat.maturidade : (payload.maturidade ?? 0);
         showResultadoMaturidade(maturidadeFinal);
@@ -1101,7 +1147,6 @@
       }
     });
 
-    // Init
     document.getElementById("dataHora").value = nowBR();
     initSemanaMock();
     render();
