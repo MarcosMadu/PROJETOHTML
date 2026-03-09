@@ -1,3 +1,4 @@
+const Calendario5S = require('./models/avaliacao5s/Calendario5S');
 const Inspecao    = require('./models/Inspecao');
 const Aptidao     = require('./models/Aptidao');
 const PDFDocument = require('pdfkit');
