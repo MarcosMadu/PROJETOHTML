@@ -614,27 +614,30 @@ app.post('/api/5s/auditorias/:id/itens/:itemId/desvios/:index/baixa', upload5S.s
 
     const desvio = item.desvios[idx];
 
-    desvio.baixa = {
-      responsavelCorrecao,
-      comentario,
-      dataHora: new Date().toLocaleString('pt-BR'),
-      fotosResolucao: [
-        {
-          public_id: req.file.filename || null,
-          secure_url: req.file.path || null,
-          url: req.file.path || null,
-          original_filename: req.file.originalname || null,
-          format: (req.file.mimetype || '').split('/')[1] || null,
-          bytes: typeof req.file.size === 'number' ? req.file.size : null,
-          resource_type: 'image',
-          name: req.file.originalname || null,
-          type: req.file.mimetype || null,
-          size: typeof req.file.size === 'number' ? req.file.size : null
-        }
-      ]
-    };
+desvio.status = "BAIXADO";
+desvio.baixa = {
+  responsavelCorrecao,
+  comentario,
+  dataHora: new Date().toLocaleString('pt-BR'),
+  fotosResolucao: [
+    {
+      public_id: req.file.filename || null,
+      secure_url: req.file.path || null,
+      url: req.file.path || null,
+      original_filename: req.file.originalname || null,
+      format: (req.file.mimetype || '').split('/')[1] || null,
+      bytes: typeof req.file.size === 'number' ? req.file.size : null,
+      resource_type: 'image',
 
-    await auditoria.save();
+      name: req.file.originalname || null,
+      size: typeof req.file.size === 'number' ? req.file.size : null,
+      type: req.file.mimetype || null
+    }
+  ]
+};
+
+auditoria.markModified('itens');
+await auditoria.save();
 
     return res.json({
       ok: true,
