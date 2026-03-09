@@ -151,19 +151,17 @@ const NOMES_5S = [
   "WILDSON DA SILVA BARROS"
 ];
 
-// Semana ISO (para “2026-W05” etc.)
-function getISOWeek(d = new Date()) {
-  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  const dayNum = date.getUTCDay() || 7;
-  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-  const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
-  return { year: date.getUTCFullYear(), week: weekNo };
-}
-
+// Semana por mês (ex.: 2026-S1-FEV)
 function getSemanaId(d = new Date()) {
-  const { year, week } = getISOWeek(d);
-  return `${year}-W${String(week).padStart(2, "0")}`;
+  const meses = ["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"];
+
+  const ano = d.getFullYear();
+  const mes = meses[d.getMonth()];
+  const dia = d.getDate();
+
+  const semanaDoMes = Math.ceil(dia / 7);
+
+  return `${ano}-S${semanaDoMes}-${mes}`;
 }
 
 // Auditor automático baseado no número da semana (cíclico)
