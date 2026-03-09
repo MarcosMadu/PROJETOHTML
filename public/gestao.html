@@ -879,10 +879,13 @@ function getMaturidade(doc){
 
       if(buscaTxt){
         const id = String(doc._id || "").toLowerCase();
-        const data = String(doc.dataHora || "").toLowerCase();
-        const mat = String(getMaturidade(doc) ?? "").toLowerCase();
+const data = String(doc.dataHora || "").toLowerCase();
+const mat = String(doc.maturidade ?? "").toLowerCase();
+const local = String(doc.local || doc.setor || "").toLowerCase();
+const auditorProgramado = String(doc.auditorProgramado || "").toLowerCase();
+const auditorRealizador = String(doc.auditorRealizador || doc.auditorSemana || "").toLowerCase();
 
-        let found = false;
+let found = false;
         const itens = Array.isArray(doc.itens) ? doc.itens : [];
         for(const it of itens){
           const t = (it.texto || "").toLowerCase();
