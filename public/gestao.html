@@ -1167,18 +1167,21 @@ tr.innerHTML = `
         if(!res.ok) throw new Error("Falha ao buscar detalhes.");
         const doc = await res.json();
 
-        const stAud = auditoriaStatus(doc);
-        const auditor = doc.auditorSemana || "—";
-        const maturidade = getMaturidade(doc);
+       const stAud = auditoriaStatus(doc);
+const auditorProgramado = doc.auditorProgramado || "—";
+const auditorRealizador = doc.auditorRealizador || doc.auditorSemana || "—";
+const local = doc.local || doc.setor || "—";
 
-        $("modalTitle").textContent = `Auditoria 5S — ${String(doc._id).slice(0,8)}...`;
-        $("modalSub").innerHTML = `
-          Semana: <strong>${escapeHtml(doc.semanaId)}</strong> ·
-          Auditor: <strong>${escapeHtml(auditor)}</strong> ·
-          Maturidade: <strong>${escapeHtml(String(maturidade ?? "—"))}</strong> ·
-          Status: <strong>${escapeHtml(stAud.label)}</strong> ·
-          Data/Hora: <strong>${escapeHtml(doc.dataHora || "—")}</strong>
-        `;
+$("modalTitle").textContent = `Auditoria 5S — ${String(doc._id).slice(0,8)}...`;
+$("modalSub").innerHTML = `
+  Semana: <strong>${escapeHtml(doc.semanaId || "—")}</strong> ·
+  Local: <strong>${escapeHtml(local)}</strong> ·
+  Auditor programado: <strong>${escapeHtml(auditorProgramado)}</strong> ·
+  Auditor realizador: <strong>${escapeHtml(auditorRealizador)}</strong> ·
+  Maturidade: <strong>${escapeHtml(String(doc.maturidade ?? "—"))}</strong> ·
+  Status: <strong>${escapeHtml(stAud.label)}</strong> ·
+  Data/Hora: <strong>${escapeHtml(doc.dataHora || "—")}</strong>
+`;
 
         let html = `<div class="items">`;
 
