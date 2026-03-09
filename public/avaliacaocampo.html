@@ -618,20 +618,20 @@
     }
 
     function fillAuditorRealizadorSelect(){
-      const sel = document.getElementById("auditorRealizador");
-      if(!sel) return;
+  const sel = document.getElementById("auditorRealizador");
+  if(!sel) return;
 
-      sel.innerHTML = `
-        <option value="">Mesmo auditor programado</option>
-        ${RESPONSAVEIS
-          .filter(n => n !== "Selecione...")
-          .map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`)
-          .join("")}
-      `;
+  sel.innerHTML = `
+    <option value="">Mesmo auditor programado</option>
+    ${RESPONSAVEIS
+      .filter(n => n !== "Selecione...")
+      .map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`)
+      .join("")}
+  `;
 
-      sel.value = "";
-    }
-
+  sel.value = "";
+}
+    
     function escapeHtml(str){
       return String(str)
         .replaceAll("&","&amp;")
