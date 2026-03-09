@@ -181,6 +181,150 @@ app.get('/api/5s/semana-atual', (req, res) => {
 });
 
 // ===================================================================
+// ======================= CALENDÁRIO 5S ==============================
+// ===================================================================
+
+// GET listar calendário 5S
+app.get('/api/5s/calendario', async (req, res) => {
+  try {
+    const { semanaId, local, tipoAuditoria } = req.query;
+
+    const filtro = {};
+    if (semanaId) filtro.semanaId = semanaId;
+    if (local) filtro.local = local;
+    if (tipoAuditoria) filtro.tipoAuditoria = tipoAuditoria;
+
+    const lista = await Calendario5S.find(filtro)
+      .sort({ semanaId: 1, local: 1, tipoAuditoria: 1 })
+      .lean();
+
+    return res.json(lista);
+  } catch (err) {
+    console.error('Erro ao listar calendário 5S:', err);
+    return res.status(500).json({ error: 'Erro ao listar calendário 5S.' });
+  }
+});
+
+// GET buscar responsável programado por semana/local/tipo
+app.get('/api/5s/calendario/responsavel', async (req, res) => {
+  try {
+    const { semanaId, local, tipoAuditoria } = req.query;
+
+    if (!semanaId || !local) {
+      return res.status(400).json({
+        error: 'Informe semanaId e local.'
+      });
+    }
+
+    let item = null;
+
+    // 1) tenta achar programação específica do tipo
+    if (tipoAuditoria) {
+      item = await Calendario5S.findOne({
+        semanaId,
+        local,
+        tipoAuditoria
+      }).lean();
+    }
+
+    // 2) fallback para "Ambos"
+    if (!item) {
+      item = await Calendario5S.findOne({
+        semanaId,
+        local,
+        tipoAuditoria: 'Ambos'
+      }).lean();
+    }
+
+    if (!item) {
+      return res.json({
+        semanaId,
+        local,
+        tipoAuditoria: tipoAuditoria || null,
+        responsavel: null,
+        encontrado: false
+      });
+    }
+
+    return res.json({
+      ...item,
+      encontrado: true
+    });
+  } catch (err) {
+    console.error('Erro ao buscar responsável do calendário 5S:', err);
+    return res.status(500).json({ error: 'Erro ao buscar responsável do calendário 5S.' });
+  }
+});
+
+// POST cadastrar/atualizar calendário 5S
+app.post('/api/5s/calendario', async (req, res) => {
+  try {
+    const {
+      semanaId,
+      dataInicio,
+      dataFim,
+      local,
+      responsavel,
+      tipoAuditoria,
+      observacoes
+    } = req.body || {};
+
+    if (!semanaId || !local || !responsavel) {
+      return res.status(400).json({
+        error: 'semanaId, local e responsavel são obrigatórios.'
+      });
+    }
+
+    const tipoFinal = tipoAuditoria || 'Ambos';
+
+    const doc = await Calendario5S.findOneAndUpdate(
+      {
+        semanaId,
+        local,
+        tipoAuditoria: tipoFinal
+      },
+      {
+        semanaId,
+        dataInicio: dataInicio || null,
+        dataFim: dataFim || null,
+        local,
+        responsavel,
+        tipoAuditoria: tipoFinal,
+        observacoes: observacoes || null
+      },
+      {
+        upsert: true,
+        new: true,
+        setDefaultsOnInsert: true
+      }
+    );
+
+    return res.json({
+      ok: true,
+      item: doc
+    });
+  } catch (err) {
+    console.error('Erro ao salvar calendário 5S:', err);
+    return res.status(500).json({ error: 'Erro ao salvar calendário 5S.' });
+  }
+});
+
+// DELETE remover item do calendário 5S
+app.delete('/api/5s/calendario/:id', async (req, res) => {
+  try {
+    const del = await Calendario5S.findByIdAndDelete(req.params.id);
+    if (!del) {
+      return res.status(404).json({ error: 'Registro do calendário não encontrado.' });
+    }
+
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('Erro ao excluir item do calendário 5S:', err);
+    return res.status(500).json({ error: 'Erro ao excluir item do calendário 5S.' });
+  }
+});
+
+// ===================================================================
 // ============================ 5S (UPLOAD REAL) =======================
 // ===================================================================
 
