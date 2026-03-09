@@ -902,9 +902,9 @@ let found = false;
           }
         }
 
-        if(!(id.includes(buscaTxt) || data.includes(buscaTxt) || auditor.includes(buscaTxt) || mat.includes(buscaTxt) || found)){
-          return false;
-        }
+        if(!(id.includes(buscaTxt) || data.includes(buscaTxt) || auditorProgramado.includes(buscaTxt) || auditorRealizador.includes(buscaTxt) || local.includes(buscaTxt) || mat.includes(buscaTxt) || found)){
+  return false;
+}
       }
 
       return true;
