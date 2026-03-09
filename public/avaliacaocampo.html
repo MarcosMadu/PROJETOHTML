@@ -1176,9 +1176,14 @@
       }
     });
 
-    document.getElementById("dataHora").value = nowBR();
-    initSemanaMock();
-    render();
+   document.getElementById("dataHora").value = nowBR();
+
+document.getElementById("setor").addEventListener("change", async () => {
+  await atualizarAuditorProgramadoPorLocal();
+});
+
+initSemanaMock();
+render();
   </script>
 </body>
 </html>
