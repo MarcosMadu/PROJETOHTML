@@ -924,24 +924,29 @@ function getMaturidade(doc){
 
       for(const doc of list){
         const stAud = auditoriaStatus(doc);
-        const auditor = doc.auditorSemana || "—";
-        const diasTxt = String(stAud.dias);
-        const maturidade = getMaturidade(doc);
+        const auditorRealizador = doc.auditorRealizador || doc.auditorSemana || "—";
+const auditorProgramado = doc.auditorProgramado || "—";
+const local = doc.local || doc.setor || "—";
+const semana = doc.semanaId || "—";
+const diasTxt = String(stAud.dias);
 
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td class="checkcell">
-            <input class="check" type="checkbox" data-sel="${escapeHtml(doc._id)}" ${selectedIds.has(String(doc._id)) ? "checked" : ""} />
-          </td>
+const tr = document.createElement("tr");
+tr.innerHTML = `
+  <td class="checkcell">
+    <input class="check" type="checkbox" data-sel="${escapeHtml(doc._id)}" ${selectedIds.has(String(doc._id)) ? "checked" : ""} />
+  </td>
 
-          <td><span class="link" data-open="${escapeHtml(doc._id)}">${escapeHtml(String(doc._id).slice(0,8))}...</span></td>
-          <td>${escapeHtml(doc.dataHora || "—")}</td>
-          <td>${escapeHtml(auditor)}</td>
-          <td><strong>${escapeHtml(String(maturidade ?? "—"))}</strong></td>
-          <td><strong>${diasTxt}</strong></td>
-          <td><span class="badge ${stAud.cls === "ok" ? "ok" : stAud.cls === "warn" ? "warn" : "danger"}">${escapeHtml(stAud.label)}</span></td>
-          <td><button class="btn ghost mini" data-open="${escapeHtml(doc._id)}">Visualizar</button></td>
-        `;
+  <td><span class="link" data-open="${escapeHtml(doc._id)}">${escapeHtml(String(doc._id).slice(0,8))}...</span></td>
+  <td>${escapeHtml(semana)}</td>
+  <td>${escapeHtml(doc.dataHora || "—")}</td>
+  <td>${escapeHtml(local)}</td>
+  <td>${escapeHtml(auditorProgramado)}</td>
+  <td>${escapeHtml(auditorRealizador)}</td>
+  <td><strong>${escapeHtml(String(doc.maturidade ?? "—"))}</strong></td>
+  <td><strong>${diasTxt}</strong></td>
+  <td><span class="badge ${stAud.cls === "ok" ? "ok" : stAud.cls === "warn" ? "warn" : "danger"}">${escapeHtml(stAud.label)}</span></td>
+  <td><button class="btn ghost mini" data-open="${escapeHtml(doc._id)}">Visualizar</button></td>
+`;
         tbody.appendChild(tr);
       }
 
