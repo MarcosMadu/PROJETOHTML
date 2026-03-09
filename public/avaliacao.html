@@ -579,6 +579,33 @@
   }
 }
 
+    async function atualizarAuditorProgramadoPorLocal(){
+  const semanaId = document.getElementById("semanaId").textContent;
+  const local = document.getElementById("setor").value;
+
+  if(!semanaId || semanaId === "—" || !local){
+    document.getElementById("auditorSemana").textContent = "Selecione um local";
+    return;
+  }
+
+  try{
+    const url = `/api/5s/calendario/responsavel?semanaId=${encodeURIComponent(semanaId)}&local=${encodeURIComponent(local)}`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error("Falha ao buscar responsável no calendário.");
+
+    const data = await res.json();
+
+    if(data && data.encontrado && data.responsavel){
+      document.getElementById("auditorSemana").textContent = data.responsavel;
+    }else{
+      document.getElementById("auditorSemana").textContent = "Não programado";
+    }
+  }catch(err){
+    document.getElementById("auditorSemana").textContent = "Erro";
+    console.error("Erro ao consultar calendário 5S:", err);
+  }
+}
+    
     function buildResponsaveisOptions(selected="Selecione..."){
       return RESPONSAVEIS.map(n => `<option value="${escapeHtml(n)}" ${n===selected?'selected':''}>${escapeHtml(n)}</option>`).join("");
     }
