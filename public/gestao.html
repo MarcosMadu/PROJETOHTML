@@ -203,7 +203,6 @@
       50%{transform:scale(1.2);opacity:1}
     }
 
-    /* Modal */
     .backdrop{
       position:fixed; inset:0;
       background: rgba(16,24,40,.55);
@@ -215,7 +214,6 @@
     }
     .backdrop.on{display:flex}
 
-    /* Modal agora "quase tela cheia" pra ficar organizado */
     .modal{
       width:min(1200px, 100%);
       height: calc(100vh - 44px);
@@ -283,7 +281,6 @@
     .q{margin:0; font-size:13px; line-height:1.35}
     .miniLine{margin:6px 0 0 0; font-size:12px; color:var(--muted)}
 
-    /* seleção + evidências */
     .checkcell{ width:42px; }
     .check{
       width:18px;height:18px;
@@ -344,7 +341,6 @@
       color:var(--muted);
     }
 
-    /* Desvios (NC) */
     .dev{
       border:1px solid var(--border);
       background:#fff;
@@ -420,7 +416,6 @@
     <div class="wrap">
       <div class="grid">
 
-        <!-- KPIs -->
         <section class="card">
           <div class="card-h">
             <div>
@@ -465,7 +460,6 @@
           </div>
         </section>
 
-        <!-- Filtros + Tabela -->
         <section class="card">
           <div class="card-h">
             <div>
@@ -513,21 +507,21 @@
 
             <div class="table-wrap" style="margin-top:12px">
               <table>
-               <thead>
-  <tr>
-    <th class="checkcell">Sel.</th>
-    <th style="width:120px">ID</th>
-    <th style="width:160px">Semana</th>
-    <th style="width:180px">Data/Hora</th>
-    <th style="width:220px">Local</th>
-    <th style="width:220px">Auditor programado</th>
-    <th style="width:220px">Auditor realizador</th>
-    <th style="width:110px">Maturidade</th>
-    <th style="width:120px">Dias p/ fechar</th>
-    <th style="width:220px">Status</th>
-    <th style="width:120px">Ações</th>
-  </tr>
-</thead>
+                <thead>
+                  <tr>
+                    <th class="checkcell">Sel.</th>
+                    <th style="width:120px">ID</th>
+                    <th style="width:160px">Semana</th>
+                    <th style="width:180px">Data/Hora</th>
+                    <th style="width:220px">Local</th>
+                    <th style="width:220px">Auditor programado</th>
+                    <th style="width:220px">Auditor realizador</th>
+                    <th style="width:110px">Maturidade</th>
+                    <th style="width:120px">Dias p/ fechar</th>
+                    <th style="width:220px">Status</th>
+                    <th style="width:120px">Ações</th>
+                  </tr>
+                </thead>
                 <tbody id="tbody"></tbody>
               </table>
             </div>
@@ -542,7 +536,6 @@
     </div>
   </main>
 
-  <!-- Modal Visualizar -->
   <div class="backdrop" id="backdrop">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <div class="modal-h">
@@ -560,7 +553,6 @@
     </div>
   </div>
 
-  <!-- Modal Mudar Auditor -->
   <div class="backdrop" id="backdropAuditor">
     <div class="modal" role="dialog" aria-modal="true">
       <div class="modal-h">
@@ -634,8 +626,16 @@
     let auditorAuto = null;
     let registrosAll = [];
     let selectedDocId = null;
-
     const selectedIds = new Set();
+
+    function escapeHtml(str){
+      return String(str ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
 
     function updateBulkUI(){
       const n = selectedIds.size;
@@ -648,34 +648,25 @@
       $("chkAll").indeterminate = !allVisibleChecked && n > 0 && visibleIds.some(id => selectedIds.has(id));
     }
 
-    // ====== Semana ISO (prazo Seg–Sáb) ======
-    function parseSemanaId(semanaId){
-      const [y, w] = String(semanaId).split("-W");
-      return { year: Number(y), week: Number(w) };
+    function parseBRDateTime(str){
+      if(!str || typeof str !== "string") return null;
+      const [dataPart, horaPart = "00:00"] = str.trim().split(" ");
+      const [dd, mm, yyyy] = dataPart.split("/").map(Number);
+      const [hh, min] = horaPart.split(":").map(Number);
+
+      if(!dd || !mm || !yyyy) return null;
+
+      const dt = new Date(yyyy, mm - 1, dd, hh || 0, min || 0, 0, 0);
+      return isNaN(dt.getTime()) ? null : dt;
     }
-    function startOfISOWeek(year, week){
-      const simple = new Date(Date.UTC(year, 0, 4));
-      const dow = simple.getUTCDay() || 7;
-      const week1Monday = new Date(simple);
-      week1Monday.setUTCDate(simple.getUTCDate() - (dow - 1));
-      const monday = new Date(week1Monday);
-      monday.setUTCDate(week1Monday.getUTCDate() + (week - 1) * 7);
-      return monday; // Monday 00:00 UTC
-    }
-    function endOfISOSaturday(year, week){
-      const monday = startOfISOWeek(year, week);
-      const sat = new Date(monday);
-      sat.setUTCDate(monday.getUTCDate() + 5); // Saturday
-      sat.setUTCHours(23,59,59,999);
-      return sat;
-    }
-    function daysToClose(semanaId){
-      if(!semanaId) return 0;
-      const { year, week } = parseSemanaId(semanaId);
-      const end = endOfISOSaturday(year, week);
-      const now = new Date();
-      const ms = end.getTime() - now.getTime();
-      return Math.ceil(ms / 86400000);
+
+    function endOfWeekSaturdayFromDate(baseDate){
+      const fechamento = new Date(baseDate);
+      const diaSemana = fechamento.getDay(); // 0=dom, 6=sáb
+      const diffParaSabado = 6 - diaSemana;
+      fechamento.setDate(fechamento.getDate() + diffParaSabado);
+      fechamento.setHours(23, 59, 59, 999);
+      return fechamento;
     }
 
     function hasOpenDeviations(doc){
@@ -692,39 +683,65 @@
     }
 
     function auditoriaStatus(doc){
+      const dataBase = parseBRDateTime(doc?.dataHora);
+
+      if(!dataBase){
+        return {
+          key:"SemData",
+          label:"Sem data",
+          cls:"warn",
+          dias:"—",
+          within:false,
+          canBaixa:false
+        };
+      }
+
+      const fechamento = endOfWeekSaturdayFromDate(dataBase);
+      const agora = new Date();
+      const abertaNoPrazo = agora <= fechamento;
+      const diasRestantes = Math.ceil((fechamento.getTime() - agora.getTime()) / 86400000);
       const open = hasOpenDeviations(doc);
-      const d = daysToClose(doc.semanaId);
 
       if(!open){
-        return { key:"Fechada", label:"Fechada", cls:"ok", dias: Math.max(d, 0), within:true, canBaixa:false };
+        return {
+          key:"Fechada",
+          label:"Fechada",
+          cls:"ok",
+          dias: abertaNoPrazo ? Math.max(diasRestantes, 0) : 0,
+          within:abertaNoPrazo,
+          canBaixa:false
+        };
       }
 
-      if(d >= 0){
-        if(d === 0) return { key:"Aberta", label:"Aberta — fecha hoje (Sáb)", cls:"warn", dias:d, within:true, canBaixa:true };
-        return { key:"Aberta", label:"Aberta", cls:"warn", dias:d, within:true, canBaixa:true };
+      if(abertaNoPrazo){
+        return {
+          key:"Aberta",
+          label: diasRestantes === 0 ? "Aberta — fecha hoje (Sáb)" : "Aberta",
+          cls:"warn",
+          dias: Math.max(diasRestantes, 0),
+          within:true,
+          canBaixa:true
+        };
       }
 
-      return { key:"Fechada", label:"Fechada", cls:"danger", dias:d, within:false, canBaixa:false };
+      return {
+        key:"Fechada",
+        label:"Fechada",
+        cls:"danger",
+        dias:0,
+        within:false,
+        canBaixa:false
+      };
     }
 
-    // ====== Auditor override local (somente semana atual) ======
     function lsKey(semanaId){ return `5s_auditor_override_${semanaId}`; }
-    function getAuditorSemanaAtual(semanaId, auditorAuto){
+    function getAuditorSemanaAtual(semanaId, auditorAutoBase){
       const o = localStorage.getItem(lsKey(semanaId));
-      return o || auditorAuto || "—";
+      return o || auditorAutoBase || "—";
     }
 
     function fillSelectNomes(selectEl, selected){
       selectEl.innerHTML = NOMES_5S.map(n => `<option value="${escapeHtml(n)}" ${n===selected?'selected':''}>${escapeHtml(n)}</option>`).join("");
-    }
-
-    function escapeHtml(str){
-      return String(str)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
     }
 
     function getImageUrl(file){
@@ -740,69 +757,63 @@
       return null;
     }
 
-    // ====== Maturidade (garantir que aparece mesmo se vier com outro nome) ======
-   function getTipoAuditoria(doc){
-  // tenta inferir pelo total de itens (15 = ADM, 17 = CAMPO)
-  const n = Array.isArray(doc?.itens) ? doc.itens.length : 0;
-  if(n === 15) return "ADM";
-  if(n === 17) return "CAMPO";
-  // fallback: se você tiver doc.tipo, melhor ainda:
-  return (doc?.tipo || "").toUpperCase() || (n > 15 ? "CAMPO" : "ADM");
-}
+    function getTipoAuditoria(doc){
+      const n = Array.isArray(doc?.itens) ? doc.itens.length : 0;
+      if(n === 15) return "ADM";
+      if(n === 17) return "CAMPO";
+      return (doc?.tipo || "").toUpperCase() || (n > 15 ? "CAMPO" : "ADM");
+    }
 
-function nivelItem(tipo, itemId){
-  const id = Number(itemId);
+    function nivelItem(tipo, itemId){
+      const id = Number(itemId);
 
-  if(tipo === "ADM"){
-    if(id >= 1 && id <= 7) return 1;
-    if(id >= 8 && id <= 11) return 2;
-    if(id >= 12 && id <= 14) return 3;
-    if(id === 15) return 4;
-    return null;
-  }
+      if(tipo === "ADM"){
+        if(id >= 1 && id <= 7) return 1;
+        if(id >= 8 && id <= 11) return 2;
+        if(id >= 12 && id <= 14) return 3;
+        if(id === 15) return 4;
+        return null;
+      }
 
-  // CAMPO (com a correção da sobreposição do 14)
-  if(id >= 1 && id <= 9) return 1;
-  if(id >= 10 && id <= 13) return 2;
-  if(id >= 14 && id <= 15) return 3;
-  if(id >= 16 && id <= 17) return 4;
-  return null;
-}
+      if(id >= 1 && id <= 9) return 1;
+      if(id >= 10 && id <= 13) return 2;
+      if(id >= 14 && id <= 15) return 3;
+      if(id >= 16 && id <= 17) return 4;
+      return null;
+    }
 
-function getMaturidade(doc){
-  // 1) se o backend mandou, sempre respeita
-  const direct =
-    doc?.maturidade ??
-    doc?.maturidadeNivel ??
-    doc?.nivelMaturidade ??
-    doc?.maturidade5s ??
-    null;
+    function getMaturidade(doc){
+      const direct =
+        doc?.maturidade ??
+        doc?.maturidadeNivel ??
+        doc?.nivelMaturidade ??
+        doc?.maturidade5s ??
+        null;
 
-  if(direct !== null && direct !== undefined && String(direct).trim() !== ""){
-    return direct;
-  }
+      if(direct !== null && direct !== undefined && String(direct).trim() !== ""){
+        return direct;
+      }
 
-  // 2) fallback (cálculo correto)
-  const itens = Array.isArray(doc?.itens) ? doc.itens : [];
-  if(!itens.length) return "—";
+      const itens = Array.isArray(doc?.itens) ? doc.itens : [];
+      if(!itens.length) return "—";
 
-  const tipo = getTipoAuditoria(doc);
-  let maturidadeFinal = 4; // se não houver NC, fica 4
+      const tipo = getTipoAuditoria(doc);
+      let maturidadeFinal = 4;
 
-  for(const it of itens){
-    if(it.status !== "NC") continue; // NA e C não derrubam
-    const id = it.itemId ?? null;
-    const nivel = nivelItem(tipo, id);
-    if(nivel == null) continue;
+      for(const it of itens){
+        if(it.status !== "NC") continue;
+        const id = it.itemId ?? null;
+        const nivel = nivelItem(tipo, id);
+        if(nivel == null) continue;
 
-    const resultado = nivel - 1;       // REGRA PRINCIPAL
-    if(resultado < maturidadeFinal) maturidadeFinal = resultado;
-    if(maturidadeFinal === 0) break;   // não dá pra cair mais
-  }
+        const resultado = nivel - 1;
+        if(resultado < maturidadeFinal) maturidadeFinal = resultado;
+        if(maturidadeFinal === 0) break;
+      }
 
-  return maturidadeFinal;
-}
-    // ====== KPIs ======
+      return maturidadeFinal;
+    }
+
     function calcKPIs(list){
       let totalItens = 0;
       let c = 0, nc = 0, na = 0;
@@ -846,8 +857,7 @@ function getMaturidade(doc){
         desviosTotal,
         pctConformidade: pct,
         fechadas: desviosFechados,
-        abertas: desviosAbertos,
-        breakdown: { c, nc, na }
+        abertas: desviosAbertos
       };
     }
 
@@ -861,7 +871,6 @@ function getMaturidade(doc){
       $("kpiAB").textContent = `${k.abertas} / ${k.fechadas}`;
     }
 
-    // ====== Filtros ======
     function matchesFilter(doc){
       const semanaSel = $("fSemana").value;
       const statusSel = $("fStatus").value;
@@ -875,19 +884,19 @@ function getMaturidade(doc){
       if(statusSel === "Fechadas" && stAud.key !== "Fechada") return false;
 
       const auditorProgramadoFiltro = String(doc.auditorProgramado || "").toLowerCase();
-const auditorRealizadorFiltro = String(doc.auditorRealizador || doc.auditorSemana || "").toLowerCase();
+      const auditorRealizadorFiltro = String(doc.auditorRealizador || doc.auditorSemana || "").toLowerCase();
 
-if(auditorTxt && !(auditorProgramadoFiltro.includes(auditorTxt) || auditorRealizadorFiltro.includes(auditorTxt))) return false;
+      if(auditorTxt && !(auditorProgramadoFiltro.includes(auditorTxt) || auditorRealizadorFiltro.includes(auditorTxt))) return false;
 
       if(buscaTxt){
         const id = String(doc._id || "").toLowerCase();
-const data = String(doc.dataHora || "").toLowerCase();
-const mat = String(doc.maturidade ?? "").toLowerCase();
-const local = String(doc.local || doc.setor || "").toLowerCase();
-const auditorProgramado = String(doc.auditorProgramado || "").toLowerCase();
-const auditorRealizador = String(doc.auditorRealizador || doc.auditorSemana || "").toLowerCase();
+        const data = String(doc.dataHora || "").toLowerCase();
+        const mat = String(getMaturidade(doc) ?? "").toLowerCase();
+        const local = String(doc.local || doc.setor || "").toLowerCase();
+        const auditorProgramado = String(doc.auditorProgramado || "").toLowerCase();
+        const auditorRealizador = String(doc.auditorRealizador || doc.auditorSemana || "").toLowerCase();
 
-let found = false;
+        let found = false;
         const itens = Array.isArray(doc.itens) ? doc.itens : [];
         for(const it of itens){
           const t = (it.texto || "").toLowerCase();
@@ -898,15 +907,16 @@ let found = false;
             const desv = Array.isArray(it.desvios) ? it.desvios : [];
             for(const d of desv){
               const r = (d.responsavel || "").toLowerCase();
-              if(r.includes(buscaTxt)) { found = true; break; }
+              const desc = (d.descricao || d.texto || d.observacao || "").toLowerCase();
+              if(r.includes(buscaTxt) || desc.includes(buscaTxt)) { found = true; break; }
             }
             if(found) break;
           }
         }
 
         if(!(id.includes(buscaTxt) || data.includes(buscaTxt) || auditorProgramado.includes(buscaTxt) || auditorRealizador.includes(buscaTxt) || local.includes(buscaTxt) || mat.includes(buscaTxt) || found)){
-  return false;
-}
+          return false;
+        }
       }
 
       return true;
@@ -929,29 +939,30 @@ let found = false;
 
       for(const doc of list){
         const stAud = auditoriaStatus(doc);
+        const local = doc.local || doc.setor || "—";
+        const semana = doc.semanaId || "—";
+        const auditorProgramado = doc.auditorProgramado || "—";
         const auditorRealizador = doc.auditorRealizador || doc.auditorSemana || "—";
-const auditorProgramado = doc.auditorProgramado || "—";
-const local = doc.local || doc.setor || "—";
-const semana = doc.semanaId || "—";
-const diasTxt = String(stAud.dias);
+        const maturidade = getMaturidade(doc);
+        const diasTxt = stAud.dias === "—" ? "—" : String(stAud.dias);
 
-const tr = document.createElement("tr");
-tr.innerHTML = `
-  <td class="checkcell">
-    <input class="check" type="checkbox" data-sel="${escapeHtml(doc._id)}" ${selectedIds.has(String(doc._id)) ? "checked" : ""} />
-  </td>
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="checkcell">
+            <input class="check" type="checkbox" data-sel="${escapeHtml(doc._id)}" ${selectedIds.has(String(doc._id)) ? "checked" : ""} />
+          </td>
 
-  <td><span class="link" data-open="${escapeHtml(doc._id)}">${escapeHtml(String(doc._id).slice(0,8))}...</span></td>
-  <td>${escapeHtml(semana)}</td>
-  <td>${escapeHtml(doc.dataHora || "—")}</td>
-  <td>${escapeHtml(local)}</td>
-  <td>${escapeHtml(auditorProgramado)}</td>
-  <td>${escapeHtml(auditorRealizador)}</td>
-  <td><strong>${escapeHtml(String(doc.maturidade ?? "—"))}</strong></td>
-  <td><strong>${diasTxt}</strong></td>
-  <td><span class="badge ${stAud.cls === "ok" ? "ok" : stAud.cls === "warn" ? "warn" : "danger"}">${escapeHtml(stAud.label)}</span></td>
-  <td><button class="btn ghost mini" data-open="${escapeHtml(doc._id)}">Visualizar</button></td>
-`;
+          <td><span class="link" data-open="${escapeHtml(doc._id)}">${escapeHtml(String(doc._id).slice(0,8))}...</span></td>
+          <td>${escapeHtml(semana)}</td>
+          <td>${escapeHtml(doc.dataHora || "—")}</td>
+          <td>${escapeHtml(local)}</td>
+          <td>${escapeHtml(auditorProgramado)}</td>
+          <td>${escapeHtml(auditorRealizador)}</td>
+          <td><strong>${escapeHtml(String(maturidade))}</strong></td>
+          <td><strong>${escapeHtml(diasTxt)}</strong></td>
+          <td><span class="badge ${stAud.cls === "ok" ? "ok" : stAud.cls === "warn" ? "warn" : "danger"}">${escapeHtml(stAud.label)}</span></td>
+          <td><button class="btn ghost mini" data-open="${escapeHtml(doc._id)}">Visualizar</button></td>
+        `;
         tbody.appendChild(tr);
       }
 
@@ -971,7 +982,6 @@ tr.innerHTML = `
       updateBulkUI();
     }
 
-    // ====== Modal detalhes ======
     function openBackdrop(on=true){
       $("backdrop").classList.toggle("on", on);
     }
@@ -993,7 +1003,6 @@ tr.innerHTML = `
     }
 
     function getFotosNCFromDeviation(d){
-      // suporta: d.fotos (array), d.foto (string), d.fotosNC, d.files
       const a =
         normalizeFotos(d?.fotos)
         .concat(normalizeFotos(d?.foto))
@@ -1126,11 +1135,9 @@ tr.innerHTML = `
       if(!ok) return;
 
       const fd = new FormData();
-      // campos mais comuns (backend pode esperar 'responsavel' e 'comentario')
       fd.append("responsavel", responsavelCorrecao);
       fd.append("responsavelCorrecao", responsavelCorrecao);
       fd.append("comentario", comentario || "");
-      // arquivo (backend pode esperar 'foto' ou 'fotoResolucao')
       fd.append("foto", file);
       fd.append("fotoResolucao", file);
 
@@ -1151,7 +1158,6 @@ tr.innerHTML = `
         }
 
         alert("Baixa registrada com sucesso.");
-        // Recarrega modal e tabela (maturidade/indicadores atualizam na hora)
         await loadRegistros();
         await openDetails(docId);
       }catch(err){
@@ -1169,21 +1175,22 @@ tr.innerHTML = `
         if(!res.ok) throw new Error("Falha ao buscar detalhes.");
         const doc = await res.json();
 
-       const stAud = auditoriaStatus(doc);
-const auditorProgramado = doc.auditorProgramado || "—";
-const auditorRealizador = doc.auditorRealizador || doc.auditorSemana || "—";
-const local = doc.local || doc.setor || "—";
+        const stAud = auditoriaStatus(doc);
+        const auditorProgramado = doc.auditorProgramado || "—";
+        const auditorRealizador = doc.auditorRealizador || doc.auditorSemana || "—";
+        const local = doc.local || doc.setor || "—";
+        const maturidade = getMaturidade(doc);
 
-$("modalTitle").textContent = `Auditoria 5S — ${String(doc._id).slice(0,8)}...`;
-$("modalSub").innerHTML = `
-  Semana: <strong>${escapeHtml(doc.semanaId || "—")}</strong> ·
-  Local: <strong>${escapeHtml(local)}</strong> ·
-  Auditor programado: <strong>${escapeHtml(auditorProgramado)}</strong> ·
-  Auditor realizador: <strong>${escapeHtml(auditorRealizador)}</strong> ·
-  Maturidade: <strong>${escapeHtml(String(doc.maturidade ?? "—"))}</strong> ·
-  Status: <strong>${escapeHtml(stAud.label)}</strong> ·
-  Data/Hora: <strong>${escapeHtml(doc.dataHora || "—")}</strong>
-`;
+        $("modalTitle").textContent = `Auditoria 5S — ${String(doc._id).slice(0,8)}...`;
+        $("modalSub").innerHTML = `
+          Semana: <strong>${escapeHtml(doc.semanaId || "—")}</strong> ·
+          Local: <strong>${escapeHtml(local)}</strong> ·
+          Auditor programado: <strong>${escapeHtml(auditorProgramado)}</strong> ·
+          Auditor realizador: <strong>${escapeHtml(auditorRealizador)}</strong> ·
+          Maturidade: <strong>${escapeHtml(String(maturidade))}</strong> ·
+          Status: <strong>${escapeHtml(stAud.label)}</strong> ·
+          Data/Hora: <strong>${escapeHtml(doc.dataHora || "—")}</strong>
+        `;
 
         let html = `<div class="items">`;
 
@@ -1196,7 +1203,6 @@ $("modalSub").innerHTML = `
             it.status === "NA" ? `<span class="badge warn">Não Aplica</span>` :
             `<span class="badge">—</span>`;
 
-          // Conforme: suporta it.conformeFotos (array) ou it.evidencias.conforme
           const conformeFotos =
             (Array.isArray(it.conformeFotos) ? it.conformeFotos : [])
               .concat(Array.isArray(it?.evidencias?.conforme) ? it.evidencias.conforme : []);
@@ -1209,15 +1215,15 @@ $("modalSub").innerHTML = `
                 <div class="item-left">
                   <div class="num">${escapeHtml(String(itemId))}</div>
                   <div class="txt">
-                   <div class="tag">${escapeHtml(it.grupo || "—")}</div>
-                   <p class="q">${escapeHtml(it.texto || "—")}</p>
+                    <div class="tag">${escapeHtml(it.grupo || "—")}</div>
+                    <p class="q">${escapeHtml(it.texto || "—")}</p>
 
-               ${
-                     it.status === "NA" && it.justificativa
-                   ? `<p class="miniLine"><strong>Justificativa:</strong> ${escapeHtml(it.justificativa)}</p>`
-                     : ""
-                               }
-                </div>
+                    ${
+                      it.status === "NA" && (it.justificativa || it.naJustificativa)
+                        ? `<p class="miniLine"><strong>Justificativa:</strong> ${escapeHtml(it.justificativa || it.naJustificativa)}</p>`
+                        : ""
+                    }
+                  </div>
                 </div>
                 ${statusBadge}
               </div>
@@ -1241,7 +1247,7 @@ $("modalSub").innerHTML = `
                             d,
                             canBaixa: stAud.canBaixa
                           })).join("")
-                        : `<div class="alert" style="margin-top:10px">Nenhum desvio detalhado encontrado neste item (sem responsável/descrição/foto).</div>`
+                        : `<div class="alert" style="margin-top:10px">Nenhum desvio detalhado encontrado neste item.</div>`
                       }
                     `
                     : ``
@@ -1260,7 +1266,6 @@ $("modalSub").innerHTML = `
         html += `</div>`;
         $("modalBody").innerHTML = html;
 
-        // toggle de itens
         $("modalBody").querySelectorAll("[data-toggle]").forEach(el => {
           el.addEventListener("click", () => {
             const idx = el.getAttribute("data-toggle");
@@ -1269,7 +1274,6 @@ $("modalSub").innerHTML = `
           });
         });
 
-        // binds de baixa
         $("modalBody").querySelectorAll("[data-baixar]").forEach(btn=>{
           btn.addEventListener("click", (e)=>{
             e.stopPropagation();
@@ -1285,14 +1289,14 @@ $("modalSub").innerHTML = `
       }
     }
 
-    // ====== Carregamento ======
     async function loadSemanaAtual(){
       try{
         const res = await fetch("/api/5s/semana-atual");
         if(!res.ok) throw new Error("Falha ao buscar semana atual.");
         const data = await res.json();
-        semanaAtual = data.semanaId || null;
-        auditorAuto = data.auditorSemana || null;
+
+        semanaAtual = data?.semanaId || null;
+        auditorAuto = data?.auditorSemana || null;
 
         $("semanaAtual").textContent = semanaAtual || "—";
         $("auditorAuto").textContent = getAuditorSemanaAtual(semanaAtual, auditorAuto);
@@ -1300,9 +1304,13 @@ $("modalSub").innerHTML = `
         $("audSemana").value = semanaAtual || "";
         $("audAutoInput").value = auditorAuto || "";
         fillSelectNomes($("audNovo"), getAuditorSemanaAtual(semanaAtual, auditorAuto));
-      }catch{
-        $("semanaAtual").textContent = "erro";
-        $("auditorAuto").textContent = "erro";
+      }catch(err){
+        console.error("Erro ao carregar semana atual:", err);
+        $("semanaAtual").textContent = "—";
+        $("auditorAuto").textContent = "—";
+        $("audSemana").value = "";
+        $("audAutoInput").value = "";
+        fillSelectNomes($("audNovo"), NOMES_5S[0]);
       }
     }
 
@@ -1311,7 +1319,7 @@ $("modalSub").innerHTML = `
       const current = sel.value;
       const opts = ["Todas", ...weeks];
       sel.innerHTML = opts.map(w => `<option value="${escapeHtml(w)}">${escapeHtml(w)}</option>`).join("");
-      sel.value = current && opts.includes(current) ? current : (semanaAtual || "Todas");
+      sel.value = current && opts.includes(current) ? current : ((semanaAtual && opts.includes(semanaAtual)) ? semanaAtual : "Todas");
     }
 
     async function loadRegistros(){
@@ -1336,7 +1344,6 @@ $("modalSub").innerHTML = `
       }
     }
 
-    // ====== Mudar auditor (local override) ======
     function openAuditorModal(on=true){
       $("backdropAuditor").classList.toggle("on", on);
     }
@@ -1347,7 +1354,6 @@ $("modalSub").innerHTML = `
       $("auditorAuto").textContent = getAuditorSemanaAtual(semanaAtual, auditorAuto);
     }
 
-    // ====== Excluir selecionados ======
     async function excluirSelecionados(){
       const ids = Array.from(selectedIds);
       if(!ids.length) return;
@@ -1382,7 +1388,6 @@ $("modalSub").innerHTML = `
       }
     }
 
-    // ====== Eventos ======
     $("btnFecharModal").addEventListener("click", closeDetails);
     $("backdrop").addEventListener("click", (e)=>{ if(e.target === $("backdrop")) closeDetails(); });
 
@@ -1439,7 +1444,6 @@ $("modalSub").innerHTML = `
 
     $("btnExcluirSelecionados").addEventListener("click", excluirSelecionados);
 
-    // Copiar ID
     $("btnCopiarId").addEventListener("click", async ()=>{
       if(!selectedDocId) return;
       try{
@@ -1450,7 +1454,6 @@ $("modalSub").innerHTML = `
       }
     });
 
-    // Init
     (async function init(){
       await loadSemanaAtual();
       await loadRegistros();
