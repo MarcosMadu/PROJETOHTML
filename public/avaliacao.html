@@ -560,25 +560,24 @@
       return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
     }
 
-    async function initSemanaMock(){
-      try{
-        const res = await fetch("/api/5s/semana-atual");
-        if(!res.ok) throw new Error("Falha ao buscar semana atual.");
-        const data = await res.json();
+  async function initSemanaMock(){
+  try{
+    const res = await fetch("/api/5s/semana-atual");
+    if(!res.ok) throw new Error("Falha ao buscar semana atual.");
+    const data = await res.json();
 
-        const semanaId = data.semanaId || "—";
-        const auditorProgramado = data.auditorSemana || "—";
+    const semanaId = data.semanaId || "—";
 
-        document.getElementById("semanaId").textContent = semanaId;
-        document.getElementById("auditorSemana").textContent = auditorProgramado;
+    document.getElementById("semanaId").textContent = semanaId;
+    document.getElementById("auditorSemana").textContent = "Selecione um local";
 
-        fillAuditorRealizadorSelect();
-      }catch(e){
-        document.getElementById("semanaId").textContent = "erro";
-        document.getElementById("auditorSemana").textContent = "erro";
-        fillAuditorRealizadorSelect();
-      }
-    }
+    fillAuditorRealizadorSelect();
+  }catch(e){
+    document.getElementById("semanaId").textContent = "erro";
+    document.getElementById("auditorSemana").textContent = "erro";
+    fillAuditorRealizadorSelect();
+  }
+}
 
     function buildResponsaveisOptions(selected="Selecione..."){
       return RESPONSAVEIS.map(n => `<option value="${escapeHtml(n)}" ${n===selected?'selected':''}>${escapeHtml(n)}</option>`).join("");
