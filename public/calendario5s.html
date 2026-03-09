@@ -31,7 +31,7 @@
       backdrop-filter: blur(10px);
       border-bottom:1px solid var(--border);
     }
-    .wrap{max-width:1200px;margin:0 auto;padding:18px}
+    .wrap{max-width:1500px;margin:0 auto;padding:18px}
     .topbar{
       display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;
     }
@@ -50,7 +50,7 @@
       padding-top:20px;
       padding-bottom:30px;
     }
-    @media (max-width: 980px){
+    @media (max-width: 1100px){
       .grid{grid-template-columns:1fr}
     }
 
@@ -80,7 +80,7 @@
     .field label{
       display:block; margin-bottom:6px; font-size:12px; color:var(--muted);
     }
-    .field input, .field select, .field textarea{
+    .field input, .field select{
       width:100%;
       padding:10px 12px;
       border:1px solid var(--border);
@@ -89,13 +89,9 @@
       outline:none;
       font:inherit;
     }
-    .field input:focus, .field select:focus, .field textarea:focus{
+    .field input:focus, .field select:focus{
       border-color: rgba(37,99,235,.5);
       box-shadow: 0 0 0 4px rgba(37,99,235,.12);
-    }
-    .field textarea{
-      min-height:90px;
-      resize:vertical;
     }
 
     .btn{
@@ -125,6 +121,10 @@
       background:var(--ok);
       box-shadow:0 10px 18px rgba(22,163,74,.18);
     }
+    .btn.warn{
+      background:var(--warn);
+      box-shadow:0 10px 18px rgba(245,158,11,.18);
+    }
     .mini{padding:8px 10px; border-radius:10px; font-size:12px}
 
     .alert{
@@ -147,7 +147,7 @@
     table{
       border-collapse:collapse;
       width:100%;
-      min-width:920px;
+      min-width:100%;
       font-size:13px;
     }
     th, td{
@@ -190,6 +190,66 @@
       0%,100%{transform:scale(.9);opacity:.6}
       50%{transform:scale(1.2);opacity:1}
     }
+
+    .calendario-visual{
+      display:none;
+      margin-top:16px;
+      border:1px solid var(--border);
+      border-radius:16px;
+      background:#fff;
+      overflow:hidden;
+      box-shadow:var(--shadow);
+    }
+    .calendario-visual.on{display:block}
+
+    .cal-top{
+      padding:16px;
+      border-bottom:1px solid var(--border);
+      background:linear-gradient(135deg,#2563eb,#1d4ed8);
+      color:#fff;
+    }
+    .cal-top h3{
+      margin:0;
+      font-size:16px;
+    }
+    .cal-top p{
+      margin:6px 0 0 0;
+      font-size:12px;
+      opacity:.95;
+    }
+
+    .cal-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap:12px;
+      padding:16px;
+    }
+    .cal-card{
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:#fff;
+      padding:14px;
+      box-shadow:0 6px 16px rgba(16,24,40,.06);
+    }
+    .cal-card h4{
+      margin:0 0 10px 0;
+      font-size:14px;
+      color:var(--text);
+    }
+    .cal-line{
+      font-size:12px;
+      color:var(--muted);
+      margin:6px 0;
+    }
+    .cal-line strong{
+      color:var(--text);
+    }
+
+    @media (max-width: 600px){
+      .wrap{padding:14px}
+      .btn{width:100%}
+      .row{flex-direction:column}
+    }
   </style>
 </head>
 <body>
@@ -198,7 +258,7 @@
       <div class="topbar">
         <div class="brand">
           <h1>Calendário 5S Tecnosonda</h1>
-          <p>Programação semanal de responsáveis por local e tipo de auditoria</p>
+          <p>Programação semanal de responsáveis por local</p>
         </div>
         <div class="pill">
           Total de programações: <strong id="totalRegistros">0</strong>
@@ -214,24 +274,21 @@
         <div class="card-h">
           <div>
             <h2>Cadastro de programação</h2>
-            <p class="sub">Cadastre ou atualize a programação semanal do 5S.</p>
+            <p class="sub">Cadastre ou atualize a programação semanal do 5S por local.</p>
           </div>
         </div>
 
         <div class="card-b">
-          <div class="field">
-            <label>Semana ID *</label>
-            <input id="semanaId" type="text" placeholder="Ex.: 2026-W01" />
-          </div>
+          <input type="hidden" id="editId" />
 
           <div class="row">
             <div class="field">
-              <label>Data início</label>
-              <input id="dataInicio" type="text" placeholder="Ex.: 01/08/2026" />
+              <label>Data início *</label>
+              <input id="dataInicio" type="date" />
             </div>
             <div class="field">
               <label>Data fim</label>
-              <input id="dataFim" type="text" placeholder="Ex.: 05/08/2026" />
+              <input id="dataFim" type="text" readonly />
             </div>
           </div>
 
@@ -249,22 +306,8 @@
           </div>
 
           <div class="field">
-            <label>Tipo de auditoria *</label>
-            <select id="tipoAuditoria">
-              <option value="Ambos">Ambos</option>
-              <option value="Administrativa">Administrativa</option>
-              <option value="Campo">Campo</option>
-            </select>
-          </div>
-
-          <div class="field">
             <label>Responsável *</label>
             <select id="responsavel"></select>
-          </div>
-
-          <div class="field">
-            <label>Observações</label>
-            <textarea id="observacoes" placeholder="Ex.: Semana 1 de agosto / cobertura de férias / apoio de turno"></textarea>
           </div>
 
           <div class="row">
@@ -273,7 +316,7 @@
           </div>
 
           <div class="alert">
-            <strong>Regra:</strong> cada combinação de <strong>semana + local + tipo de auditoria</strong> terá um responsável programado.
+            <strong>Regra:</strong> a semana é calculada automaticamente a partir da <strong>data início</strong>. A <strong>data fim</strong> é preenchida automaticamente com 5 dias após a data inicial.
           </div>
         </div>
       </section>
@@ -282,10 +325,11 @@
         <div class="card-h">
           <div>
             <h2>Programações cadastradas</h2>
-            <p class="sub">Use os filtros para localizar rapidamente a programação semanal.</p>
+            <p class="sub">Visualize, edite e gere um calendário visual das programações cadastradas.</p>
           </div>
           <div class="row" style="flex:0 0 auto">
             <span class="loading" id="loadingLista"><span class="dot"></span>Carregando...</span>
+            <button class="btn warn mini" id="btnGerarCalendario">Gerar calendário visual</button>
             <button class="btn ghost mini" id="btnRecarregar">Recarregar</button>
           </div>
         </div>
@@ -308,33 +352,30 @@
                 <option value="CANTEIRO AEROPORTO">CANTEIRO AEROPORTO</option>
               </select>
             </div>
-            <div class="field">
-              <label>Filtrar por tipo</label>
-              <select id="fTipo">
-                <option value="">Todos</option>
-                <option value="Ambos">Ambos</option>
-                <option value="Administrativa">Administrativa</option>
-                <option value="Campo">Campo</option>
-              </select>
-            </div>
           </div>
 
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th style="width:120px">Semana</th>
-                  <th style="width:120px">Início</th>
-                  <th style="width:120px">Fim</th>
-                  <th style="width:260px">Local</th>
-                  <th style="width:140px">Tipo</th>
-                  <th style="width:240px">Responsável</th>
-                  <th>Observações</th>
-                  <th style="width:100px">Ações</th>
+                  <th style="width:110px">Semana</th>
+                  <th style="width:140px">Data início</th>
+                  <th style="width:140px">Data fim</th>
+                  <th style="width:320px">Local</th>
+                  <th style="width:260px">Responsável</th>
+                  <th style="width:180px">Ações</th>
                 </tr>
               </thead>
               <tbody id="tbodyCalendario"></tbody>
             </table>
+          </div>
+
+          <div class="calendario-visual" id="calendarioVisual">
+            <div class="cal-top">
+              <h3>Calendário Visual 5S</h3>
+              <p>Programações cadastradas por semana, local e responsável</p>
+            </div>
+            <div class="cal-grid" id="calendarioGrid"></div>
           </div>
         </div>
       </section>
@@ -344,7 +385,7 @@
 
   <script>
     const RESPONSAVEIS = [
-     "ADELMO PIRES GOMES",
+       "ADELMO PIRES GOMES",
 "ALCINEIA QUADROS DE OLIVEIRA SILVA",
 "ALLAN DO NASCIMENTO MORAES",
 "ANA PAULA DA SILVA PIAZERA",
@@ -416,20 +457,48 @@
       `;
     }
 
+    function getISOWeek(dateString){
+      const date = new Date(dateString + "T00:00:00");
+      const tmp = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+      const dayNum = tmp.getUTCDay() || 7;
+      tmp.setUTCDate(tmp.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 1));
+      const weekNo = Math.ceil((((tmp - yearStart) / 86400000) + 1) / 7);
+      return `${tmp.getUTCFullYear()}-W${String(weekNo).padStart(2, "0")}`;
+    }
+
+    function formatDateBR(dateObj){
+      const d = String(dateObj.getDate()).padStart(2, "0");
+      const m = String(dateObj.getMonth() + 1).padStart(2, "0");
+      const y = dateObj.getFullYear();
+      return `${d}/${m}/${y}`;
+    }
+
+    function updateDataFim(){
+      const inicio = $("dataInicio").value;
+      if(!inicio){
+        $("dataFim").value = "";
+        return;
+      }
+
+      const dt = new Date(inicio + "T00:00:00");
+      dt.setDate(dt.getDate() + 5);
+      $("dataFim").value = formatDateBR(dt);
+    }
+
     function limparFormulario(){
-      $("semanaId").value = "";
+      $("editId").value = "";
       $("dataInicio").value = "";
       $("dataFim").value = "";
       $("local").value = "";
-      $("tipoAuditoria").value = "Ambos";
       $("responsavel").value = "";
-      $("observacoes").value = "";
+      $("btnSalvar").textContent = "Salvar programação";
     }
 
     function validarFormulario(){
       const erros = [];
 
-      if(!$("semanaId").value.trim()) erros.push("Informe a semana.");
+      if(!$("dataInicio").value) erros.push("Informe a data início.");
       if(!$("local").value) erros.push("Selecione o local.");
       if(!$("responsavel").value) erros.push("Selecione o responsável.");
 
@@ -443,14 +512,14 @@
         return;
       }
 
+      const semanaId = getISOWeek($("dataInicio").value);
+
       const payload = {
-        semanaId: $("semanaId").value.trim(),
-        dataInicio: $("dataInicio").value.trim() || null,
-        dataFim: $("dataFim").value.trim() || null,
+        semanaId,
+        dataInicio: formatDateBR(new Date($("dataInicio").value + "T00:00:00")),
+        dataFim: $("dataFim").value || null,
         local: $("local").value,
-        tipoAuditoria: $("tipoAuditoria").value,
-        responsavel: $("responsavel").value,
-        observacoes: $("observacoes").value.trim() || null
+        responsavel: $("responsavel").value
       };
 
       try{
@@ -466,7 +535,7 @@
           throw new Error(data?.error || "Erro ao salvar programação.");
         }
 
-        alert("Programação salva com sucesso.");
+        alert($("editId").value ? "Programação atualizada com sucesso." : "Programação salva com sucesso.");
         limparFormulario();
         await carregarCalendario();
       }catch(err){
@@ -477,13 +546,30 @@
     function matchesFiltro(item){
       const fSemana = $("fSemana").value.trim().toLowerCase();
       const fLocal = $("fLocal").value;
-      const fTipo = $("fTipo").value;
 
       if(fSemana && !String(item.semanaId || "").toLowerCase().includes(fSemana)) return false;
       if(fLocal && item.local !== fLocal) return false;
-      if(fTipo && item.tipoAuditoria !== fTipo) return false;
 
       return true;
+    }
+
+    function preencherFormularioEdicao(item){
+      $("editId").value = item._id || "";
+      $("local").value = item.local || "";
+      $("responsavel").value = item.responsavel || "";
+      $("btnSalvar").textContent = "Atualizar programação";
+
+      if(item.dataInicio){
+        const [d,m,y] = item.dataInicio.split("/");
+        if(d && m && y){
+          $("dataInicio").value = `${y}-${m}-${d}`;
+        }
+      } else {
+        $("dataInicio").value = "";
+      }
+
+      $("dataFim").value = item.dataFim || "";
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     function renderTabela(){
@@ -494,7 +580,7 @@
       $("totalRegistros").textContent = String(filtrados.length);
 
       if(!filtrados.length){
-        tbody.innerHTML = `<tr><td colspan="8" style="color:var(--muted)">Nenhuma programação encontrada.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="color:var(--muted)">Nenhuma programação encontrada.</td></tr>`;
         return;
       }
 
@@ -505,15 +591,24 @@
           <td>${escapeHtml(item.dataInicio || "—")}</td>
           <td>${escapeHtml(item.dataFim || "—")}</td>
           <td>${escapeHtml(item.local || "—")}</td>
-          <td><span class="badge">${escapeHtml(item.tipoAuditoria || "—")}</span></td>
           <td>${escapeHtml(item.responsavel || "—")}</td>
-          <td>${escapeHtml(item.observacoes || "—")}</td>
           <td>
-            <button class="btn danger mini" data-del="${escapeHtml(item._id)}">Excluir</button>
+            <div class="row">
+              <button class="btn ghost mini" data-edit="${escapeHtml(item._id)}">Editar</button>
+              <button class="btn danger mini" data-del="${escapeHtml(item._id)}">Excluir</button>
+            </div>
           </td>
         `;
         tbody.appendChild(tr);
       }
+
+      tbody.querySelectorAll("[data-edit]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-edit");
+          const item = registros.find(x => String(x._id) === String(id));
+          if(item) preencherFormularioEdicao(item);
+        });
+      });
 
       tbody.querySelectorAll("[data-del]").forEach(btn => {
         btn.addEventListener("click", async () => {
@@ -540,6 +635,36 @@
       });
     }
 
+    function renderCalendarioVisual(){
+      const box = $("calendarioVisual");
+      const grid = $("calendarioGrid");
+      const filtrados = registros.filter(matchesFiltro);
+
+      if(!filtrados.length){
+        box.classList.remove("on");
+        grid.innerHTML = "";
+        return;
+      }
+
+      const ordenados = [...filtrados].sort((a,b) => {
+        if((a.semanaId || "") < (b.semanaId || "")) return -1;
+        if((a.semanaId || "") > (b.semanaId || "")) return 1;
+        return (a.local || "").localeCompare(b.local || "");
+      });
+
+      grid.innerHTML = ordenados.map(item => `
+        <div class="cal-card">
+          <h4>${escapeHtml(item.local || "—")}</h4>
+          <div class="cal-line"><strong>Semana:</strong> ${escapeHtml(item.semanaId || "—")}</div>
+          <div class="cal-line"><strong>Início:</strong> ${escapeHtml(item.dataInicio || "—")}</div>
+          <div class="cal-line"><strong>Fim:</strong> ${escapeHtml(item.dataFim || "—")}</div>
+          <div class="cal-line"><strong>Responsável:</strong> ${escapeHtml(item.responsavel || "—")}</div>
+        </div>
+      `).join("");
+
+      box.classList.add("on");
+    }
+
     async function carregarCalendario(){
       $("loadingLista").classList.add("on");
 
@@ -554,17 +679,19 @@
         registros = Array.isArray(data) ? data : [];
         renderTabela();
       }catch(err){
-        $("tbodyCalendario").innerHTML = `<tr><td colspan="8" style="color:var(--muted)">Erro ao carregar: ${escapeHtml(err?.message || err)}</td></tr>`;
+        $("tbodyCalendario").innerHTML = `<tr><td colspan="6" style="color:var(--muted)">Erro ao carregar: ${escapeHtml(err?.message || err)}</td></tr>`;
       }finally{
         $("loadingLista").classList.remove("on");
       }
     }
 
+    $("dataInicio").addEventListener("change", updateDataFim);
     $("btnSalvar").addEventListener("click", salvarProgramacao);
     $("btnLimpar").addEventListener("click", limparFormulario);
     $("btnRecarregar").addEventListener("click", carregarCalendario);
+    $("btnGerarCalendario").addEventListener("click", renderCalendarioVisual);
 
-    ["fSemana","fLocal","fTipo"].forEach(id => {
+    ["fSemana","fLocal"].forEach(id => {
       $(id).addEventListener("input", renderTabela);
       $(id).addEventListener("change", renderTabela);
     });
