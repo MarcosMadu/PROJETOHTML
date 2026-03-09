@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Calendário 5S Tecnosonda</title>
+  <style>
+    :root{
+      --bg:#f2f4f7;
+      --card:#ffffff;
+      --text:#101828;
+      --muted:#667085;
+      --border:#e4e7ec;
+      --shadow: 0 10px 24px rgba(16,24,40,.08);
+      --primary:#2563eb;
+      --danger:#dc2626;
+      --ok:#16a34a;
+      --warn:#f59e0b;
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    header{
+      position:sticky; top:0; z-index:10;
+      background:rgba(242,244,247,.88);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid var(--border);
+    }
+    .wrap{max-width:1200px;margin:0 auto;padding:18px}
+    .topbar{
+      display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;
+    }
+    .brand h1{margin:0;font-size:20px}
+    .brand p{margin:4px 0 0 0;font-size:12px;color:var(--muted)}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 12px; background:#fff; border:1px solid var(--border);
+      border-radius:999px; font-size:12px; color:var(--muted);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 420px 1fr;
+      gap:14px;
+      padding-top:20px;
+      padding-bottom:30px;
+    }
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr}
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .card-h{
+      padding:16px;
+      border-bottom:1px solid var(--border);
+      display:flex; justify-content:space-between; align-items:flex-start; gap:10px;
+      flex-wrap:wrap;
+    }
+    .card-h h2{margin:0;font-size:15px}
+    .card-h .sub{margin:4px 0 0 0;font-size:12px;color:var(--muted)}
+    .card-b{padding:16px}
+
+    .row{
+      display:flex; gap:10px; flex-wrap:wrap;
+    }
+    .row > *{flex:1 1 180px}
+
+    .field{margin-bottom:12px}
+    .field label{
+      display:block; margin-bottom:6px; font-size:12px; color:var(--muted);
+    }
+    .field input, .field select, .field textarea{
+      width:100%;
+      padding:10px 12px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:#fff;
+      outline:none;
+      font:inherit;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus{
+      border-color: rgba(37,99,235,.5);
+      box-shadow: 0 0 0 4px rgba(37,99,235,.12);
+    }
+    .field textarea{
+      min-height:90px;
+      resize:vertical;
+    }
+
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      border:1px solid transparent;
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:700;
+      font-size:13px;
+      background:var(--primary);
+      color:#fff;
+      box-shadow:0 10px 18px rgba(37,99,235,.18);
+    }
+    .btn:disabled{opacity:.55; cursor:not-allowed}
+    .btn.ghost{
+      background:#fff;
+      color:var(--text);
+      border-color:var(--border);
+      box-shadow:none;
+    }
+    .btn.danger{
+      background:var(--danger);
+      box-shadow:0 10px 18px rgba(220,38,38,.18);
+    }
+    .btn.ok{
+      background:var(--ok);
+      box-shadow:0 10px 18px rgba(22,163,74,.18);
+    }
+    .mini{padding:8px 10px; border-radius:10px; font-size:12px}
+
+    .alert{
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:#fff;
+      padding:10px 12px;
+      font-size:12px;
+      color:var(--muted);
+      margin-top:12px;
+    }
+    .alert strong{color:var(--text)}
+
+    .table-wrap{
+      border:1px solid var(--border);
+      border-radius:14px;
+      overflow:auto;
+      background:#fff;
+    }
+    table{
+      border-collapse:collapse;
+      width:100%;
+      min-width:920px;
+      font-size:13px;
+    }
+    th, td{
+      padding:10px 12px;
+      border-bottom:1px solid var(--border);
+      text-align:left;
+      vertical-align:top;
+    }
+    th{
+      background:#fbfcfe;
+      color:var(--muted);
+      font-size:12px;
+      position:sticky;
+      top:0;
+      z-index:1;
+    }
+    tr:hover td{background:#fbfdff}
+
+    .badge{
+      display:inline-flex; align-items:center;
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#fff;
+      font-size:11px;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+
+    .loading{
+      display:none; align-items:center; gap:8px;
+      font-size:12px; color:var(--muted);
+    }
+    .loading.on{display:inline-flex}
+    .dot{
+      width:10px;height:10px;border-radius:999px;background:var(--primary);
+      animation:pulse .9s infinite ease-in-out;
+    }
+    @keyframes pulse{
+      0%,100%{transform:scale(.9);opacity:.6}
+      50%{transform:scale(1.2);opacity:1}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="topbar">
+        <div class="brand">
+          <h1>Calendário 5S Tecnosonda</h1>
+          <p>Programação semanal de responsáveis por local e tipo de auditoria</p>
+        </div>
+        <div class="pill">
+          Total de programações: <strong id="totalRegistros">0</strong>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="grid">
+
+      <section class="card">
+        <div class="card-h">
+          <div>
+            <h2>Cadastro de programação</h2>
+            <p class="sub">Cadastre ou atualize a programação semanal do 5S.</p>
+          </div>
+        </div>
+
+        <div class="card-b">
+          <div class="field">
+            <label>Semana ID *</label>
+            <input id="semanaId" type="text" placeholder="Ex.: 2026-W01" />
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label>Data início</label>
+              <input id="dataInicio" type="text" placeholder="Ex.: 01/08/2026" />
+            </div>
+            <div class="field">
+              <label>Data fim</label>
+              <input id="dataFim" type="text" placeholder="Ex.: 05/08/2026" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Local *</label>
+            <select id="local">
+              <option value="">Selecione...</option>
+              <option value="RAP 05">RAP 05</option>
+              <option value="CT 12">CT 12</option>
+              <option value="KM 09 RAIMUNDO MASCARENHAS">KM 09 RAIMUNDO MASCARENHAS</option>
+              <option value="KM 09 RAIMUNDO MASCARENHAS TURNO">KM 09 RAIMUNDO MASCARENHAS TURNO</option>
+              <option value="CANTEIRO PA 071">CANTEIRO PA 071</option>
+              <option value="CANTEIRO AEROPORTO">CANTEIRO AEROPORTO</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Tipo de auditoria *</label>
+            <select id="tipoAuditoria">
+              <option value="Ambos">Ambos</option>
+              <option value="Administrativa">Administrativa</option>
+              <option value="Campo">Campo</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Responsável *</label>
+            <select id="responsavel"></select>
+          </div>
+
+          <div class="field">
+            <label>Observações</label>
+            <textarea id="observacoes" placeholder="Ex.: Semana 1 de agosto / cobertura de férias / apoio de turno"></textarea>
+          </div>
+
+          <div class="row">
+            <button class="btn ok" id="btnSalvar">Salvar programação</button>
+            <button class="btn ghost" id="btnLimpar" type="button">Limpar</button>
+          </div>
+
+          <div class="alert">
+            <strong>Regra:</strong> cada combinação de <strong>semana + local + tipo de auditoria</strong> terá um responsável programado.
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-h">
+          <div>
+            <h2>Programações cadastradas</h2>
+            <p class="sub">Use os filtros para localizar rapidamente a programação semanal.</p>
+          </div>
+          <div class="row" style="flex:0 0 auto">
+            <span class="loading" id="loadingLista"><span class="dot"></span>Carregando...</span>
+            <button class="btn ghost mini" id="btnRecarregar">Recarregar</button>
+          </div>
+        </div>
+
+        <div class="card-b">
+          <div class="row" style="margin-bottom:12px">
+            <div class="field">
+              <label>Filtrar por semana</label>
+              <input id="fSemana" type="text" placeholder="Ex.: 2026-W01" />
+            </div>
+            <div class="field">
+              <label>Filtrar por local</label>
+              <select id="fLocal">
+                <option value="">Todos</option>
+                <option value="RAP 05">RAP 05</option>
+                <option value="CT 12">CT 12</option>
+                <option value="KM 09 RAIMUNDO MASCARENHAS">KM 09 RAIMUNDO MASCARENHAS</option>
+                <option value="KM 09 RAIMUNDO MASCARENHAS TURNO">KM 09 RAIMUNDO MASCARENHAS TURNO</option>
+                <option value="CANTEIRO PA 071">CANTEIRO PA 071</option>
+                <option value="CANTEIRO AEROPORTO">CANTEIRO AEROPORTO</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Filtrar por tipo</label>
+              <select id="fTipo">
+                <option value="">Todos</option>
+                <option value="Ambos">Ambos</option>
+                <option value="Administrativa">Administrativa</option>
+                <option value="Campo">Campo</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:120px">Semana</th>
+                  <th style="width:120px">Início</th>
+                  <th style="width:120px">Fim</th>
+                  <th style="width:260px">Local</th>
+                  <th style="width:140px">Tipo</th>
+                  <th style="width:240px">Responsável</th>
+                  <th>Observações</th>
+                  <th style="width:100px">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyCalendario"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    const RESPONSAVEIS = [
+     "ADELMO PIRES GOMES",
+"ALCINEIA QUADROS DE OLIVEIRA SILVA",
+"ALLAN DO NASCIMENTO MORAES",
+"ANA PAULA DA SILVA PIAZERA",
+"ANDRE DA CONCEICAO ALVES",
+"ANTONIO HYAGO",
+"ANTONY CHE GUEVARA CAVALCANTE DOS SANTOS",
+"BRUNA SANTOS DOS REIS",
+"EDILEI BELTRAO DE SOUSA",
+"EDIONES DE ALMEIDA SILVA",
+"EDUARDO RAMOS ALVARENGA",
+"FERNANDO QUEIROZ DA SILVA",
+"FREDERICO SILVEIRO RIBEIRO",
+"GILVAN DE NAZARE BARROS CASTRO",
+"HELIO BARBOSA DOS SANTOS",
+"HERACLITO HENRIQUE SANTANA LOPES",
+"HUGO DELLEON RAMOS DA SILVA",
+"IRIANE DA SILVA LIMA",
+"JANAINA KETLEY ANDRADE RIBEIRO",
+"JARDEL DE BRITO CARMO",
+"JEFERSON LEITE ALVES",
+"JOAO DE SOUSA FERREIRA JUNIOR",
+"JORGE CERQUEIRA JUNIOR",
+"JORGE MOUZINHO CARVALHO",
+"JOSE VITOR SILVA COSTA",
+"KARLA MARIA VIEIRA DA SILVA",
+"LEANDRO LOPES DA SILVA",
+"LEONILDO DA SILVA FERRAZ",
+"LUCAS DA SILVA SANTOS",
+"LUIS ANTONIO FELIX DE VASCONCELLOS",
+"MANOANO JOSE VICENTE DA SILVA BASTOS",
+"MARCELINO ALENCAR DA SILVA",
+"MARCELO DOS SANTOS CONCEIÇÃO",
+"MARCOS AUGUSTO MENDONÇA GONÇALVES",
+"MARCOS OLIVEIRA MENEZES",
+"MARCOS VINICIUS BATISTA RIBEIRO",
+"RAFAEL HENRIQUE ALVES RIBEIRO",
+"RAPHAEL JOSE PEREIRA DA SILVA",
+"RODRIGO DOS SANTOS SILVA",
+"SANDY HORTENCIA SANTOS DE SOUZA",
+"SIDNEY MACHADO LIBERATO DE MATTOS",
+"SUEANE SOUZA DUTRA",
+"TAINARA BERTUNES DOS SANTOS",
+"TATIANA SIMAN MAGALHÃES",
+"THIAGO DE OLIVEIRA JUNQUEIRA",
+"THIAGO PEDRO TORRES",
+"UILSON SANTANA DE ALMEIDA",
+"WALASON DA VEIGA LIMA",
+"WALLISON DOS SANTOS SOUSA",
+"WELLINGTON PEREIRA GOMES",
+"WILDSON DA SILVA BARROS",
+    ];
+
+    const $ = (id) => document.getElementById(id);
+    let registros = [];
+
+    function escapeHtml(str){
+      return String(str ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function fillResponsaveis(){
+      $("responsavel").innerHTML = `
+        <option value="">Selecione...</option>
+        ${RESPONSAVEIS.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("")}
+      `;
+    }
+
+    function limparFormulario(){
+      $("semanaId").value = "";
+      $("dataInicio").value = "";
+      $("dataFim").value = "";
+      $("local").value = "";
+      $("tipoAuditoria").value = "Ambos";
+      $("responsavel").value = "";
+      $("observacoes").value = "";
+    }
+
+    function validarFormulario(){
+      const erros = [];
+
+      if(!$("semanaId").value.trim()) erros.push("Informe a semana.");
+      if(!$("local").value) erros.push("Selecione o local.");
+      if(!$("responsavel").value) erros.push("Selecione o responsável.");
+
+      return erros;
+    }
+
+    async function salvarProgramacao(){
+      const erros = validarFormulario();
+      if(erros.length){
+        alert("Corrija antes de salvar:\n\n- " + erros.join("\n- "));
+        return;
+      }
+
+      const payload = {
+        semanaId: $("semanaId").value.trim(),
+        dataInicio: $("dataInicio").value.trim() || null,
+        dataFim: $("dataFim").value.trim() || null,
+        local: $("local").value,
+        tipoAuditoria: $("tipoAuditoria").value,
+        responsavel: $("responsavel").value,
+        observacoes: $("observacoes").value.trim() || null
+      };
+
+      try{
+        const res = await fetch("/api/5s/calendario", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if(!res.ok){
+          throw new Error(data?.error || "Erro ao salvar programação.");
+        }
+
+        alert("Programação salva com sucesso.");
+        limparFormulario();
+        await carregarCalendario();
+      }catch(err){
+        alert("Erro ao salvar: " + (err?.message || err));
+      }
+    }
+
+    function matchesFiltro(item){
+      const fSemana = $("fSemana").value.trim().toLowerCase();
+      const fLocal = $("fLocal").value;
+      const fTipo = $("fTipo").value;
+
+      if(fSemana && !String(item.semanaId || "").toLowerCase().includes(fSemana)) return false;
+      if(fLocal && item.local !== fLocal) return false;
+      if(fTipo && item.tipoAuditoria !== fTipo) return false;
+
+      return true;
+    }
+
+    function renderTabela(){
+      const tbody = $("tbodyCalendario");
+      tbody.innerHTML = "";
+
+      const filtrados = registros.filter(matchesFiltro);
+      $("totalRegistros").textContent = String(filtrados.length);
+
+      if(!filtrados.length){
+        tbody.innerHTML = `<tr><td colspan="8" style="color:var(--muted)">Nenhuma programação encontrada.</td></tr>`;
+        return;
+      }
+
+      for(const item of filtrados){
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>${escapeHtml(item.semanaId)}</strong></td>
+          <td>${escapeHtml(item.dataInicio || "—")}</td>
+          <td>${escapeHtml(item.dataFim || "—")}</td>
+          <td>${escapeHtml(item.local || "—")}</td>
+          <td><span class="badge">${escapeHtml(item.tipoAuditoria || "—")}</span></td>
+          <td>${escapeHtml(item.responsavel || "—")}</td>
+          <td>${escapeHtml(item.observacoes || "—")}</td>
+          <td>
+            <button class="btn danger mini" data-del="${escapeHtml(item._id)}">Excluir</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      tbody.querySelectorAll("[data-del]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.getAttribute("data-del");
+          const ok = confirm("Deseja excluir esta programação?");
+          if(!ok) return;
+
+          try{
+            const res = await fetch(`/api/5s/calendario/${encodeURIComponent(id)}`, {
+              method: "DELETE"
+            });
+
+            const data = await res.json().catch(() => ({}));
+
+            if(!res.ok){
+              throw new Error(data?.error || "Erro ao excluir.");
+            }
+
+            await carregarCalendario();
+          }catch(err){
+            alert("Erro ao excluir: " + (err?.message || err));
+          }
+        });
+      });
+    }
+
+    async function carregarCalendario(){
+      $("loadingLista").classList.add("on");
+
+      try{
+        const res = await fetch("/api/5s/calendario");
+        const data = await res.json();
+
+        if(!res.ok){
+          throw new Error(data?.error || "Erro ao carregar calendário.");
+        }
+
+        registros = Array.isArray(data) ? data : [];
+        renderTabela();
+      }catch(err){
+        $("tbodyCalendario").innerHTML = `<tr><td colspan="8" style="color:var(--muted)">Erro ao carregar: ${escapeHtml(err?.message || err)}</td></tr>`;
+      }finally{
+        $("loadingLista").classList.remove("on");
+      }
+    }
+
+    $("btnSalvar").addEventListener("click", salvarProgramacao);
+    $("btnLimpar").addEventListener("click", limparFormulario);
+    $("btnRecarregar").addEventListener("click", carregarCalendario);
+
+    ["fSemana","fLocal","fTipo"].forEach(id => {
+      $(id).addEventListener("input", renderTabela);
+      $(id).addEventListener("change", renderTabela);
+    });
+
+    fillResponsaveis();
+    carregarCalendario();
+  </script>
+</body>
+</html>
