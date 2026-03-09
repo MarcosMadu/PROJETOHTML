@@ -166,8 +166,9 @@ function getSemanaId(d = new Date()) {
 
 // Auditor automático baseado no número da semana (cíclico)
 function getAuditorAutomatico(semanaId) {
-  const wk = Number(String(semanaId).split("W")[1] || "1");
-  const idx = (wk - 1) % NOMES_5S.length;
+  const match = String(semanaId).match(/-S(\d+)-/);
+  const semanaNumero = match ? Number(match[1]) : 1;
+  const idx = (semanaNumero - 1) % NOMES_5S.length;
   return NOMES_5S[idx];
 }
 
