@@ -457,14 +457,17 @@
       `;
     }
 
-    function getISOWeek(dateString){
-      const date = new Date(dateString + "T00:00:00");
-      const tmp = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-      const dayNum = tmp.getUTCDay() || 7;
-      tmp.setUTCDate(tmp.getUTCDate() + 4 - dayNum);
-      const yearStart = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 1));
-      const weekNo = Math.ceil((((tmp - yearStart) / 86400000) + 1) / 7);
-      return `${tmp.getUTCFullYear()}-W${String(weekNo).padStart(2, "0")}`;
+    function getSemanaMesId(dateString){
+  const meses = ["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"];
+  const d = new Date(dateString + "T00:00:00");
+
+  const ano = d.getFullYear();
+  const mes = meses[d.getMonth()];
+  const dia = d.getDate();
+
+  const semanaDoMes = Math.ceil(dia / 7);
+
+  return `${ano}-S${semanaDoMes}-${mes}`;
     }
 
     function formatDateBR(dateObj){
