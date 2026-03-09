@@ -1,167 +1,204 @@
 const nodemailer = require("nodemailer");
 
-function makeTransporter() {
-  const port = Number(process.env.SMTP_PORT || 587);
-  const secure = String(process.env.SMTP_SECURE || "false") === "true";
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port,
-    secure,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
+function getMaturidadeColor(maturidade) {
+  if (Number(maturidade) === 4) return "#16a34a";
+  if (Number(maturidade) === 3) return "#2563eb";
+  if (Number(maturidade) === 2) return "#f59e0b";
+  return "#dc2626";
+}
+
+function formatarData(data) {
+  if (!data) return "-";
+
+  const d = new Date(data);
+  if (Number.isNaN(d.getTime())) return "-";
+
+  return d.toLocaleString("pt-BR", {
+    dateStyle: "short",
+    timeStyle: "short",
   });
 }
 
-function escapeHtml(str) {
-  return String(str ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+function escapeHtml(texto = "") {
+  return String(texto)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
-function getMaturidade(auditoria) {
-  // Preferir o que já vem calculado/salvo
-  const m = auditoria?.maturidade;
-  return (m === 0 || m) ? m : "—";
-}
+async function sendAuditoriaCreatedEmail(doc) {
+  try {
+    const itens = Array.isArray(doc.itens) ? doc.itens : [];
 
-function collectDeviations(auditoria) {
-  // Retorna lista plana: [{ itemId, texto, responsavel, descricao }]
-  const itens = Array.isArray(auditoria?.itens) ? auditoria.itens : [];
-  const out = [];
+    const itensNC = itens.filter((item) => item.status === "NC");
+    const totalItens = itens.length;
+    const totalNC = itensNC.length;
+    const totalC = itens.filter((item) => item.status === "C").length;
+    const totalNA = itens.filter((item) => item.status === "NA").length;
 
-  for (const it of itens) {
-    if (it?.status !== "NC") continue;
+    let desviosHtml = "";
 
-    const desvios = Array.isArray(it?.desvios) ? it.desvios : [];
-    for (const d of desvios) {
-      out.push({
-        itemId: it.itemId ?? "",
-        texto: it.texto ?? "",
-        responsavel: d?.responsavel ?? d?.responsavelDesvio ?? "",
-        descricao: d?.descricao ?? d?.texto ?? d?.observacao ?? "",
+    if (itensNC.length > 0) {
+      itensNC.forEach((item, index) => {
+        const desvios = Array.isArray(item.desvios) ? item.desvios : [];
+
+        const responsaveis = desvios.length
+          ? desvios
+              .map((d) => escapeHtml(d.responsavel || "Não informado"))
+              .join(", ")
+          : "Não informado";
+
+        desviosHtml += `
+          <div style="border:1px solid #e5e7eb; border-radius:12px; padding:14px; margin-bottom:12px; background:#f9fafb;">
+            <div style="font-size:13px; color:#6b7280; margin-bottom:6px;">
+              NC ${index + 1}
+            </div>
+            <div style="font-size:15px; font-weight:700; color:#111827; margin-bottom:8px;">
+              ${escapeHtml(item.texto || "Item não informado")}
+            </div>
+            <div style="font-size:14px; color:#374151; margin-bottom:4px;">
+              <strong>Grupo:</strong> ${escapeHtml(item.grupo || "-")}
+            </div>
+            <div style="font-size:14px; color:#374151;">
+              <strong>Responsável(is):</strong> ${responsaveis}
+            </div>
+          </div>
+        `;
       });
+    } else {
+      desviosHtml = `
+        <div style="border:1px solid #d1fae5; background:#ecfdf5; color:#065f46; border-radius:12px; padding:14px;">
+          Nenhuma não conformidade foi registrada nesta auditoria.
+        </div>
+      `;
     }
-  }
-  return out;
-}
 
-function buildAuditoriaEmailHtml(auditoria) {
-  const maturidade = getMaturidade(auditoria);
-  const local = auditoria?.area || auditoria?.local || "—";
-  const semanaId = auditoria?.semanaId || "—";
-  const dataHora = auditoria?.dataHora || "—";
+    const maturidadeColor = getMaturidadeColor(doc.maturidade);
 
-  // Auditor programado (automatico da semana) vs realizador (fixado no registro)
-  const auditorProgramado = auditoria?.auditorProgramado || auditoria?.auditorAuto || auditoria?.auditorSemanaAuto || "—";
-  const auditorRealizador = auditoria?.auditorSemana || auditoria?.auditor || "—";
+    const html = `
+      <div style="margin:0; padding:0; background:#f3f4f6; font-family:Arial, Helvetica, sans-serif;">
+        <div style="max-width:760px; margin:0 auto; padding:24px 16px;">
+          
+          <div style="background:linear-gradient(135deg, #0f172a, #1d4ed8); border-radius:18px 18px 0 0; padding:28px 24px; color:#ffffff;">
+            <div style="font-size:12px; letter-spacing:1px; text-transform:uppercase; opacity:.85; margin-bottom:8px;">
+              Painel SESMT
+            </div>
+            <h1 style="margin:0; font-size:28px; line-height:1.2;">
+              Nova Auditoria 5S Registrada
+            </h1>
+            <p style="margin:10px 0 0; font-size:14px; opacity:.92;">
+              Uma nova auditoria foi cadastrada automaticamente no sistema.
+            </p>
+          </div>
 
-  const desvios = collectDeviations(auditoria);
+          <div style="background:#ffffff; border-radius:0 0 18px 18px; padding:24px; box-shadow:0 10px 30px rgba(15,23,42,.08);">
+            
+            <div style="display:flex; flex-wrap:wrap; gap:12px; margin-bottom:20px;">
+              <div style="flex:1 1 180px; min-width:180px; background:#f8fafc; border:1px solid #e5e7eb; border-radius:14px; padding:14px;">
+                <div style="font-size:12px; color:#6b7280; margin-bottom:6px;">Semana</div>
+                <div style="font-size:16px; font-weight:700; color:#111827;">${escapeHtml(doc.semanaId || "-")}</div>
+              </div>
 
-  const hasDesvios = desvios.length > 0;
+              <div style="flex:1 1 180px; min-width:180px; background:#f8fafc; border:1px solid #e5e7eb; border-radius:14px; padding:14px;">
+                <div style="font-size:12px; color:#6b7280; margin-bottom:6px;">Local</div>
+                <div style="font-size:16px; font-weight:700; color:#111827;">${escapeHtml(doc.local || "-")}</div>
+              </div>
 
-  const rows = hasDesvios
-    ? desvios.map((d, i) => `
-      <tr>
-        <td style="padding:10px;border-bottom:1px solid #e4e7ec;">${escapeHtml(String(i + 1))}</td>
-        <td style="padding:10px;border-bottom:1px solid #e4e7ec;"><strong>${escapeHtml(d.itemId)}</strong></td>
-        <td style="padding:10px;border-bottom:1px solid #e4e7ec;">${escapeHtml(d.texto)}</td>
-        <td style="padding:10px;border-bottom:1px solid #e4e7ec;"><strong>${escapeHtml(d.responsavel || "—")}</strong></td>
-      </tr>
-    `).join("")
-    : "";
+              <div style="flex:1 1 180px; min-width:180px; background:#f8fafc; border:1px solid #e5e7eb; border-radius:14px; padding:14px;">
+                <div style="font-size:12px; color:#6b7280; margin-bottom:6px;">Tipo</div>
+                <div style="font-size:16px; font-weight:700; color:#111827;">${escapeHtml(doc.tipoAuditoria || "-")}</div>
+              </div>
+            </div>
 
-  return `
-  <div style="font-family:Arial,Helvetica,sans-serif;color:#101828;background:#f2f4f7;padding:18px">
-    <div style="max-width:920px;margin:0 auto;background:#ffffff;border:1px solid #e4e7ec;border-radius:14px;overflow:hidden">
-      <div style="padding:16px 18px;border-bottom:1px solid #e4e7ec;background:#fbfcfe">
-        <div style="font-size:14px;color:#667085">Gestão 5S Tecnosonda</div>
-        <div style="font-size:18px;font-weight:800;margin-top:6px">Auditoria 5S — Resumo do Registro</div>
-        <div style="font-size:12px;color:#667085;margin-top:6px">
-          Semana: <strong>${escapeHtml(semanaId)}</strong> · Data/Hora: <strong>${escapeHtml(dataHora)}</strong>
+            <div style="display:flex; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
+              <div style="flex:1 1 180px; min-width:180px; background:#f8fafc; border:1px solid #e5e7eb; border-radius:14px; padding:14px;">
+                <div style="font-size:12px; color:#6b7280; margin-bottom:6px;">Auditor</div>
+                <div style="font-size:16px; font-weight:700; color:#111827;">${escapeHtml(doc.auditorRealizador || doc.auditorSemana || "-")}</div>
+              </div>
+
+              <div style="flex:1 1 180px; min-width:180px; background:#f8fafc; border:1px solid #e5e7eb; border-radius:14px; padding:14px;">
+                <div style="font-size:12px; color:#6b7280; margin-bottom:6px;">Data da auditoria</div>
+                <div style="font-size:16px; font-weight:700; color:#111827;">${formatarData(doc.dataHora)}</div>
+              </div>
+
+              <div style="flex:1 1 180px; min-width:180px; background:${maturidadeColor}10; border:1px solid ${maturidadeColor}33; border-radius:14px; padding:14px;">
+                <div style="font-size:12px; color:#6b7280; margin-bottom:6px;">Maturidade</div>
+                <div style="font-size:18px; font-weight:800; color:${maturidadeColor};">Nível ${escapeHtml(String(doc.maturidade || "-"))}</div>
+              </div>
+            </div>
+
+            <div style="margin-bottom:24px;">
+              <h2 style="margin:0 0 14px; font-size:18px; color:#111827;">
+                Resumo da Auditoria
+              </h2>
+
+              <div style="display:flex; flex-wrap:wrap; gap:12px;">
+                <div style="flex:1 1 150px; min-width:150px; border:1px solid #e5e7eb; border-radius:14px; padding:14px; background:#ffffff;">
+                  <div style="font-size:12px; color:#6b7280;">Itens avaliados</div>
+                  <div style="font-size:24px; font-weight:800; color:#111827;">${totalItens}</div>
+                </div>
+
+                <div style="flex:1 1 150px; min-width:150px; border:1px solid #dcfce7; border-radius:14px; padding:14px; background:#f0fdf4;">
+                  <div style="font-size:12px; color:#166534;">Conformes</div>
+                  <div style="font-size:24px; font-weight:800; color:#166534;">${totalC}</div>
+                </div>
+
+                <div style="flex:1 1 150px; min-width:150px; border:1px solid #fee2e2; border-radius:14px; padding:14px; background:#fef2f2;">
+                  <div style="font-size:12px; color:#991b1b;">Não conformes</div>
+                  <div style="font-size:24px; font-weight:800; color:#991b1b;">${totalNC}</div>
+                </div>
+
+                <div style="flex:1 1 150px; min-width:150px; border:1px solid #fef3c7; border-radius:14px; padding:14px; background:#fffbeb;">
+                  <div style="font-size:12px; color:#92400e;">Não aplicáveis</div>
+                  <div style="font-size:24px; font-weight:800; color:#92400e;">${totalNA}</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-bottom:20px;">
+              <h2 style="margin:0 0 14px; font-size:18px; color:#111827;">
+                Não Conformidades Identificadas
+              </h2>
+              ${desviosHtml}
+            </div>
+
+            <div style="border-top:1px solid #e5e7eb; padding-top:18px; margin-top:24px;">
+              <p style="margin:0 0 8px; font-size:14px; color:#374151;">
+                Esta mensagem foi enviada automaticamente pelo <strong>Painel SESMT</strong> após o registro de uma nova auditoria 5S.
+              </p>
+              <p style="margin:0; font-size:12px; color:#6b7280;">
+                Gestão de Segurança do Trabalho • Sistema interno de auditorias e inspeções
+              </p>
+            </div>
+
+          </div>
         </div>
       </div>
+    `;
 
-      <div style="padding:16px 18px">
-        <table style="width:100%;border-collapse:collapse;font-size:13px">
-          <tr>
-            <td style="padding:10px;border-bottom:1px solid #e4e7ec;color:#667085;width:220px">Maturidade alcançada</td>
-            <td style="padding:10px;border-bottom:1px solid #e4e7ec"><strong>${escapeHtml(String(maturidade))}</strong></td>
-          </tr>
-          <tr>
-            <td style="padding:10px;border-bottom:1px solid #e4e7ec;color:#667085">Local</td>
-            <td style="padding:10px;border-bottom:1px solid #e4e7ec"><strong>${escapeHtml(local)}</strong></td>
-          </tr>
-          <tr>
-            <td style="padding:10px;border-bottom:1px solid #e4e7ec;color:#667085">Auditor programado</td>
-            <td style="padding:10px;border-bottom:1px solid #e4e7ec"><strong>${escapeHtml(auditorProgramado)}</strong></td>
-          </tr>
-          <tr>
-            <td style="padding:10px;border-bottom:1px solid #e4e7ec;color:#667085">Auditor realizador</td>
-            <td style="padding:10px;border-bottom:1px solid #e4e7ec"><strong>${escapeHtml(auditorRealizador)}</strong></td>
-          </tr>
-        </table>
+    await transporter.sendMail({
+      from: `"Painel SESMT" <${process.env.EMAIL_USER}>`,
+      to: process.env.EMAIL_TO,
+      subject: `Nova Auditoria 5S Registrada - ${doc.local || "Local não informado"} - ${doc.semanaId || ""}`,
+      html,
+    });
 
-        <div style="margin-top:14px;font-size:14px;font-weight:800">Itens com desvios e responsáveis</div>
-        ${
-          hasDesvios
-            ? `
-              <div style="margin-top:8px;border:1px solid #e4e7ec;border-radius:12px;overflow:hidden">
-                <table style="width:100%;border-collapse:collapse;font-size:13px">
-                  <thead>
-                    <tr style="background:#fbfcfe;color:#667085;font-size:12px">
-                      <th style="text-align:left;padding:10px;border-bottom:1px solid #e4e7ec;width:40px">#</th>
-                      <th style="text-align:left;padding:10px;border-bottom:1px solid #e4e7ec;width:70px">Item</th>
-                      <th style="text-align:left;padding:10px;border-bottom:1px solid #e4e7ec">Desvio</th>
-                      <th style="text-align:left;padding:10px;border-bottom:1px solid #e4e7ec;width:220px">Responsável</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${rows}
-                  </tbody>
-                </table>
-              </div>
-            `
-            : `<div style="margin-top:8px;color:#667085">Nenhum desvio (NC) registrado nesta auditoria.</div>`
-        }
-      </div>
-
-      <div style="padding:12px 18px;border-top:1px solid #e4e7ec;color:#667085;font-size:12px;background:#fbfcfe">
-        Mensagem automática — sistema de auditoria 5S Tecnosonda.
-      </div>
-    </div>
-  </div>
-  `;
+    console.log("E-mail de auditoria enviado com sucesso.");
+  } catch (error) {
+    console.error("Erro ao enviar e-mail da auditoria:", error);
+  }
 }
 
-async function sendAuditoriaCreatedEmail(auditoria) {
-  const toList = (process.env.AUDITORIA_EMAIL_TO || "")
-    .split(",")
-    .map(s => s.trim())
-    .filter(Boolean);
-
-  if (!toList.length) return; // não quebra o fluxo se não tiver destinatário
-
-  const transporter = makeTransporter();
-
-  const semanaId = auditoria?.semanaId || "—";
-  const local = auditoria?.area || auditoria?.local || "—";
-  const maturidade = getMaturidade(auditoria);
-  const subject = `Auditoria 5S — Semana ${semanaId} — ${local} — Maturidade ${maturidade}`;
-
-  const html = buildAuditoriaEmailHtml(auditoria);
-
-  await transporter.sendMail({
-    from: process.env.AUDITORIA_EMAIL_FROM || process.env.SMTP_USER,
-    to: toList,
-    subject,
-    html,
-  });
-}
-
-module.exports = { sendAuditoriaCreatedEmail };
+module.exports = {
+  sendAuditoriaCreatedEmail,
+};
