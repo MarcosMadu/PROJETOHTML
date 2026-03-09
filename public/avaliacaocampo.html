@@ -1047,62 +1047,62 @@
     }
 
     function buildPayloadWithFields(){
-      const auditorProgramado = document.getElementById("auditorSemana").textContent;
-      const auditorRealizadorSelecionado = document.getElementById("auditorRealizador").value;
-      const auditorRealizador = auditorRealizadorSelecionado || auditorProgramado;
-      const setor = document.getElementById("setor").value || null;
+  const auditorProgramado = document.getElementById("auditorSemana").textContent;
+  const auditorRealizadorSelecionado = document.getElementById("auditorRealizador").value;
+  const auditorRealizador = auditorRealizadorSelecionado || auditorProgramado;
+  const setor = document.getElementById("setor").value || null;
 
-      const itens = ITENS.map(it=>{
-        const st = ensureItemState(it.id);
+  const itens = ITENS.map(it=>{
+    const st = ensureItemState(it.id);
 
-        return {
-          itemId: it.id,
-          grupo: it.grupo,
-          texto: it.texto,
-          status: st.status,
-          naJustificativa: st.status==="NA" ? st.naJustificativa : null,
+    return {
+      itemId: it.id,
+      grupo: it.grupo,
+      texto: it.texto,
+      status: st.status,
+      naJustificativa: st.status==="NA" ? st.naJustificativa : null,
 
-          conformeFotos: st.status==="C"
-            ? (st.conformeFotos || []).map((f, idx)=>({
-                field: `conf_${it.id}_${idx}`,
-                name: f.name,
-                size: f.size,
-                type: f.type
-              }))
-            : [],
+      conformeFotos: st.status==="C"
+        ? (st.conformeFotos || []).map((f, idx)=>({
+            field: `conf_${it.id}_${idx}`,
+            name: f.name,
+            size: f.size,
+            type: f.type
+          }))
+        : [],
 
-          desvios: st.status==="NC"
-            ? (st.desvios || []).map((d, idx)=>({
-                responsavel: d.responsavel,
-                foto: d.foto
-                  ? {
-                      field: `nc_${it.id}_${idx}`,
-                      name: d.foto.name,
-                      size: d.foto.size,
-                      type: d.foto.type
-                    }
-                  : null
-              }))
-            : []
-        };
-      });
+      desvios: st.status==="NC"
+        ? (st.desvios || []).map((d, idx)=>({
+            responsavel: d.responsavel,
+            foto: d.foto
+              ? {
+                  field: `nc_${it.id}_${idx}`,
+                  name: d.foto.name,
+                  size: d.foto.size,
+                  type: d.foto.type
+                }
+              : null
+          }))
+        : []
+    };
+  });
 
-      const mat = computeMaturidade();
-      const maturidadeFinal = mat.ready ? mat.maturidade : null;
+  const mat = computeMaturidade();
+  const maturidadeFinal = mat.ready ? mat.maturidade : null;
 
-      return {
-        semanaId: document.getElementById("semanaId").textContent,
-        auditorProgramado,
-        auditorSemana: auditorRealizador,
-        auditorRealizador,
-        dataHora: document.getElementById("dataHora").value,
-        setor,
-        local: setor,
-        tipoAuditoria: "Campo",
-        maturidade: maturidadeFinal,
-        itens
-      };
-    }
+  return {
+    semanaId: document.getElementById("semanaId").textContent,
+    auditorProgramado,
+    auditorSemana: auditorRealizador,
+    auditorRealizador,
+    dataHora: document.getElementById("dataHora").value,
+    setor,
+    local: setor,
+    tipoAuditoria: "Campo",
+    maturidade: maturidadeFinal,
+    itens
+  };
+}
 
     document.getElementById("btnExpandir").addEventListener("click", ()=>{
       const items = document.querySelectorAll(".item");
