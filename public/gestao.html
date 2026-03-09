@@ -874,8 +874,10 @@ function getMaturidade(doc){
       if(statusSel === "Abertas" && stAud.key !== "Aberta") return false;
       if(statusSel === "Fechadas" && stAud.key !== "Fechada") return false;
 
-      const auditor = String(doc.auditorSemana || "").toLowerCase();
-      if(auditorTxt && !auditor.includes(auditorTxt)) return false;
+      const auditorProgramadoFiltro = String(doc.auditorProgramado || "").toLowerCase();
+const auditorRealizadorFiltro = String(doc.auditorRealizador || doc.auditorSemana || "").toLowerCase();
+
+if(auditorTxt && !(auditorProgramadoFiltro.includes(auditorTxt) || auditorRealizadorFiltro.includes(auditorTxt))) return false;
 
       if(buscaTxt){
         const id = String(doc._id || "").toLowerCase();
