@@ -1,4 +1,3 @@
-const Calendario5S = require('./models/avaliacao5s/Calendario5S');
 const Inspecao    = require('./models/Inspecao');
 const Aptidao     = require('./models/Aptidao');
 const PDFDocument = require('pdfkit');
@@ -15,7 +14,7 @@ const { sendAuditoriaCreatedEmail } = require('./src/utils/mailer');
 
 // ✅ 5S (NOVO) — model
 const Auditoria5S = require('./models/avaliacao5s/Auditoria5S');
-
+const Calendario5S = require('./models/avaliacao5s/Calendario5S');
 // 🔹 Cloudinary
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
