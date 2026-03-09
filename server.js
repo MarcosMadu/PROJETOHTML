@@ -574,6 +574,82 @@ app.post('/api/5s/auditorias/bulk-delete', async (req, res) => {
   }
 });
 
+
+// BAIXA DE DESVIO NC (5S)
+app.post('/api/5s/auditorias/:id/itens/:itemId/desvios/:index/baixa', upload5S.single('foto'), async (req, res) => {
+  try {
+    const { id, itemId, index } = req.params;
+    const idx = Number(index);
+
+    const responsavelCorrecao =
+      req.body.responsavelCorrecao ||
+      req.body.responsavel ||
+      '';
+
+    const comentario =
+      req.body.comentario ||
+      '';
+
+    if (!responsavelCorrecao) {
+      return res.status(400).json({ error: 'Responsável pela correção é obrigatório.' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'Foto da correção é obrigatória.' });
+    }
+
+    const auditoria = await Auditoria5S.findById(id);
+    if (!auditoria) {
+      return res.status(404).json({ error: 'Auditoria não encontrada.' });
+    }
+
+    const item = auditoria.itens.find(i => String(i.itemId) === String(itemId));
+    if (!item) {
+      return res.status(404).json({ error: 'Item não encontrado na auditoria.' });
+    }
+
+    if (!Array.isArray(item.desvios) || !item.desvios[idx]) {
+      return res.status(404).json({ error: 'Desvio não encontrado.' });
+    }
+
+    const desvio = item.desvios[idx];
+
+    desvio.baixa = {
+      responsavelCorrecao,
+      comentario,
+      dataHora: new Date().toLocaleString('pt-BR'),
+      fotosResolucao: [
+        {
+          public_id: req.file.filename || null,
+          secure_url: req.file.path || null,
+          url: req.file.path || null,
+          original_filename: req.file.originalname || null,
+          format: (req.file.mimetype || '').split('/')[1] || null,
+          bytes: typeof req.file.size === 'number' ? req.file.size : null,
+          resource_type: 'image',
+          name: req.file.originalname || null,
+          type: req.file.mimetype || null,
+          size: typeof req.file.size === 'number' ? req.file.size : null
+        }
+      ]
+    };
+
+    await auditoria.save();
+
+    return res.json({
+      ok: true,
+      message: 'Baixa registrada com sucesso.'
+    });
+
+  } catch (err) {
+    console.error('Erro ao dar baixa do desvio 5S:', err);
+    return res.status(500).json({
+      error: 'Falha ao dar baixa.',
+      detalhe: err.message
+    });
+  }
+});
+
 // ===================================================================
 // ======================= ENVIAR NOTIFICAÇÃO =========================
 // ===================================================================
