@@ -914,7 +914,7 @@ function getMaturidade(doc){
       const list = registrosAll.filter(matchesFilter);
 
       if(!list.length){
-        tbody.innerHTML = `<tr><td colspan="8" style="color:var(--muted)">Nenhum registro encontrado com os filtros atuais.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="11" style="color:var(--muted)">Nenhum registro encontrado com os filtros atuais.</td></tr>`;
         setKPIs(list, $("fSemana").value === "Todas" ? null : $("fSemana").value);
         updateBulkUI();
         return;
