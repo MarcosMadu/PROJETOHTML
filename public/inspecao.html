@@ -1120,6 +1120,11 @@
               <strong>Dias Resolução</strong>
               <span>${r.diasResolucao ?? "-"}</span>
             </div>
+
+            <div class="detail-item" style="grid-column:1 / -1;">
+  <strong>Descrição</strong>
+  <span>${escapeHtml(r.descricao || "Não informada")}</span>
+</div>
           </div>
         </div>
       `).join("");
