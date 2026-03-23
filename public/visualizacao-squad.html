@@ -1189,55 +1189,100 @@
     }
 
     function normalizeRow(row){
-      const id = getCell(row, ["ID", "Id", "id"]);
-      const tipo = normalizeText(getCell(row, ["Tipo Registro", "Tipo de Registro", "TIPO REGISTRO"]));
-      const categoria = normalizeText(getCell(row, ["Categoria", "CATEGORIA", "Categoria Registro", "Classificação", "CLASSIFICAÇÃO"]));
-      const area = normalizeArea(getCell(row, ["Área", "AREA", "Area"]));
-      const emissor = normalizePerson(getCell(row, ["Emissor", "EMISSOR"]));
-      const status = normalizeStatus(getCell(row, ["Status Geral", "Status", "STATUS GERAL"]));
-      const dataEmissao = parseExcelDate(getCell(row, ["Data Emissão", "Data Emissao", "DATA EMISSÃO", "DATA EMISSAO"]));
-      const prazo = parseExcelDate(getCell(row, ["Prazo", "PRAZO"]));
-      const dataConclusao = parseExcelDate(getCell(row, ["Data Conclusão", "Data Conclusao", "DATA CONCLUSÃO", "DATA CONCLUSAO"]));
+  const id = getCell(row, ["N° do Termo", "Nº do Termo", "Numero do Termo", "ID"]);
 
-      const ano = dataEmissao ? dataEmissao.getFullYear() : "";
-      const mes = dataEmissao ? dataEmissao.getMonth() + 1 : "";
-      const semana = dataEmissao ? getISOWeek(dataEmissao) : "";
-      const dia = dataEmissao ? dataEmissao.getDate() : "";
+  const tipo = normalizeText(getCell(row, [
+    "Tipo de Registro",
+    "TIPO DE REGISTRO"
+  ]));
 
-      const resolvida = ["Resolvido", "Resolvido com atraso"].includes(status);
-      const vencida = status === "Vencido";
-      const aberta = status === "Em aberto";
-      const noPrazo = status === "No prazo";
-      const resolvidaAtraso = status === "Resolvido com atraso";
+  const categoria = normalizeText(getCell(row, [
+    "Categoria",
+    "Classificação",
+    "CLASSIFICAÇÃO"
+  ]) || tipo); // fallback
 
-      const diasResolucao =
-        (dataEmissao && dataConclusao)
-          ? diffDays(new Date(dataEmissao), new Date(dataConclusao))
-          : null;
+  const area = normalizeArea(getCell(row, [
+    "Área",
+    "AREA",
+    "Gerência de Área",
+    "GERENCIA DE AREA"
+  ]));
 
-      return {
-        id: String(id || "").trim(),
-        tipoRegistro: tipo || "Não informado",
-        categoria: categoria || "Não informada",
-        area: area || "Não informada",
-        emissor: emissor || "Não informado",
-        status: status || "Não informado",
-        dataEmissao,
-        prazo,
-        dataConclusao,
-        anoEmissao: ano,
-        mesEmissao: mes,
-        semanaEmissao: semana,
-        diaEmissao: dia,
-        resolvida,
-        resolvidaAtraso,
-        vencida,
-        aberta,
-        noPrazo,
-        diasResolucao
-      };
+  const emissor = normalizePerson(getCell(row, [
+    "Emissor",
+    "EMISSOR"
+  ]));
+
+  const dataEmissao = parseExcelDate(getCell(row, [
+    "Data de Emissão",
+    "Data de Emissao",
+    "DATA DE EMISSÃO",
+    "DATA DE EMISSAO",
+    "Data Emissão",
+    "Data Emissao"
+  ]));
+
+  // ⚠️ ESSA PLANILHA NÃO TEM PRAZO → vamos simular vazio
+  const prazo = null;
+
+  // ⚠️ SEM DATA DE CONCLUSÃO → não tem resolução real
+  const dataConclusao = null;
+
+  // =========================
+  // REGRAS DE STATUS (INTELIGENTE)
+  // =========================
+
+  let status = "Em aberto";
+
+  // Se quiser evoluir depois, dá pra usar regras baseadas em tempo
+
+  const hoje = new Date();
+
+  let vencida = false;
+  let noPrazo = true;
+
+  // Exemplo: considerar vencido se passou de 15 dias
+  if(dataEmissao){
+    const dias = diffDays(new Date(dataEmissao), new Date(hoje));
+    if(dias > 15){
+      status = "Vencido";
+      vencida = true;
+      noPrazo = false;
     }
+  }
 
+  const resolvida = false;
+  const resolvidaAtraso = false;
+  const aberta = true;
+
+  const ano = dataEmissao ? dataEmissao.getFullYear() : "";
+  const mes = dataEmissao ? dataEmissao.getMonth() + 1 : "";
+  const semana = dataEmissao ? getISOWeek(dataEmissao) : "";
+  const dia = dataEmissao ? dataEmissao.getDate() : "";
+
+  return {
+    id: String(id || "").trim(),
+    tipoRegistro: tipo || "Não informado",
+    categoria: categoria || "Não informada",
+    area: area || "Não informada",
+    emissor: emissor || "Não informado",
+    status,
+    dataEmissao,
+    prazo,
+    dataConclusao,
+    anoEmissao: ano,
+    mesEmissao: mes,
+    semanaEmissao: semana,
+    diaEmissao: dia,
+    resolvida,
+    resolvidaAtraso,
+    vencida,
+    aberta,
+    noPrazo,
+    diasResolucao: null
+  };
+}
     function getCell(row, aliases){
       for(const key of aliases){
         if(Object.prototype.hasOwnProperty.call(row, key)) return row[key];
