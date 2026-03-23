@@ -1233,6 +1233,13 @@
     "EMISSOR"
   ]));
 
+   const descricao = normalizeText(getCell(row, [
+    "Descrição",
+    "DESCRIÇÃO",
+    "Descricao",
+    "DESCRICAO"
+  ]));
+
   const dataEmissao = parseExcelDate(getCell(row, [
     "Data de Emissão",
     "Data de Emissao",
