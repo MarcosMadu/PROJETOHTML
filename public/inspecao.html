@@ -1029,6 +1029,24 @@
 
     initDefaultFilters();
 
+    function loadStaticData(){
+  if (!window.NOTIFICACOES_STATIC || !Array.isArray(window.NOTIFICACOES_STATIC)) {
+    console.warn("Base estática não encontrada.");
+    return;
+  }
+
+  normalizedData = window.NOTIFICACOES_STATIC.map(item => ({
+    ...item,
+    dataEmissao: item.dataEmissao ? new Date(item.dataEmissao) : null,
+    prazo: item.prazo ? new Date(item.prazo) : null,
+    dataConclusao: item.dataConclusao ? new Date(item.dataConclusao) : null
+  }));
+
+  populateFilters(normalizedData);
+  applyFiltersAndRender();
+  fileStatus.textContent = `Base estática carregada. Registros: ${normalizedData.length}`;
+}
+
     function openDrawer(){
       detailDrawer.classList.add("open");
       drawerBackdrop.classList.add("open");
@@ -1889,6 +1907,10 @@
 
       drawerList.innerHTML = "";
       drawerSummary.innerHTML = "";
+
+      window.addEventListener("DOMContentLoaded", () => {
+  loadStaticData();
+});
 
       Object.values(charts).forEach(chart => chart.destroy());
     }
