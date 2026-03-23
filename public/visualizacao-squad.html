@@ -1188,7 +1188,7 @@
       return workbook.SheetNames[0] || null;
     }
 
-    function normalizeRow(row){
+     function normalizeRow(row){
   const id = getCell(row, ["N° do Termo", "Nº do Termo", "Numero do Termo", "ID"]);
 
   const tipo = normalizeText(getCell(row, [
@@ -1200,7 +1200,7 @@
     "Categoria",
     "Classificação",
     "CLASSIFICAÇÃO"
-  ]) || tipo); // fallback
+  ]) || tipo);
 
   const area = normalizeArea(getCell(row, [
     "Área",
@@ -1214,6 +1214,13 @@
     "EMISSOR"
   ]));
 
+  const descricao = normalizeText(getCell(row, [
+    "Descrição",
+    "DESCRIÇÃO",
+    "Descricao",
+    "DESCRICAO"
+  ]));
+
   const dataEmissao = parseExcelDate(getCell(row, [
     "Data de Emissão",
     "Data de Emissao",
@@ -1223,26 +1230,15 @@
     "Data Emissao"
   ]));
 
-  // ⚠️ ESSA PLANILHA NÃO TEM PRAZO → vamos simular vazio
   const prazo = null;
-
-  // ⚠️ SEM DATA DE CONCLUSÃO → não tem resolução real
   const dataConclusao = null;
-
-  // =========================
-  // REGRAS DE STATUS (INTELIGENTE)
-  // =========================
 
   let status = "Em aberto";
 
-  // Se quiser evoluir depois, dá pra usar regras baseadas em tempo
-
   const hoje = new Date();
-
   let vencida = false;
   let noPrazo = true;
 
-  // Exemplo: considerar vencido se passou de 15 dias
   if(dataEmissao){
     const dias = diffDays(new Date(dataEmissao), new Date(hoje));
     if(dias > 15){
@@ -1267,6 +1263,7 @@
     categoria: categoria || "Não informada",
     area: area || "Não informada",
     emissor: emissor || "Não informado",
+    descricao: descricao || "Não informada",
     status,
     dataEmissao,
     prazo,
