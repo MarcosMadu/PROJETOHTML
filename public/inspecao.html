@@ -1908,12 +1908,13 @@
       drawerList.innerHTML = "";
       drawerSummary.innerHTML = "";
 
-      window.addEventListener("DOMContentLoaded", () => {
-  loadStaticData();
-});
-
       Object.values(charts).forEach(chart => chart.destroy());
     }
+
+    // 🔥 CARREGA BASE ESTÁTICA AUTOMATICAMENTE
+window.addEventListener("DOMContentLoaded", () => {
+  loadStaticData();
+});
   </script>
 </body>
 </html>
