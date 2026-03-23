@@ -1233,6 +1233,14 @@
     "GERENCIA DE AREA"
   ]));
 
+    const local = normalizeArea(getCell(row, [
+    "Local",
+    "LOCAL",
+    "local",
+    
+  ]));
+
+
   const emissor = normalizePerson(getCell(row, [
     "Emissor",
     "EMISSOR"
@@ -1286,6 +1294,7 @@
     tipoRegistro: tipo || "Não informado",
     categoria: categoria || "Não informada",
     area: area || "Não informada",
+    local: local || "Não informada",
     emissor: emissor || "Não informado",
     descricao: descricao || "Não informada",
     status,
