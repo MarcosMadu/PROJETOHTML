@@ -6,26 +6,403 @@
 <title>Telemetria | Gráficos Vinculados</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-:root{--line:rgba(255,255,255,.08);--text:#edf4ff;--muted:#9db2d4;--shadow:0 18px 40px rgba(0,0,0,.32);--radius:24px}
+:root{
+  --line:rgba(255,255,255,.08);
+  --text:#edf4ff;
+  --muted:#9db2d4;
+  --shadow:0 18px 40px rgba(0,0,0,.32);
+  --radius:24px;
+
+  --bg-grad-1:#06101d;
+  --bg-grad-2:#0a1830;
+  --bg-grad-3:#07111d;
+  --hero-grad:linear-gradient(135deg,rgba(83,200,255,.14),rgba(122,240,210,.07),rgba(255,255,255,.03));
+  --panel-bg:rgba(13,29,53,.85);
+  --btn-bg:rgba(255,255,255,.05);
+  --btn-text:#eef6ff;
+  --input-bg:#081426;
+  --input-text:#eef6ff;
+  --metric-sub:#c8d7ee;
+  --month-nav-bg:rgba(255,255,255,.05);
+  --month-nav-text:#d6ebff;
+  --side-item-bg:linear-gradient(135deg,rgba(255,255,255,.03),rgba(83,200,255,.04));
+  --rank-badge-bg:rgba(122,240,210,.12);
+  --rank-badge-text:#d5fff4;
+  --chart-grid:rgba(255,255,255,.08);
+  --chart-tick:#bfd2f0;
+  --chart-label:#d9e9ff;
+  --legend-color:#edf4ff;
+
+  --theme-switch-bg:rgba(18,28,48,.9);
+  --theme-switch-border:rgba(255,255,255,.08);
+  --theme-switch-btn:#eaf2ff;
+  --theme-switch-active:#5c7399;
+}
+
+body.light{
+  --line:rgba(15,35,60,.10);
+  --text:#1a2330;
+  --muted:#5f7188;
+  --shadow:0 18px 40px rgba(17,34,68,.10);
+
+  --bg-grad-1:#f8fbff;
+  --bg-grad-2:#edf4fb;
+  --bg-grad-3:#e7eef8;
+  --hero-grad:linear-gradient(135deg,rgba(38,132,255,.10),rgba(31,200,165,.08),rgba(255,255,255,.88));
+  --panel-bg:rgba(255,255,255,.92);
+  --btn-bg:#ffffff;
+  --btn-text:#1a2330;
+  --input-bg:#f7fafe;
+  --input-text:#1a2330;
+  --metric-sub:#6b7d95;
+  --month-nav-bg:rgba(38,132,255,.06);
+  --month-nav-text:#2c4565;
+  --side-item-bg:linear-gradient(135deg,rgba(255,255,255,.95),rgba(38,132,255,.05));
+  --rank-badge-bg:rgba(31,200,165,.12);
+  --rank-badge-text:#0d6a58;
+  --chart-grid:rgba(15,35,60,.08);
+  --chart-tick:#617691;
+  --chart-label:#41556f;
+  --legend-color:#314660;
+
+  --theme-switch-bg:rgba(255,255,255,.9);
+  --theme-switch-border:rgba(15,35,60,.10);
+  --theme-switch-btn:#32445f;
+  --theme-switch-active:#dbe6f7;
+}
+
 *{box-sizing:border-box}
-body{margin:0;font-family:Segoe UI,Inter,Arial,sans-serif;color:var(--text);background:radial-gradient(circle at top right,rgba(83,200,255,.18),transparent 22%),linear-gradient(160deg,#06101d,#0a1830 55%,#07111d)}
-.wrap{max-width:1700px;margin:auto;padding:24px}
-.hero{padding:30px;border-radius:30px;border:1px solid var(--line);background:linear-gradient(135deg,rgba(83,200,255,.14),rgba(122,240,210,.07),rgba(255,255,255,.03));box-shadow:var(--shadow)}
-h1{margin:0 0 8px;font-size:clamp(30px,4vw,48px)} .sub{margin:0;color:var(--muted);line-height:1.65;max-width:980px}
-.nav{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
-.btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 16px;border-radius:14px;text-decoration:none;border:1px solid var(--line);background:rgba(255,255,255,.05);color:#eef6ff;font-weight:700;cursor:pointer}
-.btn.primary{background:linear-gradient(135deg,rgba(83,200,255,.28),rgba(122,240,210,.22));border-color:rgba(83,200,255,.35)}
-.topbar{display:grid;grid-template-columns:1.2fr .9fr .9fr .8fr;gap:16px;margin:20px 0}
-.panel,.metric{background:rgba(13,29,53,.85);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
-.metric{padding:18px 20px} .metric .k{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px} .metric .v{font-size:32px;font-weight:800} .metric .s{margin-top:6px;color:#c8d7ee;font-size:13px}
-.filters{padding:18px;display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:14px;align-items:end}
-label{display:block;font-size:12px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.12em} select,input{width:100%;padding:13px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:#081426;color:#eef6ff;outline:none}
-.month-nav{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 22px} .month-nav a{text-decoration:none;color:#d6ebff;padding:10px 14px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);font-size:13px}
-.charts{display:grid;gap:18px} .chart-card{padding:16px 16px 8px} .chart-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:6px 8px 14px} .chart-title{font-size:20px;font-weight:800} .chart-sub{color:var(--muted);font-size:13px;margin-top:4px} .chart-box{height:520px;padding:0 8px 12px}
-.split{display:grid;grid-template-columns:1.4fr .9fr;gap:18px;margin-top:18px} .side-list{padding:16px;display:grid;gap:12px} .side-item{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.06);background:linear-gradient(135deg,rgba(255,255,255,.03),rgba(83,200,255,.04))}
-.n{width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:rgba(122,240,210,.12);color:#d5fff4;font-weight:800} .nm{font-weight:700} .sb{font-size:12px;color:var(--muted)} .vv{font-size:22px;font-weight:800}
-.note{color:var(--muted);font-size:13px;padding:0 16px 16px}
-@media (max-width:1200px){.topbar,.split,.filters{grid-template-columns:1fr}.chart-box{height:430px}}
+
+body{
+  margin:0;
+  font-family:Segoe UI,Inter,Arial,sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(circle at top right,rgba(83,200,255,.18),transparent 22%),
+    linear-gradient(160deg,var(--bg-grad-1),var(--bg-grad-2) 55%,var(--bg-grad-3));
+  transition:background .35s ease,color .25s ease;
+}
+
+.wrap{
+  max-width:1700px;
+  margin:auto;
+  padding:24px 24px 120px;
+}
+
+.hero{
+  padding:30px;
+  border-radius:30px;
+  border:1px solid var(--line);
+  background:var(--hero-grad);
+  box-shadow:var(--shadow);
+  transition:background .3s ease,border-color .3s ease,box-shadow .3s ease;
+}
+
+h1{
+  margin:0 0 8px;
+  font-size:clamp(30px,4vw,48px);
+}
+
+.sub{
+  margin:0;
+  color:var(--muted);
+  line-height:1.65;
+  max-width:980px;
+}
+
+.nav{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-top:18px;
+}
+
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:12px 16px;
+  border-radius:14px;
+  text-decoration:none;
+  border:1px solid var(--line);
+  background:var(--btn-bg);
+  color:var(--btn-text);
+  font-weight:700;
+  cursor:pointer;
+  transition:transform .18s ease,background .25s ease,border-color .25s ease,box-shadow .25s ease,color .25s ease;
+}
+
+.btn:hover{
+  transform:translateY(-2px);
+}
+
+.btn.primary{
+  background:linear-gradient(135deg,rgba(83,200,255,.28),rgba(122,240,210,.22));
+  border-color:rgba(83,200,255,.35);
+}
+
+body.light .btn.primary{
+  background:linear-gradient(135deg,rgba(38,132,255,.16),rgba(31,200,165,.14));
+  border-color:rgba(38,132,255,.20);
+}
+
+.topbar{
+  display:grid;
+  grid-template-columns:1.2fr .9fr .9fr .8fr;
+  gap:16px;
+  margin:20px 0;
+}
+
+.panel,.metric{
+  background:var(--panel-bg);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  transition:background .3s ease,border-color .3s ease,box-shadow .3s ease;
+}
+
+.metric{
+  padding:18px 20px;
+}
+
+.metric .k{
+  font-size:12px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:10px;
+}
+
+.metric .v{
+  font-size:32px;
+  font-weight:800;
+}
+
+.metric .s{
+  margin-top:6px;
+  color:var(--metric-sub);
+  font-size:13px;
+}
+
+.filters{
+  padding:18px;
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr auto;
+  gap:14px;
+  align-items:end;
+}
+
+label{
+  display:block;
+  font-size:12px;
+  color:var(--muted);
+  margin-bottom:8px;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+}
+
+select,input{
+  width:100%;
+  padding:13px 14px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:var(--input-bg);
+  color:var(--input-text);
+  outline:none;
+  transition:border-color .2s ease,box-shadow .2s ease,background .25s ease,color .25s ease;
+}
+
+.month-nav{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:14px 0 22px;
+}
+
+.month-nav a{
+  text-decoration:none;
+  color:var(--month-nav-text);
+  padding:10px 14px;
+  border-radius:999px;
+  background:var(--month-nav-bg);
+  border:1px solid var(--line);
+  font-size:13px;
+}
+
+.charts{
+  display:grid;
+  gap:18px;
+}
+
+.chart-card{
+  padding:16px 16px 8px;
+}
+
+.chart-head{
+  display:flex;
+  justify-content:space-between;
+  gap:14px;
+  align-items:flex-start;
+  padding:6px 8px 14px;
+}
+
+.chart-title{
+  font-size:20px;
+  font-weight:800;
+}
+
+.chart-sub{
+  color:var(--muted);
+  font-size:13px;
+  margin-top:4px;
+}
+
+.chart-box{
+  height:520px;
+  padding:0 8px 12px;
+}
+
+.split{
+  display:grid;
+  grid-template-columns:1.4fr .9fr;
+  gap:18px;
+  margin-top:18px;
+}
+
+.side-list{
+  padding:16px;
+  display:grid;
+  gap:12px;
+}
+
+.side-item{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  gap:12px;
+  align-items:center;
+  padding:12px 14px;
+  border-radius:16px;
+  border:1px solid var(--line);
+  background:var(--side-item-bg);
+}
+
+.n{
+  width:34px;
+  height:34px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:var(--rank-badge-bg);
+  color:var(--rank-badge-text);
+  font-weight:800;
+}
+
+.nm{
+  font-weight:700;
+}
+
+.sb{
+  font-size:12px;
+  color:var(--muted);
+}
+
+.vv{
+  font-size:22px;
+  font-weight:800;
+}
+
+.note{
+  color:var(--muted);
+  font-size:13px;
+  padding:0 16px 16px;
+}
+
+/* seletor de tema */
+.theme-dock{
+  position:fixed;
+  left:50%;
+  bottom:18px;
+  transform:translateX(-50%);
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:8px;
+  border-radius:20px;
+  background:var(--theme-switch-bg);
+  border:1px solid var(--theme-switch-border);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  box-shadow:0 18px 45px rgba(0,0,0,.22);
+  z-index:1200;
+}
+
+.theme-option{
+  width:50px;
+  height:44px;
+  border:none;
+  border-radius:14px;
+  background:transparent;
+  color:var(--theme-switch-btn);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  transition:all .25s ease;
+  position:relative;
+}
+
+.theme-option svg{
+  width:22px;
+  height:22px;
+  stroke:currentColor;
+  transition:transform .25s ease;
+}
+
+.theme-option:hover{
+  transform:translateY(-1px);
+}
+
+.theme-option:hover svg{
+  transform:scale(1.06);
+}
+
+.theme-option.active{
+  background:var(--theme-switch-active);
+  color:#ffffff;
+}
+
+body.light .theme-option.active{
+  color:#234;
+}
+
+.theme-option.active svg{
+  transform:scale(1.05);
+}
+
+@media (max-width:1200px){
+  .topbar,.split,.filters{
+    grid-template-columns:1fr;
+  }
+  .chart-box{
+    height:430px;
+  }
+}
+
+@media (max-width:760px){
+  .wrap{
+    padding:14px 14px 120px;
+  }
+
+  .theme-dock{
+    bottom:14px;
+    padding:7px;
+  }
+
+  .theme-option{
+    width:46px;
+    height:42px;
+  }
+}
 </style>
 </head>
 <body>
@@ -79,10 +456,42 @@ label{display:block;font-size:12px;color:var(--muted);margin-bottom:8px;text-tra
   </section>
 </div>
 
-<script>
+<div class="theme-dock" aria-label="Seletor de tema">
+  <button class="theme-option" id="themeDark" type="button" title="Tema escuro" aria-label="Tema escuro">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path>
+    </svg>
+  </button>
 
+  <button class="theme-option" id="themeLight" type="button" title="Tema claro" aria-label="Tema claro">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="4"></circle>
+      <path d="M12 2v2"></path>
+      <path d="M12 20v2"></path>
+      <path d="M4.93 4.93l1.41 1.41"></path>
+      <path d="M17.66 17.66l1.41 1.41"></path>
+      <path d="M2 12h2"></path>
+      <path d="M20 12h2"></path>
+      <path d="M6.34 17.66l-1.41 1.41"></path>
+      <path d="M19.07 4.93l-1.41 1.41"></path>
+    </svg>
+  </button>
+
+  <button class="theme-option" id="themeAuto" type="button" title="Automático" aria-label="Tema automático">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="4" width="18" height="12" rx="2"></rect>
+      <path d="M8 20h8"></path>
+      <path d="M12 16v4"></path>
+    </svg>
+  </button>
+</div>
+
+<script>
 const RAW_DATA = [{"valores":[5,5,7,8,9,10,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"funcao_raw":"MORISTA DE ÃNIBUS ","nome":"ADVALDO DE MELO FERREIRA"},{"funcao_raw":"MORISTA DE ÃNIBUS ","valores":[6,5,8,9,10,11,12,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"nome":"ALDAYR SODRE  PEREIRA"},{"nome":"DAVID TEIXEIRA REIS JUNIOR","valores":[7,6,9,10,11,12,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"funcao_raw":"MORISTA DE ÃNIBUS "},{"valores":[8,7,10,11,12,13,14,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"funcao_raw":"MORISTA DE ÃNIBUS ","nome":"ELESANDRO DA SILVA RIBEIRO"},{"valores":[9,8,11,12,13,14,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"funcao_raw":"MORISTA DE ÃNIBUS ","nome":"ELSON GRANJEIRO DOS SANTOS"},{"funcao_raw":"MORISTA DE ÃNIBUS ","valores":[10,9,12,13,14,15,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"nome":"FABIO JUNIOR DA SILVA OLIVEIRA"},{"nome":"FIRTECICLEI MARTINS DE SOUSA","funcao_raw":"MORISTA DE ÃNIBUS ","valores":[11,10,13,14,15,16,17,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"nome":"FRANCISCO DE ASSIS MARTINS JUNIOR","valores":[12,11,14,15,16,17,18,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"funcao_raw":"MORISTA DE ÃNIBUS "},{"valores":[13,12,15,16,17,18,19,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"funcao_raw":"MOTORISTA DE VEICULOS LEVE","nome":"GISLEY SOARES LISBOA"},{"funcao_raw":"MOTORISTA DE VEICULOS LEVE","valores":[14,13,16,17,18,19,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"nome":"HEGRI FERREIRA FERNANDES"},{"nome":"HENRIQUE MORAIS DA SILVA","funcao_raw":"MOTORISTA DE VEICULOS LEVE","valores":[15,14,17,18,19,20,21,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"nome":"HILDERSON KENNEDY DE NAZARE BATISTA DA SILVA","valores":[16,15,18,19,20,21,22,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"funcao_raw":"MORISTA DE ÃNIBUS "},{"funcao_raw":"MORISTA DE ÃNIBUS ","valores":[17,16,19,20,21,22,23,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"nome":"IRSONLEY CUTRIM SILVA"},{"funcao_raw":"MORISTA DE ÃNIBUS ","valores":[18,17,20,21,22,23,24,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"nome":"ISAIAS DA CRUZ SOARES JUNIOR"},{"funcao_raw":"MORISTA DE ÃNIBUS ","valores":[19,18,21,22,23,24,25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"nome":"JOSE NILTON COSTA SILVA"},{"nome":"JOSE RIBAMAR FRANÃA FILHO","funcao_raw":"MORISTA DE ÃNIBUS ","valores":[20,19,22,23,24,25,26,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"funcao_raw":"MORISTA DE ÃNIBUS ","valores":[21,20,23,24,25,26,27,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"nome":"LUIZ EDUARDO MAIA SOUZA"},{"nome":"MARCELO DIAS OLIVEIRA","funcao_raw":"MORISTA DE ÃNIBUS ","valores":[22,21,24,25,26,27,28,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"nome":"MARCIO SOUSA ARAUJO","funcao_raw":"MORISTA DE ÃNIBUS ","valores":[23,22,25,26,27,28,29,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"nome":"MARCOS MARCIEL ORTEGAL GUIDA","funcao_raw":"MORISTA DE ÃNIBUS ","valores":[24,23,26,27,28,29,30,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"nome":"RAIMUNDO NONATO COSTA E SILVA","funcao_raw":"MORISTA DE ÃNIBUS ","valores":[25,24,27,28,29,30,31,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"nome":"RAIMUNDO NONATO DE SOUSA SENA","valores":[26,25,28,29,30,31,32,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"funcao_raw":"MORISTA DE ÃNIBUS "},{"nome":"RAIMUNDO VICENTE FERREIRA","funcao_raw":"MORISTA DE ÃNIBUS ","valores":[27,26,29,30,31,32,33,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"funcao_raw":"MORISTA DE ÃNIBUS ","valores":[28,27,30,31,32,33,34,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"nome":"RELSON SOUSA AGUIAR"},{"nome":"ROMARIO DO VALES ANDRADE","valores":[29,28,31,32,33,34,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"funcao_raw":"MOTORISTA DE VEICULOS LEVE"},{"nome":"RONALDO SOUSA DE ALMEIDA","funcao_raw":"MORISTA DE ÃNIBUS ","valores":[30,29,32,33,34,35,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"nome":"TIAGO RODRIGUES NASCIMENTO","valores":[31,30,33,34,35,36,37,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"funcao_raw":"MORISTA DE ÃNIBUS "},{"valores":[32,31,34,35,36,37,38,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"funcao_raw":"MORISTA DE ÃNIBUS ","nome":"WELINGTON MOREIRA RODRIGUES"},{"nome":"ZEZINHO URIAS DE OLIVEIRA JUNIOR","valores":[33,32,35,36,37,38,39,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"funcao_raw":"MORISTA DE ÃNIBUS "}];
+
 const STORAGE_KEY = 'TELEMETRIA_DB_V1';
+const THEME_KEY = 'TELEMETRIA_THEME_MODE_V2';
+
 const MONTHS = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 const ITEMS = [
   "SILLION Cartão Amarelo",
@@ -101,6 +510,7 @@ function normalizeRole(v=''){
   if (t.includes('ONIBUS') || t.includes('ÔNIBUS') || t.includes('NIBUS')) return 'Motorista de Ônibus';
   return 'Motorista';
 }
+
 function buildDefaultDB(){
   const drivers = RAW_DATA.map(row => {
     const months = {};
@@ -117,6 +527,7 @@ function buildDefaultDB(){
   });
   return {version:1, updatedAt:new Date().toISOString(), drivers};
 }
+
 function readDB(){
   try{
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -134,42 +545,52 @@ function readDB(){
     return db;
   }
 }
+
 function saveDB(db){
   db.updatedAt = new Date().toISOString();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
   window.dispatchEvent(new CustomEvent('telemetria-updated',{detail:db}));
 }
+
 function grandTotalForMonth(db, month){
   return db.drivers.reduce((acc,d)=> acc + ITEMS.reduce((a,item)=>a+Number(d.months[month][item]||0),0),0);
 }
+
 function totalForDriverMonth(driver, month){
   return ITEMS.reduce((a,item)=>a+Number(driver.months[month][item]||0),0);
 }
+
 function itemTotalsForMonth(db, month){
   return ITEMS.map(item => ({
     item,
     total: db.drivers.reduce((acc,d)=> acc + Number(d.months[month][item]||0), 0)
   }));
 }
+
 function generalMonthObject(driver){
   const obj = {};
   ITEMS.forEach(item => obj[item] = MONTHS.reduce((acc,m)=> acc + Number(driver.months[m][item]||0),0));
   return obj;
 }
+
 function grandTotalGeneral(db){
   return db.drivers.reduce((acc,d)=> acc + MONTHS.reduce((mAcc,m)=> mAcc + totalForDriverMonth(d,m), 0), 0);
 }
+
 function downloadText(filename, content, type='text/plain;charset=utf-8'){
   const blob = new Blob([content], {type});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = filename; a.click();
+  a.href = url;
+  a.download = filename;
+  a.click();
   setTimeout(()=>URL.revokeObjectURL(url), 1000);
 }
 
 let db = readDB();
 const MONTHS_PLUS = [...MONTHS, 'Geral'];
 const COLORS = ['rgba(225,240,255,.88)','rgba(176,219,255,.88)','rgba(133,203,255,.88)','rgba(108,186,255,.88)','rgba(88,222,209,.88)','rgba(122,240,210,.88)','rgba(72,151,255,.88)'];
+
 const els = {
   month: document.getElementById('highlightMonth'),
   driver: document.getElementById('driverHighlight'),
@@ -185,43 +606,69 @@ const els = {
   mLeader: document.getElementById('mLeader'),
   mLeaderSub: document.getElementById('mLeaderSub'),
   mItem: document.getElementById('mItem'),
-  mItemSub: document.getElementById('mItemSub')
+  mItemSub: document.getElementById('mItemSub'),
+  themeDark: document.getElementById('themeDark'),
+  themeLight: document.getElementById('themeLight'),
+  themeAuto: document.getElementById('themeAuto')
 };
+
 MONTHS_PLUS.forEach(m => {
   els.month.insertAdjacentHTML('beforeend', `<option value="${m}">${m}</option>`);
   els.nav.insertAdjacentHTML('beforeend', `<a href="#sec-${m}">${m}</a>`);
 });
+
 els.month.value = 'Janeiro';
+
 function refreshDriverOptions(){
   const current = els.driver.value;
   els.driver.innerHTML = `<option value="">Todos os motoristas</option>` + db.drivers.map(d=>`<option value="${d.id}">${d.nome}</option>`).join('');
   if(current && [...els.driver.options].some(o=>o.value===current)) els.driver.value = current;
 }
+
 function getFilteredDrivers(){
   const term = els.search.value.toLowerCase().trim();
   const chosen = els.driver.value;
   return db.drivers.filter(d => (!term || d.nome.toLowerCase().includes(term)) && (!chosen || d.id === chosen));
 }
+
 function totalForChart(driver, month, item){
   if(month === 'Geral') return generalMonthObject(driver)[item];
   return Number(driver.months[month][item] || 0);
 }
+
 function totalDriverPeriod(driver, month){
   if(month === 'Geral') return MONTHS.reduce((acc,m)=>acc + totalForDriverMonth(driver,m), 0);
   return totalForDriverMonth(driver, month);
 }
+
+function getThemeColors(){
+  const styles = getComputedStyle(document.body);
+  return {
+    legend: styles.getPropertyValue('--legend-color').trim() || '#edf4ff',
+    tick: styles.getPropertyValue('--chart-tick').trim() || '#bfd2f0',
+    xLabel: styles.getPropertyValue('--chart-label').trim() || '#d9e9ff',
+    grid: styles.getPropertyValue('--chart-grid').trim() || 'rgba(255,255,255,.08)'
+  };
+}
+
 let charts = [];
 let donut = null;
+
 function buildChart(month, drivers){
   const section = document.createElement('section');
   section.className = 'panel chart-card';
   section.id = `sec-${month}`;
+
   const periodTotal = month === 'Geral'
     ? drivers.reduce((acc,d)=> acc + MONTHS.reduce((a,m)=>a+totalForDriverMonth(d,m),0), 0)
     : drivers.reduce((acc,d)=> acc + totalForDriverMonth(d,month), 0);
+
   section.innerHTML = `<div class="chart-head"><div><div class="chart-title">${month}</div><div class="chart-sub">Comparativo por motorista e por item.</div></div><div class="chart-sub">Total do período: <strong>${periodTotal.toLocaleString('pt-BR')}</strong></div></div><div class="chart-box"><canvas></canvas></div>`;
   els.charts.appendChild(section);
+
   const ctx = section.querySelector('canvas');
+  const theme = getThemeColors();
+
   const datasets = ITEMS.map((item, idx) => ({
     label:item,
     data: drivers.map(d => totalForChart(d, month, item)),
@@ -229,6 +676,7 @@ function buildChart(month, drivers){
     borderRadius: 6,
     maxBarThickness: 24
   }));
+
   const chart = new Chart(ctx, {
     type:'bar',
     data:{ labels:drivers.map(d=>d.nome), datasets },
@@ -237,34 +685,54 @@ function buildChart(month, drivers){
       maintainAspectRatio:false,
       interaction:{mode:'index',intersect:false},
       plugins:{
-        legend:{labels:{color:'#edf4ff',boxWidth:14}},
+        legend:{labels:{color:theme.legend,boxWidth:14}},
         tooltip:{
           callbacks:{
             footer(items){
-              const total = items.reduce((acc,it)=>acc + Number(it.raw || 0), 0);
+              const total = items.reduce((acc,it)=> acc + Number(it.raw || 0), 0);
               return `Total do motorista: ${total}`;
             }
           }
         }
       },
       scales:{
-        x:{ticks:{color:'#d9e9ff',maxRotation:55,minRotation:55,autoSkip:false,font:{size:11}},grid:{display:false}},
-        y:{beginAtZero:true,ticks:{color:'#bfd2f0'},grid:{color:'rgba(255,255,255,.08)'}}
+        x:{
+          ticks:{
+            color:theme.xLabel,
+            maxRotation:55,
+            minRotation:55,
+            autoSkip:false,
+            font:{size:11}
+          },
+          grid:{display:false}
+        },
+        y:{
+          beginAtZero:true,
+          ticks:{color:theme.tick},
+          grid:{color:theme.grid}
+        }
       }
     }
   });
+
   charts.push(chart);
 }
+
 function renderSide(){
   const month = els.month.value;
   const drivers = getFilteredDrivers();
+  const theme = getThemeColors();
+
   els.mDrivers.textContent = db.drivers.length;
+
   const ranked = drivers.slice().sort((a,b)=>totalDriverPeriod(b,month)-totalDriverPeriod(a,month)).slice(0,10);
   const leader = ranked[0];
+
   els.mTotal.textContent = (month === 'Geral'
     ? drivers.reduce((acc,d)=> acc + MONTHS.reduce((a,m)=>a+totalForDriverMonth(d,m),0), 0)
     : drivers.reduce((acc,d)=> acc + totalForDriverMonth(d,month), 0)
   ).toLocaleString('pt-BR');
+
   els.mLeader.textContent = leader ? leader.nome : '-';
   els.mLeaderSub.textContent = leader ? `${totalDriverPeriod(leader,month)} ocorrências em ${month}` : '-';
 
@@ -272,6 +740,7 @@ function renderSide(){
     item,
     total: drivers.reduce((acc,d)=> acc + totalForChart(d,month,item), 0)
   })).sort((a,b)=>b.total-a.total);
+
   const topItem = totals[0] || {item:'-',total:0};
   els.mItem.textContent = topItem.item.replace('Sinais de ','');
   els.mItemSub.textContent = `${topItem.total.toLocaleString('pt-BR')} ocorrências em ${month}`;
@@ -281,10 +750,30 @@ function renderSide(){
   if(donut) donut.destroy();
   donut = new Chart(document.getElementById('donutChart'), {
     type:'doughnut',
-    data:{ labels: totals.map(t=>t.item), datasets:[{ data: totals.map(t=>t.total), backgroundColor: COLORS, borderWidth:0 }] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ color:'#edf4ff', boxWidth:14 } } } }
+    data:{
+      labels: totals.map(t=>t.item),
+      datasets:[{
+        data: totals.map(t=>t.total),
+        backgroundColor: COLORS,
+        borderWidth:0
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{
+        legend:{
+          position:'bottom',
+          labels:{
+            color:theme.legend,
+            boxWidth:14
+          }
+        }
+      }
+    }
   });
 }
+
 function renderCharts(){
   charts.forEach(c=>c.destroy());
   charts = [];
@@ -293,21 +782,89 @@ function renderCharts(){
   MONTHS_PLUS.forEach(month => buildChart(month, drivers));
   renderSide();
 }
+
 function refreshAll(){
   db = readDB();
   refreshDriverOptions();
   renderCharts();
 }
+
+function getSystemTheme(){
+  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+}
+
+function resolveTheme(mode){
+  return mode === 'auto' ? getSystemTheme() : mode;
+}
+
+function applyThemeVisual(theme){
+  document.body.classList.toggle('light', theme === 'light');
+}
+
+function refreshThemeButtons(mode){
+  [els.themeDark, els.themeLight, els.themeAuto].forEach(btn => btn.classList.remove('active'));
+  if(mode === 'dark') els.themeDark.classList.add('active');
+  else if(mode === 'light') els.themeLight.classList.add('active');
+  else els.themeAuto.classList.add('active');
+}
+
+function setThemeMode(mode, rerenderCharts = true){
+  localStorage.setItem(THEME_KEY, mode);
+  applyThemeVisual(resolveTheme(mode));
+  refreshThemeButtons(mode);
+  if(rerenderCharts) renderCharts();
+}
+
+function initTheme(){
+  const savedMode = localStorage.getItem(THEME_KEY) || 'auto';
+  setThemeMode(savedMode, false);
+}
+
 els.reloadBtn.onclick = refreshAll;
 els.exportBtn.onclick = () => downloadText('telemetria-dados-visiveis.json', JSON.stringify(readDB(), null, 2), 'application/json;charset=utf-8');
 els.editBtn.onclick = () => location.href = 'telemetria_dados_vinculado.html';
+
 ['change','input'].forEach(evt => {
   els.month.addEventListener(evt, renderSide);
   els.driver.addEventListener(evt, renderCharts);
   els.search.addEventListener(evt, renderCharts);
 });
-window.addEventListener('storage', refreshAll);
+
+els.themeDark.addEventListener('click', ()=> setThemeMode('dark'));
+els.themeLight.addEventListener('click', ()=> setThemeMode('light'));
+els.themeAuto.addEventListener('click', ()=> setThemeMode('auto'));
+
+window.addEventListener('storage', () => {
+  const savedMode = localStorage.getItem(THEME_KEY) || 'auto';
+  applyThemeVisual(resolveTheme(savedMode));
+  refreshThemeButtons(savedMode);
+  refreshAll();
+});
+
 window.addEventListener('telemetria-updated', refreshAll);
+
+const mediaTheme = window.matchMedia('(prefers-color-scheme: light)');
+if (mediaTheme.addEventListener) {
+  mediaTheme.addEventListener('change', () => {
+    const mode = localStorage.getItem(THEME_KEY) || 'auto';
+    if(mode === 'auto'){
+      applyThemeVisual(resolveTheme(mode));
+      refreshThemeButtons(mode);
+      renderCharts();
+    }
+  });
+} else if (mediaTheme.addListener) {
+  mediaTheme.addListener(() => {
+    const mode = localStorage.getItem(THEME_KEY) || 'auto';
+    if(mode === 'auto'){
+      applyThemeVisual(resolveTheme(mode));
+      refreshThemeButtons(mode);
+      renderCharts();
+    }
+  });
+}
+
+initTheme();
 refreshAll();
 </script>
 </body>
