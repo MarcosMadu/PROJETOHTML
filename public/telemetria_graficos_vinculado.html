@@ -589,8 +589,15 @@ function downloadText(filename, content, type='text/plain;charset=utf-8'){
 
 let db = readDB();
 const MONTHS_PLUS = [...MONTHS, 'Geral'];
-const COLORS = ['rgba(225,240,255,.88)','rgba(176,219,255,.88)','rgba(133,203,255,.88)','rgba(108,186,255,.88)','rgba(88,222,209,.88)','rgba(122,240,210,.88)','rgba(72,151,255,.88)'];
-
+const COLORS = [
+  'rgba(255, 193, 7, 0.9)',   // SILLION - Amarelo
+  'rgba(220, 53, 69, 0.9)',   // Alerta de colisão - Vermelho
+  'rgba(121, 85, 72, 0.9)',   // Excesso de velocidade - Marrom
+  'rgba(13, 110, 253, 0.9)',  // Sonolência - Azul
+  'rgba(108, 117, 125, 0.9)', // Ultrapassagem - Cinza
+  'rgba(233, 30, 99, 0.9)',   // Uso de fone - Rosa
+  'rgba(111, 66, 193, 0.9)'   // Uso de rádio - Roxo
+];
 const els = {
   month: document.getElementById('highlightMonth'),
   driver: document.getElementById('driverHighlight'),
