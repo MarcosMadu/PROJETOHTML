@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Telemetria | Gráficos Vinculados</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{--line:rgba(255,255,255,.08);--text:#edf4ff;--muted:#9db2d4;--shadow:0 18px 40px rgba(0,0,0,.32);--radius:24px}
+*{box-sizing:border-box}
+body{margin:0;font-family:Segoe UI,Inter,Arial,sans-serif;color:var(--text);background:radial-gradient(circle at top right,rgba(83,200,255,.18),transparent 22%),linear-gradient(160deg,#06101d,#0a1830 55%,#07111d)}
+.wrap{max-width:1700px;margin:auto;padding:24px}
+.hero{padding:30px;border-radius:30px;border:1px solid var(--line);background:linear-gradient(135deg,rgba(83,200,255,.14),rgba(122,240,210,.07),rgba(255,255,255,.03));box-shadow:var(--shadow)}
+h1{margin:0 0 8px;font-size:clamp(30px,4vw,48px)} .sub{margin:0;color:var(--muted);line-height:1.65;max-width:980px}
+.nav{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 16px;border-radius:14px;text-decoration:none;border:1px solid var(--line);background:rgba(255,255,255,.05);color:#eef6ff;font-weight:700;cursor:pointer}
+.btn.primary{background:linear-gradient(135deg,rgba(83,200,255,.28),rgba(122,240,210,.22));border-color:rgba(83,200,255,.35)}
+.topbar{display:grid;grid-template-columns:1.2fr .9fr .9fr .8fr;gap:16px;margin:20px 0}
+.panel,.metric{background:rgba(13,29,53,.85);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.metric{padding:18px 20px} .metric .k{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px} .metric .v{font-size:32px;font-weight:800} .metric .s{margin-top:6px;color:#c8d7ee;font-size:13px}
+.filters{padding:18px;display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:14px;align-items:end}
+label{display:block;font-size:12px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.12em} select,input{width:100%;padding:13px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:#081426;color:#eef6ff;outline:none}
+.month-nav{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 22px} .month-nav a{text-decoration:none;color:#d6ebff;padding:10px 14px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);font-size:13px}
+.charts{display:grid;gap:18px} .chart-card{padding:16px 16px 8px} .chart-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:6px 8px 14px} .chart-title{font-size:20px;font-weight:800} .chart-sub{color:var(--muted);font-size:13px;margin-top:4px} .chart-box{height:520px;padding:0 8px 12px}
+.split{display:grid;grid-template-columns:1.4fr .9fr;gap:18px;margin-top:18px} .side-list{padding:16px;display:grid;gap:12px} .side-item{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.06);background:linear-gradient(135deg,rgba(255,255,255,.03),rgba(83,200,255,.04))}
+.n{width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:rgba(122,240,210,.12);color:#d5fff4;font-weight:800} .nm{font-weight:700} .sb{font-size:12px;color:var(--muted)} .vv{font-size:22px;font-weight:800}
+.note{color:var(--muted);font-size:13px;padding:0 16px 16px}
+@media (max-width:1200px){.topbar,.split,.filters{grid-template-columns:1fr}.chart-box{height:430px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="hero">
+    <h1>Gráficos Interativos de Telemetria</h1>
+    <p class="sub">Esta página lê automaticamente os dados salvos na página de base editável. Ao alterar os números no arquivo de dados e salvar, os gráficos refletem a atualização. Para uso em várias máquinas e vários usuários, depois vale migrar a persistência para backend.</p>
+    <div class="nav">
+      <a class="btn primary" href="telemetria_dados_vinculado.html">Abrir página de dados</a>
+      <button class="btn" id="reloadBtn">Recarregar base</button>
+      <button class="btn" id="exportBtn">Exportar dados visíveis</button>
+    </div>
+  </section>
+
+  <section class="topbar">
+    <div class="metric"><div class="k">Total de motoristas</div><div class="v" id="mDrivers">0</div><div class="s">Registros ativos na base</div></div>
+    <div class="metric"><div class="k">Desvios do mês</div><div class="v" id="mTotal">0</div><div class="s">Soma do mês em destaque</div></div>
+    <div class="metric"><div class="k">Motorista líder</div><div class="v" id="mLeader" style="font-size:20px">-</div><div class="s" id="mLeaderSub">-</div></div>
+    <div class="metric"><div class="k">Item mais crítico</div><div class="v" id="mItem" style="font-size:20px">-</div><div class="s" id="mItemSub">-</div></div>
+  </section>
+
+  <section class="panel filters">
+    <div>
+      <label>Mês em destaque</label>
+      <select id="highlightMonth"></select>
+    </div>
+    <div>
+      <label>Destacar motorista</label>
+      <select id="driverHighlight"></select>
+    </div>
+    <div>
+      <label>Filtro rápido</label>
+      <input id="quickSearch" type="text" placeholder="Filtrar por nome" />
+    </div>
+    <div>
+      <button class="btn primary" id="editBtn" style="width:100%">Editar dados</button>
+    </div>
+  </section>
+
+  <nav class="month-nav" id="monthNav"></nav>
+
+  <section class="split">
+    <div class="charts" id="chartsContainer"></div>
+    <div class="panel">
+      <div class="chart-head"><div><div class="chart-title">Ranking do mês em destaque</div><div class="chart-sub">Classificação automática pelo total do mês.</div></div></div>
+      <div class="side-list" id="sideRanking"></div>
+      <div class="chart-head" style="padding-top:0"><div><div class="chart-title">Distribuição por item</div><div class="chart-sub">Leitura resumida do mês em destaque.</div></div></div>
+      <div class="chart-box" style="height:360px"><canvas id="donutChart"></canvas></div>
+      <div class="note">Os gráficos exibem 12 meses + 1 consolidado geral. A base usada aqui é a mesma que está na página de dados vinculada.</div>
+    </div>
+  </section>
+</div>
+
+<script>
+
+const RAW_DATA = [{"valores":[5,5,7,8,9,10,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"funcao_raw":"MORISTA DE ÃNIBUS ","nome":"ADVALDO DE MELO FERREIRA"},{"funcao_raw":"MORISTA DE ÃNIBUS ","valores":[6,5,8,9,10,11,12,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"nome":"ALDAYR SODRE  PEREIRA"},{"nome":"DAVID TEIXEIRA REIS JUNIOR","valores":[7,6,9,10,11,12,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"funcao_raw":"MORISTA DE ÃNIBUS "},{"valores":[8,7,10,11,12,13,14,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"funcao_raw":"MORISTA DE ÃNIBUS ","nome":"ELESANDRO DA SILVA RIBEIRO"},{"valores":[9,8,11,12,13,14,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"funcao_raw":"MORISTA DE ÃNIBUS ","nome":"ELSON GRANJEIRO DOS SANTOS"},{"funcao_raw":"MORISTA DE ÃNIBUS ","valores":[10,9,12,13,14,15,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"nome":"FABIO JUNIOR DA SILVA OLIVEIRA"},{"nome":"FIRTECICLEI MARTINS DE SOUSA","funcao_raw":"MORISTA DE ÃNIBUS ","valores":[11,10,13,14,15,16,17,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"nome":"FRANCISCO DE ASSIS MARTINS JUNIOR","valores":[12,11,14,15,16,17,18,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"funcao_raw":"MORISTA DE ÃNIBUS "},{"valores":[13,12,15,16,17,18,19,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"funcao_raw":"MOTORISTA DE VEICULOS LEVE","nome":"GISLEY SOARES LISBOA"},{"funcao_raw":"MOTORISTA DE VEICULOS LEVE","valores":[14,13,16,17,18,19,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"nome":"HEGRI FERREIRA FERNANDES"},{"nome":"HENRIQUE MORAIS DA SILVA","funcao_raw":"MOTORISTA DE VEICULOS LEVE","valores":[15,14,17,18,19,20,21,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"nome":"HILDERSON KENNEDY DE NAZARE BATISTA DA SILVA","valores":[16,15,18,19,20,21,22,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"funcao_raw":"MORISTA DE ÃNIBUS "},{"funcao_raw":"MORISTA DE ÃNIBUS ","valores":[17,16,19,20,21,22,23,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"nome":"IRSONLEY CUTRIM SILVA"},{"funcao_raw":"MORISTA DE ÃNIBUS ","valores":[18,17,20,21,22,23,24,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"nome":"ISAIAS DA CRUZ SOARES JUNIOR"},{"funcao_raw":"MORISTA DE ÃNIBUS ","valores":[19,18,21,22,23,24,25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"nome":"JOSE NILTON COSTA SILVA"},{"nome":"JOSE RIBAMAR FRANÃA FILHO","funcao_raw":"MORISTA DE ÃNIBUS ","valores":[20,19,22,23,24,25,26,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"funcao_raw":"MORISTA DE ÃNIBUS ","valores":[21,20,23,24,25,26,27,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"nome":"LUIZ EDUARDO MAIA SOUZA"},{"nome":"MARCELO DIAS OLIVEIRA","funcao_raw":"MORISTA DE ÃNIBUS ","valores":[22,21,24,25,26,27,28,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"nome":"MARCIO SOUSA ARAUJO","funcao_raw":"MORISTA DE ÃNIBUS ","valores":[23,22,25,26,27,28,29,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"nome":"MARCOS MARCIEL ORTEGAL GUIDA","funcao_raw":"MORISTA DE ÃNIBUS ","valores":[24,23,26,27,28,29,30,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"nome":"RAIMUNDO NONATO COSTA E SILVA","funcao_raw":"MORISTA DE ÃNIBUS ","valores":[25,24,27,28,29,30,31,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"nome":"RAIMUNDO NONATO DE SOUSA SENA","valores":[26,25,28,29,30,31,32,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"funcao_raw":"MORISTA DE ÃNIBUS "},{"nome":"RAIMUNDO VICENTE FERREIRA","funcao_raw":"MORISTA DE ÃNIBUS ","valores":[27,26,29,30,31,32,33,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"funcao_raw":"MORISTA DE ÃNIBUS ","valores":[28,27,30,31,32,33,34,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"nome":"RELSON SOUSA AGUIAR"},{"nome":"ROMARIO DO VALES ANDRADE","valores":[29,28,31,32,33,34,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"funcao_raw":"MOTORISTA DE VEICULOS LEVE"},{"nome":"RONALDO SOUSA DE ALMEIDA","funcao_raw":"MORISTA DE ÃNIBUS ","valores":[30,29,32,33,34,35,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"nome":"TIAGO RODRIGUES NASCIMENTO","valores":[31,30,33,34,35,36,37,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"funcao_raw":"MORISTA DE ÃNIBUS "},{"valores":[32,31,34,35,36,37,38,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"funcao_raw":"MORISTA DE ÃNIBUS ","nome":"WELINGTON MOREIRA RODRIGUES"},{"nome":"ZEZINHO URIAS DE OLIVEIRA JUNIOR","valores":[33,32,35,36,37,38,39,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"funcao_raw":"MORISTA DE ÃNIBUS "}];
+const STORAGE_KEY = 'TELEMETRIA_DB_V1';
+const MONTHS = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+const ITEMS = [
+  "SILLION Cartão Amarelo",
+  "Alerta de Colisão",
+  "Excesso de Velocidade",
+  "Sinais de Sonolência/Olho Fechado",
+  "Ultrapassagem em Faixa Contínua",
+  "Uso de Fone de Ouvido",
+  "Uso de Rádio"
+];
+const ITEMS_SHORT = ["SILLION","Alerta de Colisão","Excesso de Velocidade","Sonolência / Olho Fechado","Ultrapassagem em Faixa Contínua","Uso de Fone de Ouvido","Uso de Rádio"];
+
+function normalizeRole(v=''){
+  const t = String(v).toUpperCase();
+  if (t.includes('LEVE')) return 'Motorista de Veículos Leves';
+  if (t.includes('ONIBUS') || t.includes('ÔNIBUS') || t.includes('NIBUS')) return 'Motorista de Ônibus';
+  return 'Motorista';
+}
+function buildDefaultDB(){
+  const drivers = RAW_DATA.map(row => {
+    const months = {};
+    MONTHS.forEach((month, mi) => {
+      months[month] = {};
+      ITEMS.forEach((item, ii) => months[month][item] = Number(row.valores[mi*ITEMS.length + ii] || 0));
+    });
+    return {
+      id: row.nome.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-'),
+      nome: row.nome.replace(/\s+/g,' ').trim(),
+      funcao: normalizeRole(row.funcao_raw || ''),
+      months
+    };
+  });
+  return {version:1, updatedAt:new Date().toISOString(), drivers};
+}
+function readDB(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw){
+      const db = buildDefaultDB();
+      saveDB(db);
+      return db;
+    }
+    const parsed = JSON.parse(raw);
+    if(!parsed || !Array.isArray(parsed.drivers)) throw new Error('invalid');
+    return parsed;
+  }catch(e){
+    const db = buildDefaultDB();
+    saveDB(db);
+    return db;
+  }
+}
+function saveDB(db){
+  db.updatedAt = new Date().toISOString();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+  window.dispatchEvent(new CustomEvent('telemetria-updated',{detail:db}));
+}
+function grandTotalForMonth(db, month){
+  return db.drivers.reduce((acc,d)=> acc + ITEMS.reduce((a,item)=>a+Number(d.months[month][item]||0),0),0);
+}
+function totalForDriverMonth(driver, month){
+  return ITEMS.reduce((a,item)=>a+Number(driver.months[month][item]||0),0);
+}
+function itemTotalsForMonth(db, month){
+  return ITEMS.map(item => ({
+    item,
+    total: db.drivers.reduce((acc,d)=> acc + Number(d.months[month][item]||0), 0)
+  }));
+}
+function generalMonthObject(driver){
+  const obj = {};
+  ITEMS.forEach(item => obj[item] = MONTHS.reduce((acc,m)=> acc + Number(driver.months[m][item]||0),0));
+  return obj;
+}
+function grandTotalGeneral(db){
+  return db.drivers.reduce((acc,d)=> acc + MONTHS.reduce((mAcc,m)=> mAcc + totalForDriverMonth(d,m), 0), 0);
+}
+function downloadText(filename, content, type='text/plain;charset=utf-8'){
+  const blob = new Blob([content], {type});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+}
+
+let db = readDB();
+const MONTHS_PLUS = [...MONTHS, 'Geral'];
+const COLORS = ['rgba(225,240,255,.88)','rgba(176,219,255,.88)','rgba(133,203,255,.88)','rgba(108,186,255,.88)','rgba(88,222,209,.88)','rgba(122,240,210,.88)','rgba(72,151,255,.88)'];
+const els = {
+  month: document.getElementById('highlightMonth'),
+  driver: document.getElementById('driverHighlight'),
+  search: document.getElementById('quickSearch'),
+  nav: document.getElementById('monthNav'),
+  charts: document.getElementById('chartsContainer'),
+  ranking: document.getElementById('sideRanking'),
+  reloadBtn: document.getElementById('reloadBtn'),
+  exportBtn: document.getElementById('exportBtn'),
+  editBtn: document.getElementById('editBtn'),
+  mDrivers: document.getElementById('mDrivers'),
+  mTotal: document.getElementById('mTotal'),
+  mLeader: document.getElementById('mLeader'),
+  mLeaderSub: document.getElementById('mLeaderSub'),
+  mItem: document.getElementById('mItem'),
+  mItemSub: document.getElementById('mItemSub')
+};
+MONTHS_PLUS.forEach(m => {
+  els.month.insertAdjacentHTML('beforeend', `<option value="${m}">${m}</option>`);
+  els.nav.insertAdjacentHTML('beforeend', `<a href="#sec-${m}">${m}</a>`);
+});
+els.month.value = 'Janeiro';
+function refreshDriverOptions(){
+  const current = els.driver.value;
+  els.driver.innerHTML = `<option value="">Todos os motoristas</option>` + db.drivers.map(d=>`<option value="${d.id}">${d.nome}</option>`).join('');
+  if(current && [...els.driver.options].some(o=>o.value===current)) els.driver.value = current;
+}
+function getFilteredDrivers(){
+  const term = els.search.value.toLowerCase().trim();
+  const chosen = els.driver.value;
+  return db.drivers.filter(d => (!term || d.nome.toLowerCase().includes(term)) && (!chosen || d.id === chosen));
+}
+function totalForChart(driver, month, item){
+  if(month === 'Geral') return generalMonthObject(driver)[item];
+  return Number(driver.months[month][item] || 0);
+}
+function totalDriverPeriod(driver, month){
+  if(month === 'Geral') return MONTHS.reduce((acc,m)=>acc + totalForDriverMonth(driver,m), 0);
+  return totalForDriverMonth(driver, month);
+}
+let charts = [];
+let donut = null;
+function buildChart(month, drivers){
+  const section = document.createElement('section');
+  section.className = 'panel chart-card';
+  section.id = `sec-${month}`;
+  const periodTotal = month === 'Geral'
+    ? drivers.reduce((acc,d)=> acc + MONTHS.reduce((a,m)=>a+totalForDriverMonth(d,m),0), 0)
+    : drivers.reduce((acc,d)=> acc + totalForDriverMonth(d,month), 0);
+  section.innerHTML = `<div class="chart-head"><div><div class="chart-title">${month}</div><div class="chart-sub">Comparativo por motorista e por item.</div></div><div class="chart-sub">Total do período: <strong>${periodTotal.toLocaleString('pt-BR')}</strong></div></div><div class="chart-box"><canvas></canvas></div>`;
+  els.charts.appendChild(section);
+  const ctx = section.querySelector('canvas');
+  const datasets = ITEMS.map((item, idx) => ({
+    label:item,
+    data: drivers.map(d => totalForChart(d, month, item)),
+    backgroundColor: COLORS[idx],
+    borderRadius: 6,
+    maxBarThickness: 24
+  }));
+  const chart = new Chart(ctx, {
+    type:'bar',
+    data:{ labels:drivers.map(d=>d.nome), datasets },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{labels:{color:'#edf4ff',boxWidth:14}},
+        tooltip:{
+          callbacks:{
+            footer(items){
+              const total = items.reduce((acc,it)=>acc + Number(it.raw || 0), 0);
+              return `Total do motorista: ${total}`;
+            }
+          }
+        }
+      },
+      scales:{
+        x:{ticks:{color:'#d9e9ff',maxRotation:55,minRotation:55,autoSkip:false,font:{size:11}},grid:{display:false}},
+        y:{beginAtZero:true,ticks:{color:'#bfd2f0'},grid:{color:'rgba(255,255,255,.08)'}}
+      }
+    }
+  });
+  charts.push(chart);
+}
+function renderSide(){
+  const month = els.month.value;
+  const drivers = getFilteredDrivers();
+  els.mDrivers.textContent = db.drivers.length;
+  const ranked = drivers.slice().sort((a,b)=>totalDriverPeriod(b,month)-totalDriverPeriod(a,month)).slice(0,10);
+  const leader = ranked[0];
+  els.mTotal.textContent = (month === 'Geral'
+    ? drivers.reduce((acc,d)=> acc + MONTHS.reduce((a,m)=>a+totalForDriverMonth(d,m),0), 0)
+    : drivers.reduce((acc,d)=> acc + totalForDriverMonth(d,month), 0)
+  ).toLocaleString('pt-BR');
+  els.mLeader.textContent = leader ? leader.nome : '-';
+  els.mLeaderSub.textContent = leader ? `${totalDriverPeriod(leader,month)} ocorrências em ${month}` : '-';
+
+  const totals = ITEMS.map(item => ({
+    item,
+    total: drivers.reduce((acc,d)=> acc + totalForChart(d,month,item), 0)
+  })).sort((a,b)=>b.total-a.total);
+  const topItem = totals[0] || {item:'-',total:0};
+  els.mItem.textContent = topItem.item.replace('Sinais de ','');
+  els.mItemSub.textContent = `${topItem.total.toLocaleString('pt-BR')} ocorrências em ${month}`;
+
+  els.ranking.innerHTML = ranked.map((d,i)=>`<div class="side-item"><div class="n">${i+1}</div><div><div class="nm">${d.nome}</div><div class="sb">Total no período em destaque</div></div><div class="vv">${totalDriverPeriod(d,month)}</div></div>`).join('') || `<div class="side-item"><div class="nm">Sem resultados</div></div>`;
+
+  if(donut) donut.destroy();
+  donut = new Chart(document.getElementById('donutChart'), {
+    type:'doughnut',
+    data:{ labels: totals.map(t=>t.item), datasets:[{ data: totals.map(t=>t.total), backgroundColor: COLORS, borderWidth:0 }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ color:'#edf4ff', boxWidth:14 } } } }
+  });
+}
+function renderCharts(){
+  charts.forEach(c=>c.destroy());
+  charts = [];
+  els.charts.innerHTML = '';
+  const drivers = getFilteredDrivers();
+  MONTHS_PLUS.forEach(month => buildChart(month, drivers));
+  renderSide();
+}
+function refreshAll(){
+  db = readDB();
+  refreshDriverOptions();
+  renderCharts();
+}
+els.reloadBtn.onclick = refreshAll;
+els.exportBtn.onclick = () => downloadText('telemetria-dados-visiveis.json', JSON.stringify(readDB(), null, 2), 'application/json;charset=utf-8');
+els.editBtn.onclick = () => location.href = 'telemetria_dados_vinculado.html';
+['change','input'].forEach(evt => {
+  els.month.addEventListener(evt, renderSide);
+  els.driver.addEventListener(evt, renderCharts);
+  els.search.addEventListener(evt, renderCharts);
+});
+window.addEventListener('storage', refreshAll);
+window.addEventListener('telemetria-updated', refreshAll);
+refreshAll();
+</script>
+</body>
+</html>
