@@ -1,746 +1,1327 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Calendário Semanal — Auditor Responsável (por semana do mês)</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel do Gestor - Notificações e Interdições</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
+
   <style>
-    :root{
-      --bg:#0b1220;
-      --card:#0f1a2e;
-      --card2:#101f38;
-      --text:#eaf0ff;
-      --muted:#a7b3d6;
-      --line:rgba(255,255,255,.10);
-      --shadow: 0 18px 50px rgba(0,0,0,.35);
-      --radius:18px;
-
-      --accent:#6d5efc;
-      --accent2:#22c55e;
-      --warn:#f59e0b;
-      --danger:#ef4444;
+    :root {
+      --bg: #f3f6fb;
+      --card: #ffffff;
+      --text: #162033;
+      --muted: #6b7280;
+      --primary: #16a34a;
+      --primary-dark: #15803d;
+      --danger: #dc2626;
+      --warning: #f59e0b;
+      --border: #e5e7eb;
+      --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+      --radius: 18px;
     }
 
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
       background:
-        radial-gradient(1200px 700px at 10% 0%, rgba(109,94,252,.22), transparent 55%),
-        radial-gradient(1000px 650px at 95% 25%, rgba(34,197,94,.14), transparent 60%),
-        radial-gradient(800px 600px at 50% 110%, rgba(245,158,11,.10), transparent 55%),
-        var(--bg);
-      color:var(--text);
+        radial-gradient(circle at top left, rgba(22, 163, 74, 0.10), transparent 30%),
+        linear-gradient(180deg, #f7fafc 0%, var(--bg) 100%);
+      font-family: Arial, sans-serif;
+      color: var(--text);
     }
 
-    .wrap{
-      max-width:1100px;
-      margin:32px auto;
-      padding:0 16px 40px;
+    .page-shell {
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 28px;
     }
 
-    .top{
-      display:flex;
-      gap:14px;
-      align-items:stretch;
-      justify-content:space-between;
-      flex-wrap:wrap;
-      margin-bottom:18px;
-    }
-
-    .hero{
-      flex:1 1 520px;
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      border:1px solid var(--line);
-      border-radius:var(--radius);
+    .topbar {
+      background: linear-gradient(135deg, #0f172a, #14532d);
+      border-radius: 24px;
+      padding: 26px;
+      color: #fff;
       box-shadow: var(--shadow);
-      padding:16px 16px 14px;
-      position:relative;
-      overflow:hidden;
+      margin-bottom: 22px;
+      position: relative;
+      overflow: hidden;
     }
 
-    .hero:before{
-      content:"";
-      position:absolute;
-      inset:-2px;
-      background:
-        radial-gradient(500px 260px at 0% 0%, rgba(109,94,252,.26), transparent 70%),
-        radial-gradient(500px 260px at 100% 0%, rgba(34,197,94,.18), transparent 70%);
-      pointer-events:none;
-      opacity:.85;
+    .topbar::after {
+      content: "";
+      position: absolute;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      right: -80px;
+      top: -110px;
     }
 
-    .hero > *{ position:relative; z-index:1; }
-
-    .title{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      margin:0 0 6px;
-      font-size:18px;
-      letter-spacing:.2px;
-      flex-wrap:wrap;
-    }
-    .badge{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:7px 10px;
-      border-radius:999px;
-      background:rgba(255,255,255,.06);
-      border:1px solid var(--line);
-      color:var(--muted);
-      font-size:12px;
-      white-space:nowrap;
-    }
-    .dot{
-      width:10px;height:10px;border-radius:50%;
-      background: linear-gradient(135deg, var(--accent), #9b8cff);
-      box-shadow: 0 0 0 3px rgba(109,94,252,.15);
-    }
-    .sub{
-      margin:0;
-      color:var(--muted);
-      line-height:1.35;
-      font-size:13px;
+    .topbar-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: center;
+      flex-wrap: wrap;
     }
 
-    .controls{
-      flex:1 1 320px;
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      border:1px solid var(--line);
-      border-radius:var(--radius);
+    .page-title {
+      font-size: 30px;
+      font-weight: 800;
+      margin: 0;
+    }
+
+    .page-subtitle {
+      margin-top: 6px;
+      color: rgba(255,255,255,0.78);
+      font-size: 14px;
+    }
+
+    .topbar-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-soft-light {
+      background: rgba(255,255,255,0.14);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 14px;
+      padding: 10px 14px;
+      font-weight: 700;
+    }
+
+    .btn-soft-light:hover {
+      background: rgba(255,255,255,0.22);
+      color: #fff;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(160px, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .card-kpi {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
       box-shadow: var(--shadow);
-      padding:14px;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      min-width:310px;
+      min-height: 112px;
     }
 
-    .row{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
+    .kpi-label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: 8px;
     }
 
-    .btn{
-      appearance:none;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.06);
-      color:var(--text);
-      padding:10px 12px;
-      border-radius:14px;
-      cursor:pointer;
-      transition: transform .08s ease, background .18s ease, border-color .18s ease;
-      font-weight:700;
-      font-size:13px;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-    }
-    .btn:hover{ background:rgba(255,255,255,.10); border-color:rgba(255,255,255,.18); }
-    .btn:active{ transform: translateY(1px); }
-    .btn.primary{
-      border-color:rgba(109,94,252,.35);
-      background: linear-gradient(135deg, rgba(109,94,252,.35), rgba(109,94,252,.12));
-    }
-    .btn.primary:hover{ background: linear-gradient(135deg, rgba(109,94,252,.45), rgba(109,94,252,.16)); }
-
-    .field{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      flex:1 1 140px;
-      min-width:160px;
-    }
-    label{
-      font-size:12px;
-      color:var(--muted);
-    }
-    input[type="date"], input[type="text"], select{
-      width:100%;
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:10px 12px;
-      background:rgba(0,0,0,.18);
-      color:var(--text);
-      outline:none;
+    .kpi-value {
+      font-size: 32px;
+      line-height: 1;
+      font-weight: 800;
+      margin: 0;
     }
 
-    .grid{
-      margin-top:16px;
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      border:1px solid var(--line);
-      border-radius:var(--radius);
+    .chip-panel,
+    .filter-card,
+    .table-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
       box-shadow: var(--shadow);
-      overflow:hidden;
     }
 
-    .gridHead{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      padding:14px 14px 10px;
-      border-bottom:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-      gap:12px;
-      flex-wrap:wrap;
-    }
-    .monthTitle{
-      font-size:16px;
-      font-weight:900;
-      letter-spacing:.3px;
-    }
-    .meta{
-      color:var(--muted);
-      font-size:12px;
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-      text-align:right;
+    .chip-panel {
+      padding: 14px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
     }
 
-    /* Cards por semana */
-    .weeks{
-      display:grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap:12px;
-      padding:12px;
-    }
-    @media (max-width: 820px){
-      .weeks{ grid-template-columns: 1fr; }
-    }
-
-    .weekCard{
-      border:1px solid var(--line);
-      border-radius:18px;
-      background:rgba(0,0,0,.14);
-      overflow:hidden;
-      position:relative;
-      box-shadow: 0 12px 30px rgba(0,0,0,.22);
+    .chip-status {
+      padding: 9px 16px;
+      border-radius: 999px;
+      background: #f3f4f6;
+      color: #374151;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid #e5e7eb;
+      transition: .2s;
+      user-select: none;
     }
 
-    .weekCard.current{
-      outline:2px solid rgba(34,197,94,.45);
-      outline-offset:-2px;
-      background:
-        radial-gradient(420px 220px at 25% 10%, rgba(34,197,94,.14), transparent 60%),
-        rgba(0,0,0,.14);
+    .chip-status:hover {
+      transform: translateY(-1px);
     }
 
-    .wkTop{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      padding:12px 12px 10px;
-      border-bottom:1px solid var(--line);
-      background:rgba(255,255,255,.03);
-      flex-wrap:wrap;
-    }
-    .wkTitle{
-      font-weight:900;
-      letter-spacing:.2px;
-      font-size:13px;
-    }
-    .pill{
-      font-size:11px;
-      color:var(--muted);
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.06);
-      padding:5px 9px;
-      border-radius:999px;
-      white-space:nowrap;
+    .chip-status.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      box-shadow: 0 8px 18px rgba(22, 163, 74, .25);
     }
 
-    .wkBody{
-      padding:12px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
+    .filter-card {
+      padding: 18px;
+      margin-bottom: 18px;
     }
 
-    .auditor{
-      padding:12px 12px;
-      border-radius:16px;
-      border:1px solid rgba(255,255,255,.12);
-      background: linear-gradient(135deg, rgba(109,94,252,.20), rgba(109,94,252,.06));
-    }
-    .auditor .cap{
-      font-size:11px;
-      color:var(--muted);
-      margin-bottom:4px;
-      display:flex;
-      gap:6px;
-      align-items:center;
-    }
-    .auditor .name{
-      font-weight:900;
-      letter-spacing:.2px;
-      font-size:13px;
-      line-height:1.2;
-      text-transform:uppercase;
+    .form-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #374151;
     }
 
-    .rangeGrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
-    }
-    .miniCard{
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-      border-radius:16px;
-      padding:10px 10px;
-    }
-    .miniCard .k{
-      color:var(--muted);
-      font-size:11px;
-      margin-bottom:4px;
-    }
-    .miniCard .v{
-      font-weight:800;
-      font-size:12px;
+    .form-control,
+    .form-select {
+      border-radius: 12px;
+      min-height: 43px;
+      border-color: #d1d5db;
     }
 
-    .legend{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      padding:12px 14px 14px;
-      color:var(--muted);
-      font-size:12px;
-      border-top:1px solid var(--line);
-      background:rgba(255,255,255,.03);
-      align-items:center;
-      justify-content:space-between;
-    }
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.06);
-    }
-    .mini{
-      width:10px;height:10px;border-radius:50%;
-      background:rgba(34,197,94,.55);
-      box-shadow:0 0 0 3px rgba(34,197,94,.12);
-    }
-    .mini2{
-      width:10px;height:10px;border-radius:50%;
-      background:rgba(109,94,252,.70);
-      box-shadow:0 0 0 3px rgba(109,94,252,.14);
+    .bulk-actions {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(22, 163, 74, .25);
+      background: rgba(22, 163, 74, .08);
+      border-radius: var(--radius);
     }
 
-    .footerNote{
-      opacity:.85;
-      text-align:right;
-      max-width:560px;
+    .bulk-actions.show {
+      display: flex;
     }
-    @media (max-width: 820px){
-      .footerNote{ text-align:left; }
+
+    .bulk-info {
+      font-weight: 800;
+      color: #14532d;
+    }
+
+    .bulk-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .table-card {
+      overflow: hidden;
+    }
+
+    .table-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .table-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .table-subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 3px;
+    }
+
+    table {
+      margin-bottom: 0 !important;
+    }
+
+    table thead th {
+      background: #f8fafc !important;
+      color: #475569;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      border-bottom: 1px solid var(--border);
+      padding: 14px 12px !important;
+      white-space: nowrap;
+    }
+
+    table tbody td {
+      padding: 15px 12px !important;
+      vertical-align: middle;
+      border-color: #eef2f7;
+      font-size: 14px;
+    }
+
+    .row-notificacao {
+      cursor: pointer;
+      transition: .15s;
+    }
+
+    .row-notificacao:hover {
+      background: #f0fdf4;
+    }
+
+    .id-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 44px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #ecfdf5;
+      color: #166534;
+      font-weight: 800;
+      border: 1px solid #bbf7d0;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .status-aberta {
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    .status-pendente {
+      background: #fffbeb;
+      color: #b45309;
+    }
+
+    .status-aprovada {
+      background: #ecfdf5;
+      color: #15803d;
+    }
+
+    .status-rejeitada {
+      background: #fef2f2;
+      color: #b91c1c;
+    }
+
+    .prazo-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 11px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .prazo-ok {
+      background: #ecfdf5;
+      color: #15803d;
+    }
+
+    .prazo-alerta {
+      background: #fffbeb;
+      color: #b45309;
+    }
+
+    .prazo-vencido {
+      background: #fef2f2;
+      color: #b91c1c;
+    }
+
+    .prazo-finalizado {
+      background: #eef2ff;
+      color: #4338ca;
+    }
+
+    .modal-content {
+      border-radius: 20px;
+      border: 0;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, #0f172a, #14532d);
+      color: #fff;
+      border-bottom: 0;
+    }
+
+    .modal-header .btn-close {
+      filter: invert(1);
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .detail-item {
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .detail-item.full {
+      grid-column: 1 / -1;
+    }
+
+    .detail-label {
+      font-size: 12px;
+      font-weight: 800;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: 5px;
+    }
+
+    .detail-value {
+      font-size: 14px;
+      color: #111827;
+      white-space: pre-wrap;
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 800;
+      margin: 18px 0 10px;
+      color: #0f172a;
+    }
+
+    .photo-thumb {
+      width: 128px;
+      height: 92px;
+      object-fit: cover;
+      border-radius: 14px;
+      border: 1px solid #e5e7eb;
+    }
+
+    @media (max-width: 1100px) {
+      .kpi-grid {
+        grid-template-columns: repeat(2, minmax(160px, 1fr));
+      }
+    }
+
+    @media (max-width: 768px) {
+      .page-shell {
+        padding: 16px;
+      }
+
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .bulk-actions {
+        align-items: flex-start;
+        flex-direction: column;
+      }
     }
   </style>
 </head>
+
 <body>
-  <div class="wrap">
-    <div class="top">
-      <div class="hero">
-        <h1 class="title">
-          Calendário por Semana do Mês — Auditor Responsável
-          <span class="badge"><span class="dot"></span>Rodízio automático semanal</span>
-        </h1>
-        <p class="sub">
-          Exibe <b>somente semanas</b> do mês (cards). Cada semana recebe automaticamente 1 responsável
-          por <b>rodízio</b> a partir da <b>data de início</b>. (Opcional: use Seed para embaralhar a ordem uma vez.)
-        </p>
-      </div>
+  <main class="page-shell">
 
-      <div class="controls">
-        <div class="row">
-          <button class="btn" id="prevMonth">⬅︎ Mês</button>
-          <button class="btn primary" id="goToday">Hoje</button>
-          <button class="btn" id="nextMonth">Mês ➡︎</button>
+    <section class="topbar">
+      <div class="topbar-content">
+        <div>
+          <h1 class="page-title">Painel do Gestor</h1>
+          <div class="page-subtitle">Gerencie notificações, interdições, baixas, aprovações e prazos.</div>
         </div>
 
-        <div class="row">
-          <div class="field">
-            <label for="startDate">Data de início do rodízio (recomendado: segunda-feira)</label>
-            <input type="date" id="startDate" />
-          </div>
-          <div class="field">
-            <label for="seed">Seed (opcional) p/ embaralhar o rodízio</label>
-            <input type="text" id="seed" placeholder="ex.: 5S-TECNOSONDA-2026" />
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="field" style="min-width:220px">
-            <label for="weekRule">Regra de semana</label>
-            <select id="weekRule">
-              <option value="sunday">Semana: Domingo → Sábado</option>
-              <option value="monday">Semana: Segunda → Domingo</option>
-            </select>
-          </div>
-          <button class="btn primary" id="apply">Aplicar</button>
-          <button class="btn" id="copy">Copiar escala do mês</button>
+        <div class="topbar-actions">
+          <button class="btn btn-soft-light" onclick="window.location.href='/dashboard.html'">Dashboard</button>
+          <button class="btn btn-soft-light" onclick="window.location.href='/status.html'">Status</button>
+          <button class="btn btn-success px-4 fw-bold" onclick="window.location.href='/index.html'">
+            + Nova Notificação
+          </button>
         </div>
       </div>
-    </div>
+    </section>
 
-    <div class="grid">
-      <div class="gridHead">
-        <div class="monthTitle" id="monthTitle">—</div>
-        <div class="meta">
-          <div id="metaWeek">—</div>
-          <div id="metaOwner">—</div>
+    <section class="kpi-grid">
+      <div class="card-kpi">
+        <div class="kpi-label">Total Exibido</div>
+        <h3 class="kpi-value" id="kpiTotal">0</h3>
+      </div>
+      <div class="card-kpi">
+        <div class="kpi-label">Abertas</div>
+        <h3 class="kpi-value" id="kpiAbertas">0</h3>
+      </div>
+      <div class="card-kpi">
+        <div class="kpi-label">Pendentes</div>
+        <h3 class="kpi-value" id="kpiPendentes">0</h3>
+      </div>
+      <div class="card-kpi">
+        <div class="kpi-label">Notificações</div>
+        <h3 class="kpi-value" id="kpiNotificacoes">0</h3>
+      </div>
+      <div class="card-kpi">
+        <div class="kpi-label">Interdições</div>
+        <h3 class="kpi-value" id="kpiInterdicoes">0</h3>
+      </div>
+    </section>
+
+    <section class="chip-panel">
+      <span class="chip-status active" data-status="">Todas</span>
+      <span class="chip-status" data-status="Aberta">Abertas</span>
+      <span class="chip-status" data-status="Pendente de aprovação">Pendentes</span>
+      <span class="chip-status" data-status="Aprovada">Aprovadas</span>
+      <span class="chip-status" data-status="Rejeitada">Rejeitadas</span>
+    </section>
+
+    <section class="filter-card">
+      <form id="filtroForm" class="row g-3 align-items-end">
+        <div class="col-md-2">
+          <label for="status" class="form-label">Status</label>
+          <select id="status" class="form-select">
+            <option value="">Todos</option>
+            <option value="Aberta">Aberta</option>
+            <option value="Pendente de aprovação">Pendente de aprovação</option>
+            <option value="Aprovada">Aprovada</option>
+            <option value="Rejeitada">Rejeitada</option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label for="filtroMes" class="form-label">Mês</label>
+          <select id="filtroMes" class="form-select">
+            <option value="">Todos</option>
+            <option value="0">Janeiro</option>
+            <option value="1">Fevereiro</option>
+            <option value="2">Março</option>
+            <option value="3">Abril</option>
+            <option value="4">Maio</option>
+            <option value="5">Junho</option>
+            <option value="6">Julho</option>
+            <option value="7">Agosto</option>
+            <option value="8">Setembro</option>
+            <option value="9">Outubro</option>
+            <option value="10">Novembro</option>
+            <option value="11">Dezembro</option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label for="filtroPrazo" class="form-label">Prazo</label>
+          <select id="filtroPrazo" class="form-select">
+            <option value="">Todos</option>
+            <option value="noprazo">No prazo</option>
+            <option value="vencidas">Vencidas</option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label for="filtroClassificacao" class="form-label">Classificação</label>
+          <select id="filtroClassificacao" class="form-select">
+            <option value="">Todas</option>
+            <option value="Notificação">Notificação</option>
+            <option value="Interdição">Interdição</option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label for="filtroArea" class="form-label">Área</label>
+          <select id="filtroArea" class="form-select">
+            <option value="">Todas</option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label for="filtroTecnico" class="form-label">Técnico</label>
+          <select id="filtroTecnico" class="form-select">
+            <option value="">Todos</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label for="idBusca" class="form-label">Buscar por ID Sequencial</label>
+          <input type="text" id="idBusca" class="form-control" placeholder="Ex: 12, 25, 103" />
+        </div>
+
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-primary w-100 fw-bold">Filtrar</button>
+        </div>
+
+        <div class="col-md-2">
+          <button type="button" id="btnLimparFiltros" class="btn btn-outline-secondary w-100 fw-bold">
+            Limpar
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section id="bulkActions" class="bulk-actions">
+      <div class="bulk-info">
+        <span id="bulkCount">0</span> notificação(ões) selecionada(s)
+      </div>
+
+      <div class="bulk-buttons">
+        <button id="btnAprovarSelecionadas" type="button" class="btn btn-success fw-bold">
+          Aprovar Selecionadas
+        </button>
+        <button id="btnExcluirSelecionadas" type="button" class="btn btn-outline-danger fw-bold">
+          Excluir Selecionadas
+        </button>
+      </div>
+    </section>
+
+    <section class="table-card">
+      <div class="table-header">
+        <div>
+          <h2 class="table-title">Notificações e Interdições</h2>
+          <div class="table-subtitle">Clique em uma notificação para visualizar os detalhes.</div>
         </div>
       </div>
 
-      <div class="weeks" id="weeks"></div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle" id="tabelaNotificacoes">
+          <thead>
+            <tr>
+              <th style="width:44px;">
+                <input type="checkbox" id="selectAll">
+              </th>
+              <th>ID</th>
+              <th>Técnico</th>
+              <th>Área</th>
+              <th>Classificação</th>
+              <th>Status</th>
+              <th>Data</th>
+              <th>Prazo</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyNotificacoes">
+            <tr><td colspan="8" class="text-center py-4">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
 
-      <div class="legend">
-        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-          <span class="chip"><span class="mini"></span>Semana atual</span>
-          <span class="chip"><span class="mini2"></span>Card do auditor</span>
+  <!-- MODAL DETALHES -->
+  <div class="modal fade" id="modalDetalhes" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header d-flex align-items-center">
+          <h5 class="modal-title fw-bold">Detalhes da Notificação</h5>
+
+          <div class="ms-auto me-3">
+            <button id="btnExcluir" class="btn btn-outline-light btn-sm me-2">Excluir</button>
+            <button id="btnRejeitar" class="btn btn-danger btn-sm me-2" data-bs-toggle="modal" data-bs-target="#modalRejeicao">Rejeitar</button>
+            <button id="btnAprovar" class="btn btn-success btn-sm">Aprovar</button>
+          </div>
+
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-        <div class="footerNote" id="footerNote">—</div>
+
+        <div class="modal-body">
+          <div class="detail-grid">
+            <div class="detail-item">
+              <div class="detail-label">ID</div>
+              <div class="detail-value" id="detalheId"></div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Status</div>
+              <div class="detail-value" id="detalheStatus"></div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Técnico</div>
+              <div class="detail-value" id="detalheTecnico"></div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Encarregado</div>
+              <div class="detail-value" id="detalheEncarregado"></div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Supervisor da Obra</div>
+              <div class="detail-value" id="detalheSupervisor"></div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Área</div>
+              <div class="detail-value" id="detalheArea"></div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Classificação</div>
+              <div class="detail-value" id="detalheClassificacao"></div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">NR Relacionada</div>
+              <div class="detail-value" id="detalheNR"></div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Data de Registro</div>
+              <div class="detail-value" id="detalheDataRegistro"></div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Prazo</div>
+              <div class="detail-value" id="detalhePrazo"></div>
+            </div>
+
+            <div class="detail-item full">
+              <div class="detail-label">Descrição da Atividade</div>
+              <div class="detail-value" id="detalheDescricaoAtividade"></div>
+            </div>
+
+            <div class="detail-item full">
+              <div class="detail-label">Descrição da Condição de Risco</div>
+              <div class="detail-value" id="detalheDescricao"></div>
+            </div>
+
+            <div class="detail-item full">
+              <div class="detail-label">Ações Recomendadas</div>
+              <div class="detail-value" id="detalheAcoesRecomendadas"></div>
+            </div>
+
+            <div class="detail-item full">
+              <div class="detail-label">Justificativa do Gestor</div>
+              <div class="detail-value" id="detalheJustificativa">—</div>
+            </div>
+          </div>
+
+          <div class="section-title">Fotos da Notificação</div>
+          <div id="detalheFotosNotificacao" class="d-flex flex-wrap gap-2 mb-3"></div>
+
+          <hr />
+
+          <div class="section-title">Baixa / Resolução</div>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <div class="detail-label">Resolvido Por</div>
+              <div class="detail-value" id="detalheResolvidoPor"></div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Data da Baixa</div>
+              <div class="detail-value" id="detalheDataBaixa"></div>
+            </div>
+
+            <div class="detail-item full">
+              <div class="detail-label">Comentário da Baixa</div>
+              <div class="detail-value" id="detalheComentario"></div>
+            </div>
+          </div>
+
+          <div class="section-title">Fotos da Baixa</div>
+          <div id="detalheFotos" class="d-flex flex-wrap gap-2"></div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- MODAL REJEIÇÃO -->
+  <div class="modal fade" id="modalRejeicao" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <form id="formRejeicao" class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Justificativa de Rejeição</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <input type="hidden" name="id" id="rejeicaoId">
+          <div class="mb-3">
+            <label for="justificativa" class="form-label">Motivo da Rejeição</label>
+            <textarea name="justificativa" id="justificativa" class="form-control" rows="4" required></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger">Confirmar Rejeição</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
   <script>
-    /**
-     * LISTA FIXA (conforme você pediu)
-     */
-    const PEOPLE = [
-      "ALLAN DO NASCIMENTO MORAES",
-      "ANDRE DA CONCEICAO ALVES",
-      "ANGLA RAKEL SILVA ALMEIDA",
-      "ANTONY CHE GUEVARA CAVALCANTE DOS SANTOS",
-      "CLEITON DE PAULA BATISTA",
-      "DEIVIANE CONCEICAO PEREIRA",
-      "EDUARDO DE SOUSA",
-      "FERNANDO QUEIROZ DA SILVA",
-      "HELIO BARBOSA DOS SANTOS",
-      "HERACLITO HENRIQUE SANTANA LOPES",
-      "JANAINA KETLEY ANDRADE RIBEIRO",
-      "JEOVANE DOS SANTOS SILVA",
-      "JORGE MOUZINHO CARVALHO",
-      "LUCRECIA SANTOS DO NASCIMENTO",
-      "LUIS ANTONIO FELIX DE VASCONCELLOS",
-      "MARCELO MONTANDON MARCAL JUNIOR",
-      "MARCOS OLIVEIRA MENEZES",
-      "RAFAEL HENRIQUE ALVES RIBEIRO",
-      "RAPHAEL JOSE PEREIRA DA SILVA",
-      "RODRIGO BARBOSA DA SILVA",
-      "MARCOS VINICUS BATISTA RIBEIRO",
-      "TAINARA BERTUNES DOS SANTOS",
-      "VERONICA LUIZA GOMES DE MENEZES",
-      "WILDSON DA SILVA BARROS"
-    ];
+    const DAY = 24 * 60 * 60 * 1000;
+    let ULTIMA_LISTA = [];
+    let LIGHTBOX_INSTANCE = null;
 
-    /**
-     * Utilitários
-     */
-    const pad2 = (n)=> String(n).padStart(2,"0");
-    const fmtDateBR = (d)=> `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()}`;
-    function monthNamePT(m){
-      return ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"][m];
+    function prazoDiffDays(prazoISO) {
+      if (!prazoISO) return null;
+
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+
+      const prazo = new Date(prazoISO);
+      prazo.setHours(0, 0, 0, 0);
+
+      return Math.round((prazo - hoje) / DAY);
     }
 
-    // próxima segunda-feira (default do início)
-    function nextMonday(d=new Date()){
-      const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-      const day = x.getDay(); // 0..6
-      const diff = (8 - day) % 7 || 7;
-      x.setDate(x.getDate() + diff);
-      x.setHours(0,0,0,0);
-      return x;
+    function prazoTextoTabela(prazoISO, status) {
+      if (!prazoISO) return '-';
+
+      if (status === 'Aprovada') return 'Finalizado';
+
+      const diff = prazoDiffDays(prazoISO);
+
+      if (diff > 0) return `${diff} dia${diff > 1 ? 's' : ''} para vencer`;
+      if (diff === 0) return 'Vence hoje';
+
+      const atraso = Math.abs(diff);
+      return `${atraso} dia${atraso > 1 ? 's' : ''} vencido`;
     }
 
-    function isoWeekNumber(date){
-      const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-      const dayNum = d.getUTCDay() || 7; // 1..7
-      d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-      const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-      const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-      return { week: weekNo, year: d.getUTCFullYear() };
+    function prazoTextoModal(prazoISO, status) {
+      if (!prazoISO) return '-';
+
+      const data = new Date(prazoISO).toLocaleDateString();
+
+      if (status === 'Aprovada') return `${data} - Finalizado`;
+
+      const diff = prazoDiffDays(prazoISO);
+
+      if (diff > 0) return `${data} - ${diff} dia${diff > 1 ? 's' : ''} para vencer`;
+      if (diff === 0) return `${data} - Vence hoje`;
+
+      const atraso = Math.abs(diff);
+      return `${data} - ${atraso} dia${atraso > 1 ? 's' : ''} vencido`;
     }
 
-    // PRNG determinístico por seed (para embaralhar uma vez a lista)
-    function xmur3(str){
-      let h = 1779033703 ^ str.length;
-      for (let i = 0; i < str.length; i++){
-        h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
-        h = (h << 13) | (h >>> 19);
+    function prazoClasseTabela(prazoISO, status) {
+      if (!prazoISO) return '';
+
+      if (status === 'Aprovada') return 'prazo-pill prazo-finalizado';
+
+      const diff = prazoDiffDays(prazoISO);
+
+      if (diff < 0) return 'prazo-pill prazo-vencido';
+      if (diff === 0 || diff <= 3) return 'prazo-pill prazo-alerta';
+
+      return 'prazo-pill prazo-ok';
+    }
+
+    function statusClasse(status) {
+      if (status === 'Aberta') return 'status-badge status-aberta';
+      if (status === 'Pendente de aprovação') return 'status-badge status-pendente';
+      if (status === 'Aprovada') return 'status-badge status-aprovada';
+      if (status === 'Rejeitada') return 'status-badge status-rejeitada';
+      return 'status-badge';
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function resolveImgSrc(f) {
+      if (!f) return null;
+      if (typeof f === 'object' && f.url) return f.url;
+      if (typeof f === 'string' && f.startsWith('http')) return f;
+      return '/uploads/' + f;
+    }
+
+    async function carregarNotificacoes() {
+      try {
+        const url = new URL('/api/notificacoes', window.location.origin);
+        const status = document.getElementById('status').value;
+
+        if (status) url.searchParams.append('status', status);
+
+        const res = await fetch(url);
+
+        if (!res.ok) {
+          console.error('Erro ao buscar /api/notificacoes:', res.status, await res.text());
+          document.getElementById('tbodyNotificacoes').innerHTML =
+            '<tr><td colspan="8" class="text-center py-4 text-danger">Erro ao carregar notificações.</td></tr>';
+          return;
+        }
+
+        const lista = await res.json();
+        ULTIMA_LISTA = lista;
+
+        popularFiltrosDinamicos(lista);
+
+        const filtrada = aplicarFiltrosCliente(lista);
+        renderTabela(filtrada);
+        atualizarKPIs(filtrada);
+      } catch (err) {
+        console.error('Falha geral em carregarNotificacoes:', err);
+        document.getElementById('tbodyNotificacoes').innerHTML =
+          '<tr><td colspan="8" class="text-center py-4 text-danger">Erro ao carregar notificações.</td></tr>';
       }
-      return function(){
-        h = Math.imul(h ^ (h >>> 16), 2246822507);
-        h = Math.imul(h ^ (h >>> 13), 3266489909);
-        h ^= (h >>> 16);
-        return h >>> 0;
-      };
-    }
-    function mulberry32(a){
-      return function(){
-        let t = a += 0x6D2B79F5;
-        t = Math.imul(t ^ (t >>> 15), t | 1);
-        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-      };
-    }
-    function shuffled(array, seedStr){
-      if(!seedStr) return array.slice();
-      const seed = xmur3(seedStr)();
-      const rnd = mulberry32(seed);
-      const a = array.slice();
-      for(let i=a.length-1;i>0;i--){
-        const j = Math.floor(rnd() * (i+1));
-        [a[i], a[j]] = [a[j], a[i]];
-      }
-      return a;
     }
 
-    /**
-     * Semana - regra selecionável:
-     * - sunday: Domingo -> Sábado
-     * - monday: Segunda -> Domingo
-     */
-    function startOfWeek(date, rule){
-      const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-      d.setHours(0,0,0,0);
-      const day = d.getDay(); // 0..6 (Dom..Sáb)
-      if(rule === "monday"){
-        // converter para segunda como início
-        const diff = (day === 0) ? 6 : (day - 1);
-        d.setDate(d.getDate() - diff);
-        return d;
-      }
-      // sunday
-      d.setDate(d.getDate() - day);
-      return d;
-    }
-    function endOfWeek(date, rule){
-      const s = startOfWeek(date, rule);
-      const e = new Date(s);
-      e.setDate(e.getDate() + 6);
-      e.setHours(23,59,59,999);
-      return e;
-    }
+    function aplicarFiltrosCliente(listaBase) {
+      const mesSel = document.getElementById('filtroMes').value;
+      const prazoSel = document.getElementById('filtroPrazo').value;
+      const areaSel = document.getElementById('filtroArea').value;
+      const tecSel = document.getElementById('filtroTecnico').value;
+      const classSel = document.getElementById('filtroClassificacao').value;
+      const idBusca = document.getElementById('idBusca').value.trim().toLowerCase();
 
-    function weekIndexFromStart(startDate, anyDate, rule){
-      const s = startOfWeek(startDate, rule).getTime();
-      const w = startOfWeek(anyDate, rule).getTime();
-      return Math.floor((w - s) / (7 * 24 * 60 * 60 * 1000));
-    }
+      return listaBase.filter(n => {
+        if (idBusca) {
+          const idSequencial = String(n.idSequencial ?? '').toLowerCase();
+          if (idSequencial !== idBusca) return false;
+        }
 
-    function ownerForWeek(people, startDate, dateInWeek, seedStr, rule){
-      const list = shuffled(people, seedStr);
-      const idx = weekIndexFromStart(startDate, dateInWeek, rule);
-      const safe = ((idx % list.length) + list.length) % list.length;
-      return { name: list[safe], idx, list };
+        if (mesSel !== '') {
+          if (!n.dataRegistro) return false;
+          const m = new Date(n.dataRegistro).getMonth();
+          if (String(m) !== mesSel) return false;
+        }
+
+        if (prazoSel) {
+          const diff = prazoDiffDays(n.prazo);
+          if (prazoSel === 'noprazo' && !(diff === 0 || diff > 0)) return false;
+          if (prazoSel === 'vencidas' && !(diff < 0)) return false;
+        }
+
+        if (areaSel && (n.area || '') !== areaSel) return false;
+        if (tecSel && (n.tecnico || '') !== tecSel) return false;
+        if (classSel && (n.classificacao || '') !== classSel) return false;
+
+        return true;
+      });
     }
 
-    function escapeHtml(str){
-      return String(str)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
+    function popularFiltrosDinamicos(lista) {
+      const areaSel = document.getElementById('filtroArea');
+      const tecSel = document.getElementById('filtroTecnico');
+
+      const areas = Array.from(new Set(lista.map(n => n.area).filter(Boolean))).sort();
+      const tecs = Array.from(new Set(lista.map(n => n.tecnico).filter(Boolean))).sort();
+
+      const areaVal = areaSel.value;
+      const tecVal = tecSel.value;
+
+      areaSel.innerHTML = '<option value="">Todas</option>' +
+        areas.map(a => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join('');
+
+      tecSel.innerHTML = '<option value="">Todos</option>' +
+        tecs.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+
+      if (areas.includes(areaVal)) areaSel.value = areaVal;
+      if (tecs.includes(tecVal)) tecSel.value = tecVal;
     }
 
-    /**
-     * UI Estado
-     */
-    const elWeeks = document.getElementById("weeks");
-    const elMonthTitle = document.getElementById("monthTitle");
-    const elMetaWeek = document.getElementById("metaWeek");
-    const elMetaOwner = document.getElementById("metaOwner");
-    const elFooter = document.getElementById("footerNote");
+    function atualizarKPIs(lista) {
+      const total = lista.length;
+      const abertas = lista.filter(n => n.status === 'Aberta').length;
+      const pendentes = lista.filter(n => n.status === 'Pendente de aprovação').length;
 
-    const elStartDate = document.getElementById("startDate");
-    const elSeed = document.getElementById("seed");
-    const elWeekRule = document.getElementById("weekRule");
+      const notificacoes = lista.filter(n =>
+        (n.classificacao || '').toLowerCase().includes('notificação')
+      ).length;
 
-    const btnPrev = document.getElementById("prevMonth");
-    const btnNext = document.getElementById("nextMonth");
-    const btnToday = document.getElementById("goToday");
-    const btnApply = document.getElementById("apply");
-    const btnCopy = document.getElementById("copy");
+      const interdicoes = lista.filter(n =>
+        (n.classificacao || '').toLowerCase().includes('interdição')
+      ).length;
 
-    const now = new Date();
-    let viewYear = now.getFullYear();
-    let viewMonth = now.getMonth(); // 0..11
-
-    // Defaults
-    (function init(){
-      const d = nextMonday(now);
-      elStartDate.value = `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
-      elSeed.value = "";
-      elWeekRule.value = "monday"; // padrão mais comum em escala de trabalho
-      render();
-    })();
-
-    function getStartDate(){
-      const v = elStartDate.value;
-      if(!v) return nextMonday(now);
-      const [y,m,dd] = v.split("-").map(Number);
-      const d = new Date(y, m-1, dd);
-      d.setHours(0,0,0,0);
-      return d;
+      document.getElementById('kpiTotal').textContent = total;
+      document.getElementById('kpiAbertas').textContent = abertas;
+      document.getElementById('kpiPendentes').textContent = pendentes;
+      document.getElementById('kpiNotificacoes').textContent = notificacoes;
+      document.getElementById('kpiInterdicoes').textContent = interdicoes;
     }
 
-    function render(){
-      const people = PEOPLE.slice();
-      const startDate = getStartDate();
-      const seedStr = elSeed.value.trim();
-      const rule = elWeekRule.value;
+    function renderTabela(lista) {
+      const tbody = document.getElementById('tbodyNotificacoes');
+      tbody.innerHTML = '';
 
-      // Cabeçalho
-      elMonthTitle.textContent = `${monthNamePT(viewMonth)} ${viewYear}`;
+      document.getElementById('selectAll').checked = false;
+      document.getElementById('selectAll').indeterminate = false;
 
-      const iso = isoWeekNumber(now);
-      const wOwner = ownerForWeek(people, startDate, now, seedStr, rule).name;
-      elMetaWeek.textContent = `Semana ISO atual: ${iso.week}/${iso.year}`;
-      elMetaOwner.textContent = `Responsável da semana atual: ${wOwner}`;
-      elFooter.textContent = `Início do rodízio: ${fmtDateBR(startDate)} • Auditores: ${people.length} • Regra: ${rule === "monday" ? "Seg→Dom" : "Dom→Sáb"}`;
-
-      // Semanas únicas do mês (cards)
-      const first = new Date(viewYear, viewMonth, 1);
-      const last  = new Date(viewYear, viewMonth + 1, 0);
-
-      const seen = new Set();
-      const weeks = [];
-
-      for(let d = new Date(first); d <= last; d.setDate(d.getDate()+1)){
-        const ws = startOfWeek(d, rule);
-        const key = ws.getTime();
-        if(seen.has(key)) continue;
-        seen.add(key);
-
-        const we = endOfWeek(d, rule);
-        const isoW = isoWeekNumber(d);
-        const owner = ownerForWeek(people, startDate, d, seedStr, rule).name;
-
-        weeks.push({
-          ws: new Date(ws),
-          we: new Date(we),
-          isoWeek: isoW.week,
-          isoYear: isoW.year,
-          owner
-        });
+      if (!lista.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4">Nenhuma notificação encontrada.</td></tr>';
+        syncSelectionUI();
+        return;
       }
 
-      // Render cards
-      elWeeks.innerHTML = "";
-      const currentWsKey = startOfWeek(now, rule).getTime();
+      lista.forEach(n => {
+        const tr = document.createElement('tr');
+        tr.className = 'row-notificacao';
+        tr.dataset.id = n._id;
 
-      weeks.forEach((w, i)=>{
-        const card = document.createElement("div");
-        card.className = "weekCard" + (w.ws.getTime() === currentWsKey ? " current" : "");
+        const idLabel = typeof n.idSequencial === 'number' ? n.idSequencial : '-';
 
-        card.innerHTML = `
-          <div class="wkTop">
-            <div class="wkTitle">Semana ${i+1} do mês</div>
-            <div class="pill" title="Semana ISO (referência)">ISO W${w.isoWeek}/${w.isoYear}</div>
-          </div>
+        let statusText = n.status || '-';
+        if (n.status === 'Rejeitada' && n.comentarioAprovacao) {
+          statusText += `: ${n.comentarioAprovacao}`;
+        }
 
-          <div class="wkBody">
-            <div class="auditor">
-              <div class="cap">👤 Responsável</div>
-              <div class="name">${escapeHtml(w.owner)}</div>
-            </div>
-
-            <div class="rangeGrid">
-              <div class="miniCard">
-                <div class="k">Início</div>
-                <div class="v">${fmtDateBR(w.ws)}</div>
-              </div>
-              <div class="miniCard">
-                <div class="k">Fim</div>
-                <div class="v">${fmtDateBR(w.we)}</div>
-              </div>
-            </div>
-
-            <div class="miniCard">
-              <div class="k">Período</div>
-              <div class="v">${fmtDateBR(w.ws)} — ${fmtDateBR(w.we)}</div>
-            </div>
-          </div>
+        tr.innerHTML = `
+          <td>
+            <input type="checkbox" class="row-check" value="${escapeHtml(n._id)}">
+          </td>
+          <td><span class="id-pill">${escapeHtml(idLabel)}</span></td>
+          <td>${escapeHtml(n.tecnico || '-')}</td>
+          <td>${escapeHtml(n.area || '-')}</td>
+          <td>${escapeHtml(n.classificacao || '-')}</td>
+          <td><span class="${statusClasse(n.status)}">${escapeHtml(statusText)}</span></td>
+          <td>${n.dataRegistro ? escapeHtml(new Date(n.dataRegistro).toLocaleString()) : '-'}</td>
+          <td><span class="${prazoClasseTabela(n.prazo, n.status)}">${escapeHtml(prazoTextoTabela(n.prazo, n.status))}</span></td>
         `;
 
-        elWeeks.appendChild(card);
+        tr.addEventListener('click', e => {
+          if (e.target.classList.contains('row-check')) return;
+          visualizarDetalhes(n._id);
+          const modal = new bootstrap.Modal(document.getElementById('modalDetalhes'));
+          modal.show();
+        });
+
+        tbody.appendChild(tr);
       });
+
+      syncSelectionUI();
     }
 
-    function copyMonthSchedule(){
-      const people = PEOPLE.slice();
-      const startDate = getStartDate();
-      const seedStr = elSeed.value.trim();
-      const rule = elWeekRule.value;
+    function getSelectedIds() {
+      return Array.from(document.querySelectorAll('.row-check:checked')).map(i => i.value);
+    }
 
-      const first = new Date(viewYear, viewMonth, 1);
-      const last  = new Date(viewYear, viewMonth + 1, 0);
+    function syncSelectionUI() {
+      const selectAll = document.getElementById('selectAll');
+      const checks = document.querySelectorAll('.row-check');
+      const bulkActions = document.getElementById('bulkActions');
+      const bulkCount = document.getElementById('bulkCount');
 
-      const seen = new Set();
-      const lines = [];
-      let n = 0;
+      function updateBulkUI() {
+        const selected = getSelectedIds().length;
+        bulkCount.textContent = selected;
 
-      for(let d = new Date(first); d <= last; d.setDate(d.getDate()+1)){
-        const ws = startOfWeek(d, rule);
-        const key = ws.getTime();
-        if(seen.has(key)) continue;
-        seen.add(key);
-        n++;
+        if (selected > 0) {
+          bulkActions.classList.add('show');
+        } else {
+          bulkActions.classList.remove('show');
+        }
 
-        const we = endOfWeek(d, rule);
-        const isoW = isoWeekNumber(d);
-        const owner = ownerForWeek(people, startDate, d, seedStr, rule).name;
-
-        lines.push(`Semana ${n} — ${fmtDateBR(ws)} a ${fmtDateBR(we)} — ${owner} (ISO W${isoW.week}/${isoW.year})`);
+        const total = checks.length;
+        selectAll.checked = total > 0 && selected === total;
+        selectAll.indeterminate = selected > 0 && selected < total;
       }
 
-      const text =
-        `Escala (semanal) — ${monthNamePT(viewMonth)} ${viewYear}\n` +
-        `Regra: ${rule === "monday" ? "Segunda→Domingo" : "Domingo→Sábado"} | Início do rodízio: ${fmtDateBR(startDate)}\n\n` +
-        lines.join("\n");
+      selectAll.onchange = () => {
+        checks.forEach(c => { c.checked = selectAll.checked; });
+        updateBulkUI();
+      };
 
-      navigator.clipboard?.writeText(text).then(()=>{
-        btnCopy.textContent = "Copiado ✓";
-        setTimeout(()=> btnCopy.textContent = "Copiar escala do mês", 1200);
-      }).catch(()=>{
-        alert("Não foi possível copiar automaticamente. Copie manualmente:\n\n" + text);
+      checks.forEach(c => {
+        c.onclick = e => e.stopPropagation();
+        c.onchange = updateBulkUI;
+      });
+
+      updateBulkUI();
+    }
+
+    async function aprovarNotificacao(id) {
+      const res = await fetch('/aprovar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ id })
+      });
+
+      if (!res.ok) throw new Error(await res.text());
+    }
+
+    async function excluirNotificacao(id) {
+      const res = await fetch(`/excluir/${id}`, { method: 'DELETE' });
+
+      if (!res.ok) throw new Error(await res.text());
+    }
+
+    function configurarBulkActions() {
+      document.getElementById('btnExcluirSelecionadas').onclick = async () => {
+        const ids = getSelectedIds();
+        if (!ids.length) return;
+
+        if (!confirm(`Confirmar exclusão de ${ids.length} notificação(ões)?`)) return;
+
+        try {
+          for (const id of ids) {
+            await excluirNotificacao(id);
+          }
+
+          await carregarNotificacoes();
+          alert('Exclusão concluída!');
+        } catch (err) {
+          alert('Erro ao excluir selecionadas: ' + err.message);
+        }
+      };
+
+      document.getElementById('btnAprovarSelecionadas').onclick = async () => {
+        const ids = getSelectedIds();
+        if (!ids.length) return;
+
+        if (!confirm(`Confirmar aprovação de ${ids.length} notificação(ões)?`)) return;
+
+        try {
+          for (const id of ids) {
+            await aprovarNotificacao(id);
+          }
+
+          await carregarNotificacoes();
+          alert('Aprovação concluída!');
+        } catch (err) {
+          alert('Erro ao aprovar selecionadas: ' + err.message);
+        }
+      };
+    }
+
+    function configurarAcoes(d) {
+      const btnA = document.getElementById('btnAprovar');
+      const btnR = document.getElementById('btnRejeitar');
+
+      if (d.status === 'Aprovada' || d.status === 'Rejeitada') {
+        btnA.style.display = 'none';
+        btnR.style.display = 'none';
+      } else {
+        btnA.style.display = d.dataBaixa ? 'inline-block' : 'none';
+        btnR.style.display = 'inline-block';
+      }
+
+      btnA.onclick = async () => {
+        try {
+          await aprovarNotificacao(d._id);
+          alert('Notificação aprovada com sucesso!');
+          bootstrap.Modal.getInstance(document.getElementById('modalDetalhes')).hide();
+          await carregarNotificacoes();
+        } catch (err) {
+          alert('Erro ao aprovar: ' + err.message);
+        }
+      };
+
+      btnR.onclick = () => {
+        document.getElementById('rejeicaoId').value = d._id;
+      };
+
+      document.getElementById('btnExcluir').onclick = async () => {
+        if (!confirm('Tem certeza que deseja excluir esta notificação?')) return;
+
+        try {
+          await excluirNotificacao(d._id);
+          bootstrap.Modal.getInstance(document.getElementById('modalDetalhes')).hide();
+          await carregarNotificacoes();
+          alert('Notificação excluída com sucesso!');
+        } catch (err) {
+          alert('Erro ao excluir: ' + err.message);
+        }
+      };
+
+      const justifEl = document.getElementById('detalheJustificativa');
+
+      if (d.status === 'Rejeitada') {
+        justifEl.textContent = d.comentarioAprovacao || '—';
+      } else if (d.status === 'Aprovada') {
+        justifEl.textContent =
+          `Aprovado por ${d.aprovadoPor || '—'} em ${d.dataAprovacao ? new Date(d.dataAprovacao).toLocaleString() : '—'}`;
+      } else {
+        justifEl.textContent = '—';
+      }
+    }
+
+    async function visualizarDetalhes(id) {
+      const res = await fetch(`/api/notificacoes/${id}`);
+
+      if (!res.ok) {
+        alert('Erro ao carregar detalhes da notificação.');
+        return;
+      }
+
+      const d = await res.json();
+
+      const idLabel =
+        typeof d.idSequencial === 'number'
+          ? d.idSequencial
+          : d._id;
+
+      document.getElementById('detalheId').textContent = idLabel;
+      document.getElementById('detalheTecnico').textContent = d.tecnico || '-';
+      document.getElementById('detalheEncarregado').textContent = d.encarregado || '-';
+
+      const supervisor = d.supervisorObra ?? d.supervisor ?? d.supervisorDaObra ?? '-';
+      const descAtiv = d.descricaoAtividade ?? d.atividade ?? d.descricao_atividade ?? '-';
+
+      document.getElementById('detalheSupervisor').textContent = supervisor || '-';
+      document.getElementById('detalheDescricaoAtividade').textContent = descAtiv || '-';
+      document.getElementById('detalheNR').textContent = d.nr || '-';
+      document.getElementById('detalheAcoesRecomendadas').textContent = d.acao || '-';
+
+      document.getElementById('detalheArea').textContent = d.area || '-';
+      document.getElementById('detalheClassificacao').textContent = d.classificacao || '-';
+      document.getElementById('detalheDescricao').textContent = d.descricao || '-';
+      document.getElementById('detalheDataRegistro').textContent =
+        d.dataRegistro ? new Date(d.dataRegistro).toLocaleString() : '-';
+      document.getElementById('detalheStatus').textContent = d.status || '-';
+      document.getElementById('detalhePrazo').textContent = prazoTextoModal(d.prazo, d.status);
+
+      const notifFotosDiv = document.getElementById('detalheFotosNotificacao');
+      notifFotosDiv.innerHTML = '';
+
+      if (d.notificacaoFotos?.length) {
+        d.notificacaoFotos.forEach(f => {
+          const src = resolveImgSrc(f);
+          if (!src) return;
+
+          const link = document.createElement('a');
+          link.href = src;
+          link.className = 'glightbox';
+          link.setAttribute('data-gallery', 'notificacao');
+
+          const img = document.createElement('img');
+          img.src = src;
+          img.className = 'photo-thumb';
+
+          link.appendChild(img);
+          notifFotosDiv.appendChild(link);
+        });
+      } else {
+        notifFotosDiv.textContent = 'Sem fotos da notificação.';
+      }
+
+      document.getElementById('detalheResolvidoPor').textContent = d.resolvidoPor || '—';
+      document.getElementById('detalheDataBaixa').textContent =
+        d.dataBaixa ? new Date(d.dataBaixa).toLocaleString() : '—';
+      document.getElementById('detalheComentario').textContent = d.resolucaoComentario || 'Sem comentário';
+
+      const fotosDiv = document.getElementById('detalheFotos');
+      fotosDiv.innerHTML = '';
+
+      if (d.resolucaoFotos?.length) {
+        d.resolucaoFotos.forEach(f => {
+          const src = resolveImgSrc(f);
+          if (!src) return;
+
+          const link = document.createElement('a');
+          link.href = src;
+          link.className = 'glightbox';
+          link.setAttribute('data-gallery', 'baixa');
+
+          const img = document.createElement('img');
+          img.src = src;
+          img.className = 'photo-thumb';
+
+          link.appendChild(img);
+          fotosDiv.appendChild(link);
+        });
+      } else {
+        fotosDiv.textContent = 'Sem fotos da baixa.';
+      }
+
+      if (LIGHTBOX_INSTANCE) {
+        LIGHTBOX_INSTANCE.destroy();
+      }
+
+      LIGHTBOX_INSTANCE = GLightbox({ selector: '.glightbox' });
+
+      configurarAcoes(d);
+    }
+
+    document.getElementById('formRejeicao').addEventListener('submit', async e => {
+      e.preventDefault();
+
+      const data = new URLSearchParams(new FormData(e.target));
+
+      try {
+        const res = await fetch('/rejeitar', { method: 'POST', body: data });
+
+        if (!res.ok) throw new Error(await res.text());
+
+        alert('Notificação rejeitada com sucesso!');
+
+        const modalRejeicao = bootstrap.Modal.getInstance(document.getElementById('modalRejeicao'));
+        if (modalRejeicao) modalRejeicao.hide();
+
+        const id = e.target.rejeicaoId.value;
+        await visualizarDetalhes(id);
+        await carregarNotificacoes();
+      } catch (err) {
+        alert('Erro ao rejeitar: ' + err.message);
+      }
+    });
+
+    document.getElementById('filtroForm').addEventListener('submit', e => {
+      e.preventDefault();
+      carregarNotificacoes();
+    });
+
+    document.getElementById('btnLimparFiltros').addEventListener('click', () => {
+      document.getElementById('status').value = '';
+      document.getElementById('filtroMes').value = '';
+      document.getElementById('filtroPrazo').value = '';
+      document.getElementById('filtroClassificacao').value = '';
+      document.getElementById('filtroArea').value = '';
+      document.getElementById('filtroTecnico').value = '';
+      document.getElementById('idBusca').value = '';
+
+      document.querySelectorAll('.chip-status').forEach(c => c.classList.remove('active'));
+      document.querySelector('.chip-status[data-status=""]').classList.add('active');
+
+      carregarNotificacoes();
+    });
+
+    function configurarChips() {
+      const chips = document.querySelectorAll('.chip-status');
+
+      chips.forEach(chip => {
+        chip.addEventListener('click', () => {
+          chips.forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+
+          const status = chip.getAttribute('data-status') || '';
+          document.getElementById('status').value = status;
+
+          carregarNotificacoes();
+        });
       });
     }
 
-    // Eventos
-    btnPrev.addEventListener("click", ()=>{
-      viewMonth--;
-      if(viewMonth < 0){ viewMonth = 11; viewYear--; }
-      render();
+    window.addEventListener('DOMContentLoaded', () => {
+      configurarChips();
+      configurarBulkActions();
+      carregarNotificacoes();
     });
-    btnNext.addEventListener("click", ()=>{
-      viewMonth++;
-      if(viewMonth > 11){ viewMonth = 0; viewYear++; }
-      render();
-    });
-    btnToday.addEventListener("click", ()=>{
-      viewYear = now.getFullYear();
-      viewMonth = now.getMonth();
-      render();
-    });
-    btnApply.addEventListener("click", render);
-    btnCopy.addEventListener("click", copyMonthSchedule);
   </script>
 </body>
 </html>
