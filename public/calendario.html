@@ -1,519 +1,614 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Painel do Gestor - Notificações e Interdições</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do Gestor - SESMT</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
 
   <style>
     :root {
-      --bg: #f3f6fb;
-      --card: #ffffff;
-      --text: #162033;
-      --muted: #6b7280;
-      --primary: #16a34a;
-      --primary-dark: #15803d;
-      --danger: #dc2626;
-      --warning: #f59e0b;
-      --border: #e5e7eb;
-      --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-      --radius: 18px;
+      --bg:       #0f1117;
+      --surface:  #171c26;
+      --card:     #1d2333;
+      --border:   #2a3245;
+      --accent:   #00e87a;
+      --accent2:  #0099ff;
+      --danger:   #ff4d6a;
+      --warning:  #ffb930;
+      --text:     #e8eaf0;
+      --muted:    #5a6680;
+      --hover:    #232b3e;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      margin: 0;
-      background:
-        radial-gradient(circle at top left, rgba(22, 163, 74, 0.10), transparent 30%),
-        linear-gradient(180deg, #f7fafc 0%, var(--bg) 100%);
-      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'IBM Plex Sans', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── TOP NAV ─────────────────────────────────────────────── */
+    .topnav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .topnav .brand {
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--accent);
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    .topnav nav { display: flex; gap: 4px; flex: 1; }
+
+    .topnav nav a {
+      padding: 6px 14px;
+      border-radius: 6px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all .18s;
+      white-space: nowrap;
+    }
+
+    .topnav nav a:hover { color: var(--text); background: var(--hover); }
+    .topnav nav a.active {
+      color: var(--accent);
+      background: rgba(0,232,122,.10);
+    }
+
+    .topnav .btn-new {
+      margin-left: auto;
+      padding: 7px 18px;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #000;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity .15s;
+    }
+    .topnav .btn-new:hover { opacity: .85; }
+
+    /* ── WRAPPER ─────────────────────────────────────────────── */
+    .wrapper {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 28px 24px;
+    }
+
+    /* ── PAGE HEADER ─────────────────────────────────────────── */
+    .page-header {
+      margin-bottom: 28px;
+    }
+
+    .page-header h1 {
+      font-size: 22px;
+      font-weight: 600;
       color: var(--text);
     }
 
-    .page-shell {
-      max-width: 1480px;
-      margin: 0 auto;
-      padding: 28px;
-    }
-
-    .topbar {
-      background: linear-gradient(135deg, #0f172a, #14532d);
-      border-radius: 24px;
-      padding: 26px;
-      color: #fff;
-      box-shadow: var(--shadow);
-      margin-bottom: 22px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .topbar::after {
-      content: "";
-      position: absolute;
-      width: 260px;
-      height: 260px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.08);
-      right: -80px;
-      top: -110px;
-    }
-
-    .topbar-content {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      justify-content: space-between;
-      gap: 18px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .page-title {
-      font-size: 30px;
-      font-weight: 800;
-      margin: 0;
-    }
-
-    .page-subtitle {
-      margin-top: 6px;
-      color: rgba(255,255,255,0.78);
-      font-size: 14px;
-    }
-
-    .topbar-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .btn-soft-light {
-      background: rgba(255,255,255,0.14);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.22);
-      border-radius: 14px;
-      padding: 10px 14px;
-      font-weight: 700;
-    }
-
-    .btn-soft-light:hover {
-      background: rgba(255,255,255,0.22);
-      color: #fff;
-    }
-
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(160px, 1fr));
-      gap: 14px;
-      margin-bottom: 18px;
-    }
-
-    .card-kpi {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 18px;
-      box-shadow: var(--shadow);
-      min-height: 112px;
-    }
-
-    .kpi-label {
+    .page-header p {
+      font-size: 13px;
       color: var(--muted);
-      font-size: 13px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .04em;
-      margin-bottom: 8px;
-    }
-
-    .kpi-value {
-      font-size: 32px;
-      line-height: 1;
-      font-weight: 800;
-      margin: 0;
-    }
-
-    .chip-panel,
-    .filter-card,
-    .table-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-    }
-
-    .chip-panel {
-      padding: 14px;
-      margin-bottom: 16px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .chip-status {
-      padding: 9px 16px;
-      border-radius: 999px;
-      background: #f3f4f6;
-      color: #374151;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      border: 1px solid #e5e7eb;
-      transition: .2s;
-      user-select: none;
-    }
-
-    .chip-status:hover {
-      transform: translateY(-1px);
-    }
-
-    .chip-status.active {
-      background: var(--primary);
-      color: #fff;
-      border-color: var(--primary);
-      box-shadow: 0 8px 18px rgba(22, 163, 74, .25);
-    }
-
-    .filter-card {
-      padding: 18px;
-      margin-bottom: 18px;
-    }
-
-    .form-label {
-      font-size: 13px;
-      font-weight: 700;
-      color: #374151;
-    }
-
-    .form-control,
-    .form-select {
-      border-radius: 12px;
-      min-height: 43px;
-      border-color: #d1d5db;
-    }
-
-    .bulk-actions {
-      display: none;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 14px 16px;
-      margin-bottom: 16px;
-      border: 1px solid rgba(22, 163, 74, .25);
-      background: rgba(22, 163, 74, .08);
-      border-radius: var(--radius);
-    }
-
-    .bulk-actions.show {
-      display: flex;
-    }
-
-    .bulk-info {
-      font-weight: 800;
-      color: #14532d;
-    }
-
-    .bulk-buttons {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .table-card {
-      overflow: hidden;
-    }
-
-    .table-header {
-      padding: 18px 20px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .table-title {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 800;
-    }
-
-    .table-subtitle {
-      color: var(--muted);
-      font-size: 13px;
       margin-top: 3px;
     }
 
-    table {
-      margin-bottom: 0 !important;
+    /* ── KPI CARDS ───────────────────────────────────────────── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
     }
 
-    table thead th {
-      background: #f8fafc !important;
-      color: #475569;
-      font-size: 12px;
+    @media (max-width: 900px) {
+      .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 560px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .kpi-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      transition: border-color .2s;
+    }
+
+    .kpi-card:hover { border-color: var(--accent); }
+
+    .kpi-card .label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .08em;
       text-transform: uppercase;
-      letter-spacing: .04em;
-      border-bottom: 1px solid var(--border);
-      padding: 14px 12px !important;
-      white-space: nowrap;
+      color: var(--muted);
+      margin-bottom: 8px;
     }
 
-    table tbody td {
-      padding: 15px 12px !important;
-      vertical-align: middle;
-      border-color: #eef2f7;
-      font-size: 14px;
+    .kpi-card .value {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1;
     }
 
-    .row-notificacao {
+    .kpi-card.accent .value  { color: var(--accent); }
+    .kpi-card.warning .value { color: var(--warning); }
+    .kpi-card.danger .value  { color: var(--danger); }
+    .kpi-card.blue .value    { color: var(--accent2); }
+
+    /* ── FILTER PANEL ────────────────────────────────────────── */
+    .filter-panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+    }
+
+    .filter-panel label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .filter-panel .form-select,
+    .filter-panel .form-control {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 13px;
+      border-radius: 8px;
+      height: 36px;
+      padding: 0 12px;
+    }
+
+    .filter-panel .form-select:focus,
+    .filter-panel .form-control:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0,232,122,.12);
+      outline: none;
+    }
+
+    .filter-panel .form-select option { background: var(--surface); }
+
+    .btn-filter {
+      height: 36px;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #000;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      padding: 0 20px;
       cursor: pointer;
-      transition: .15s;
+      transition: opacity .15s;
     }
+    .btn-filter:hover { opacity: .85; }
 
-    .row-notificacao:hover {
-      background: #f0fdf4;
-    }
-
-    .id-pill {
-      display: inline-flex;
+    /* ── CHIPS ───────────────────────────────────────────────── */
+    .chips-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 18px;
       align-items: center;
-      justify-content: center;
-      min-width: 44px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: #ecfdf5;
-      color: #166534;
-      font-weight: 800;
-      border: 1px solid #bbf7d0;
     }
 
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      border-radius: 999px;
-      padding: 6px 10px;
-      font-size: 12px;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .status-aberta {
-      background: #eff6ff;
-      color: #1d4ed8;
-    }
-
-    .status-pendente {
-      background: #fffbeb;
-      color: #b45309;
-    }
-
-    .status-aprovada {
-      background: #ecfdf5;
-      color: #15803d;
-    }
-
-    .status-rejeitada {
-      background: #fef2f2;
-      color: #b91c1c;
-    }
-
-    .prazo-pill {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 7px 11px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .prazo-ok {
-      background: #ecfdf5;
-      color: #15803d;
-    }
-
-    .prazo-alerta {
-      background: #fffbeb;
-      color: #b45309;
-    }
-
-    .prazo-vencido {
-      background: #fef2f2;
-      color: #b91c1c;
-    }
-
-    .prazo-finalizado {
-      background: #eef2ff;
-      color: #4338ca;
-    }
-
-    .modal-content {
+    .chip {
+      padding: 5px 14px;
       border-radius: 20px;
-      border: 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .18s;
+      letter-spacing: .03em;
+    }
+
+    .chip:hover { border-color: var(--accent); color: var(--text); }
+    .chip.active {
+      background: rgba(0,232,122,.12);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── BULK ACTIONS ────────────────────────────────────────── */
+    .bulk-bar {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding: 10px 16px;
+      background: rgba(0,232,122,.07);
+      border: 1px solid rgba(0,232,122,.25);
+      border-radius: 10px;
+      font-size: 13px;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .bulk-bar.visible { display: flex; }
+
+    .bulk-bar .bulk-count { font-family: 'IBM Plex Mono', monospace; font-weight: 700; }
+
+    .btn-bulk {
+      padding: 6px 16px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .btn-bulk:hover { opacity: .85; }
+    .btn-bulk.approve { background: var(--accent); color: #000; }
+    .btn-bulk.delete  { background: var(--danger); color: #fff; }
+
+    /* ── TABLE ───────────────────────────────────────────────── */
+    .table-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
       overflow: hidden;
     }
 
-    .modal-header {
-      background: linear-gradient(135deg, #0f172a, #14532d);
-      color: #fff;
-      border-bottom: 0;
+    .table-card table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
     }
 
-    .modal-header .btn-close {
-      filter: invert(1);
+    .table-card thead tr {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
     }
+
+    .table-card thead th {
+      padding: 11px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .table-card tbody tr {
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background .15s;
+    }
+
+    .table-card tbody tr:last-child { border-bottom: none; }
+
+    .table-card tbody tr:hover {
+      background: var(--hover);
+    }
+
+    .table-card tbody td {
+      padding: 12px 16px;
+      vertical-align: middle;
+      color: var(--text);
+    }
+
+    .table-card tbody td.muted { color: var(--muted); }
+
+    /* checkbox column */
+    .table-card th:first-child,
+    .table-card td:first-child {
+      width: 44px;
+      text-align: center;
+    }
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    /* ── STATUS BADGES ───────────────────────────────────────── */
+    .badge-status {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .badge-status.aberta    { background: rgba(0,153,255,.15); color: var(--accent2); }
+    .badge-status.pendente  { background: rgba(255,185,48,.13); color: var(--warning); }
+    .badge-status.aprovada  { background: rgba(0,232,122,.13); color: var(--accent); }
+    .badge-status.rejeitada { background: rgba(255,77,106,.13); color: var(--danger); }
+
+    /* ── PRAZO CHIPS ─────────────────────────────────────────── */
+    .prazo-chip {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .prazo-chip.ok       { background: rgba(0,232,122,.12); color: var(--accent); }
+    .prazo-chip.soon     { background: rgba(255,185,48,.12); color: var(--warning); }
+    .prazo-chip.overdue  { background: rgba(255,77,106,.12); color: var(--danger); }
+    .prazo-chip.done     { background: rgba(90,102,128,.15); color: var(--muted); }
+    .prazo-chip.none     { color: var(--muted); }
+
+    /* ── CLASSIF BADGE ───────────────────────────────────────── */
+    .badge-class {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .04em;
+    }
+
+    .badge-class.notificacao { background: rgba(0,153,255,.12); color: var(--accent2); }
+    .badge-class.interdicao  { background: rgba(255,77,106,.12); color: var(--danger); }
+
+    /* ── EMPTY STATE ─────────────────────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    /* ── MODAL ───────────────────────────────────────────────── */
+    .modal-content {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      color: var(--text);
+    }
+
+    .modal-header {
+      border-bottom: 1px solid var(--border);
+      padding: 18px 24px;
+    }
+
+    .modal-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .modal-footer {
+      border-top: 1px solid var(--border);
+      padding: 14px 24px;
+    }
+
+    .btn-close { filter: invert(1) brightness(.6); }
 
     .detail-grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 20px;
     }
 
-    .detail-item {
-      background: #f8fafc;
-      border: 1px solid #e5e7eb;
-      border-radius: 14px;
-      padding: 12px;
+    @media (max-width: 600px) {
+      .detail-grid { grid-template-columns: 1fr; }
     }
 
-    .detail-item.full {
-      grid-column: 1 / -1;
-    }
-
-    .detail-label {
-      font-size: 12px;
-      font-weight: 800;
-      color: #64748b;
+    .detail-item .di-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
       text-transform: uppercase;
-      letter-spacing: .04em;
-      margin-bottom: 5px;
+      color: var(--muted);
+      margin-bottom: 4px;
     }
 
-    .detail-value {
-      font-size: 14px;
-      color: #111827;
-      white-space: pre-wrap;
+    .detail-item .di-value {
+      font-size: 13px;
+      color: var(--text);
+      background: var(--surface);
+      border-radius: 7px;
+      padding: 8px 12px;
+      min-height: 34px;
     }
+
+    .detail-item.full { grid-column: 1 / -1; }
 
     .section-title {
-      font-size: 15px;
-      font-weight: 800;
-      margin: 18px 0 10px;
-      color: #0f172a;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 20px 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
     }
 
-    .photo-thumb {
-      width: 128px;
-      height: 92px;
-      object-fit: cover;
-      border-radius: 14px;
-      border: 1px solid #e5e7eb;
+    .modal-actions { display: flex; gap: 8px; margin-left: auto; }
+
+    .btn-modal {
+      padding: 6px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .btn-modal:hover { opacity: .8; }
+    .btn-modal.approve { background: var(--accent); color: #000; }
+    .btn-modal.reject  { background: var(--danger); color: #fff; }
+    .btn-modal.del     { background: transparent; border: 1px solid var(--danger); color: var(--danger); }
+
+    /* Rejeição modal */
+    .modal-body textarea {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      resize: vertical;
+      width: 100%;
+    }
+    .modal-body textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0,232,122,.1);
+      outline: none;
     }
 
-    @media (max-width: 1100px) {
-      .kpi-grid {
-        grid-template-columns: repeat(2, minmax(160px, 1fr));
-      }
+    .btn-secondary-custom {
+      padding: 7px 18px;
+      border-radius: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: border-color .15s;
     }
+    .btn-secondary-custom:hover { border-color: var(--text); color: var(--text); }
 
+    .btn-danger-custom {
+      padding: 7px 18px;
+      border-radius: 8px;
+      background: var(--danger);
+      border: none;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .btn-danger-custom:hover { opacity: .85; }
+
+    /* Scrollable modal */
+    .modal-dialog-scrollable .modal-body { overflow-y: auto; }
+
+    /* Highlight row selected */
+    tr.row-selected { background: rgba(0,232,122,.05) !important; }
+
+    /* Responsive table */
     @media (max-width: 768px) {
-      .page-shell {
-        padding: 16px;
-      }
-
-      .kpi-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .detail-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .bulk-actions {
-        align-items: flex-start;
-        flex-direction: column;
-      }
+      .topnav nav { display: none; }
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
     }
+
+    /* Loading shimmer */
+    @keyframes shimmer {
+      0%   { opacity: .4; }
+      50%  { opacity: .8; }
+      100% { opacity: .4; }
+    }
+    .loading-row td { animation: shimmer 1.2s infinite; color: var(--muted); }
   </style>
 </head>
 
 <body>
-  <main class="page-shell">
 
-    <section class="topbar">
-      <div class="topbar-content">
-        <div>
-          <h1 class="page-title">Painel do Gestor</h1>
-          <div class="page-subtitle">Gerencie notificações, interdições, baixas, aprovações e prazos.</div>
-        </div>
+<!-- ── TOP NAV ──────────────────────────────────────────────── -->
+<nav class="topnav">
+  <span class="brand">🛡️ SESMT</span>
+  <nav>
+    <a href="/dashboard.html">Dashboard</a>
+    <a href="/index.html">Nova Notificação</a>
+    <a href="/status.html">Status</a>
+    <a href="/baixa.html">Baixa</a>
+    <a href="#" class="active">Painel do Gestor</a>
+  </nav>
+  <button class="btn-new" onclick="window.location.href='/index.html'">+ Nova Notificação</button>
+</nav>
 
-        <div class="topbar-actions">
-          <button class="btn btn-soft-light" onclick="window.location.href='/dashboard.html'">Dashboard</button>
-          <button class="btn btn-soft-light" onclick="window.location.href='/status.html'">Status</button>
-          <button class="btn btn-success px-4 fw-bold" onclick="window.location.href='/index.html'">
-            + Nova Notificação
-          </button>
-        </div>
-      </div>
-    </section>
+<!-- ── WRAPPER ──────────────────────────────────────────────── -->
+<div class="wrapper">
 
-    <section class="kpi-grid">
-      <div class="card-kpi">
-        <div class="kpi-label">Total Exibido</div>
-        <h3 class="kpi-value" id="kpiTotal">0</h3>
-      </div>
-      <div class="card-kpi">
-        <div class="kpi-label">Abertas</div>
-        <h3 class="kpi-value" id="kpiAbertas">0</h3>
-      </div>
-      <div class="card-kpi">
-        <div class="kpi-label">Pendentes</div>
-        <h3 class="kpi-value" id="kpiPendentes">0</h3>
-      </div>
-      <div class="card-kpi">
-        <div class="kpi-label">Notificações</div>
-        <h3 class="kpi-value" id="kpiNotificacoes">0</h3>
-      </div>
-      <div class="card-kpi">
-        <div class="kpi-label">Interdições</div>
-        <h3 class="kpi-value" id="kpiInterdicoes">0</h3>
-      </div>
-    </section>
+  <!-- Page header -->
+  <div class="page-header">
+    <h1>Painel do Gestor</h1>
+    <p>Gerencie notificações, interdições e prazos em tempo real</p>
+  </div>
 
-    <section class="chip-panel">
-      <span class="chip-status active" data-status="">Todas</span>
-      <span class="chip-status" data-status="Aberta">Abertas</span>
-      <span class="chip-status" data-status="Pendente de aprovação">Pendentes</span>
-      <span class="chip-status" data-status="Aprovada">Aprovadas</span>
-      <span class="chip-status" data-status="Rejeitada">Rejeitadas</span>
-    </section>
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="label">Total Exibido</div>
+      <div class="value" id="kpiTotal">—</div>
+    </div>
+    <div class="kpi-card accent">
+      <div class="label">Abertas</div>
+      <div class="value" id="kpiAbertas">—</div>
+    </div>
+    <div class="kpi-card warning">
+      <div class="label">Pendentes</div>
+      <div class="value" id="kpiPendentes">—</div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="label">Notificações</div>
+      <div class="value" id="kpiNotificacoes">—</div>
+    </div>
+    <div class="kpi-card danger">
+      <div class="label">Interdições</div>
+      <div class="value" id="kpiInterdicoes">—</div>
+    </div>
+  </div>
 
-    <section class="filter-card">
-      <form id="filtroForm" class="row g-3 align-items-end">
-        <div class="col-md-2">
-          <label for="status" class="form-label">Status</label>
+  <!-- Filter panel -->
+  <div class="filter-panel">
+    <form id="filtroForm">
+      <div class="row g-3 align-items-end">
+        <div class="col-6 col-md-2">
+          <label>Status</label>
           <select id="status" class="form-select">
             <option value="">Todos</option>
             <option value="Aberta">Aberta</option>
-            <option value="Pendente de aprovação">Pendente de aprovação</option>
+            <option value="Pendente de aprovação">Pendente</option>
             <option value="Aprovada">Aprovada</option>
             <option value="Rejeitada">Rejeitada</option>
           </select>
         </div>
-
-        <div class="col-md-2">
-          <label for="filtroMes" class="form-label">Mês</label>
+        <div class="col-6 col-md-2">
+          <label>Mês</label>
           <select id="filtroMes" class="form-select">
             <option value="">Todos</option>
             <option value="0">Janeiro</option>
@@ -530,798 +625,661 @@
             <option value="11">Dezembro</option>
           </select>
         </div>
-
-        <div class="col-md-2">
-          <label for="filtroPrazo" class="form-label">Prazo</label>
+        <div class="col-6 col-md-2">
+          <label>Prazo</label>
           <select id="filtroPrazo" class="form-select">
             <option value="">Todos</option>
             <option value="noprazo">No prazo</option>
             <option value="vencidas">Vencidas</option>
           </select>
         </div>
-
-        <div class="col-md-2">
-          <label for="filtroClassificacao" class="form-label">Classificação</label>
+        <div class="col-6 col-md-2">
+          <label>Classificação</label>
           <select id="filtroClassificacao" class="form-select">
             <option value="">Todas</option>
             <option value="Notificação">Notificação</option>
             <option value="Interdição">Interdição</option>
           </select>
         </div>
-
-        <div class="col-md-2">
-          <label for="filtroArea" class="form-label">Área</label>
+        <div class="col-6 col-md-3">
+          <label>Área</label>
           <select id="filtroArea" class="form-select">
             <option value="">Todas</option>
           </select>
         </div>
-
-        <div class="col-md-2">
-          <label for="filtroTecnico" class="form-label">Técnico</label>
+        <div class="col-6 col-md-3">
+          <label>Técnico</label>
           <select id="filtroTecnico" class="form-select">
             <option value="">Todos</option>
           </select>
         </div>
-
-        <div class="col-md-3">
-          <label for="idBusca" class="form-label">Buscar por ID Sequencial</label>
-          <input type="text" id="idBusca" class="form-control" placeholder="Ex: 12, 25, 103" />
+        <div class="col-8 col-md-3">
+          <label>Buscar por ID Sequencial</label>
+          <input type="text" id="idBusca" class="form-control" placeholder="Ex: 42" />
         </div>
-
-        <div class="col-md-2">
-          <button type="submit" class="btn btn-primary w-100 fw-bold">Filtrar</button>
-        </div>
-
-        <div class="col-md-2">
-          <button type="button" id="btnLimparFiltros" class="btn btn-outline-secondary w-100 fw-bold">
-            Limpar
-          </button>
-        </div>
-      </form>
-    </section>
-
-    <section id="bulkActions" class="bulk-actions">
-      <div class="bulk-info">
-        <span id="bulkCount">0</span> notificação(ões) selecionada(s)
-      </div>
-
-      <div class="bulk-buttons">
-        <button id="btnAprovarSelecionadas" type="button" class="btn btn-success fw-bold">
-          Aprovar Selecionadas
-        </button>
-        <button id="btnExcluirSelecionadas" type="button" class="btn btn-outline-danger fw-bold">
-          Excluir Selecionadas
-        </button>
-      </div>
-    </section>
-
-    <section class="table-card">
-      <div class="table-header">
-        <div>
-          <h2 class="table-title">Notificações e Interdições</h2>
-          <div class="table-subtitle">Clique em uma notificação para visualizar os detalhes.</div>
+        <div class="col-4 col-md-2">
+          <button type="submit" class="btn-filter w-100">Filtrar</button>
         </div>
       </div>
+    </form>
+  </div>
 
-      <div class="table-responsive">
-        <table class="table table-hover align-middle" id="tabelaNotificacoes">
-          <thead>
-            <tr>
-              <th style="width:44px;">
-                <input type="checkbox" id="selectAll">
-              </th>
-              <th>ID</th>
-              <th>Técnico</th>
-              <th>Área</th>
-              <th>Classificação</th>
-              <th>Status</th>
-              <th>Data</th>
-              <th>Prazo</th>
-            </tr>
-          </thead>
-          <tbody id="tbodyNotificacoes">
-            <tr><td colspan="8" class="text-center py-4">Carregando...</td></tr>
-          </tbody>
-        </table>
+  <!-- Chips -->
+  <div class="chips-row">
+    <span class="chip active" data-status="">Todas</span>
+    <span class="chip" data-status="Aberta">Abertas</span>
+    <span class="chip" data-status="Pendente de aprovação">Pendentes</span>
+    <span class="chip" data-status="Aprovada">Aprovadas</span>
+    <span class="chip" data-status="Rejeitada">Rejeitadas</span>
+  </div>
+
+  <!-- Bulk action bar -->
+  <div class="bulk-bar" id="bulkBar">
+    <span><span class="bulk-count" id="bulkCount">0</span> selecionadas</span>
+    <button class="btn-bulk approve" id="btnAprovarSelecionadas">✔ Aprovar</button>
+    <button class="btn-bulk delete"  id="btnExcluirSelecionadas">✕ Excluir</button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-card">
+    <table id="tabelaNotificacoes">
+      <thead>
+        <tr>
+          <th><input type="checkbox" id="selectAll"></th>
+          <th>ID</th>
+          <th>Técnico</th>
+          <th>Área</th>
+          <th>Classificação</th>
+          <th>Status</th>
+          <th>Data</th>
+          <th>Prazo</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyNotificacoes">
+        <tr class="loading-row">
+          <td colspan="8" style="text-align:center;padding:40px 0;">Carregando...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- /wrapper -->
+
+
+<!-- ── MODAL DETALHES ────────────────────────────────────────── -->
+<div class="modal fade" id="modalDetalhes" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Detalhes da Notificação</h5>
+        <div class="modal-actions">
+          <button id="btnExcluir" class="btn-modal del">Excluir</button>
+          <button id="btnRejeitar" class="btn-modal reject" data-bs-toggle="modal" data-bs-target="#modalRejeicao">Rejeitar</button>
+          <button id="btnAprovar" class="btn-modal approve">Aprovar</button>
+        </div>
+        <button type="button" class="btn-close ms-3" data-bs-dismiss="modal"></button>
       </div>
-    </section>
-  </main>
+      <div class="modal-body">
 
-  <!-- MODAL DETALHES -->
-  <div class="modal fade" id="modalDetalhes" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
-      <div class="modal-content">
-        <div class="modal-header d-flex align-items-center">
-          <h5 class="modal-title fw-bold">Detalhes da Notificação</h5>
-
-          <div class="ms-auto me-3">
-            <button id="btnExcluir" class="btn btn-outline-light btn-sm me-2">Excluir</button>
-            <button id="btnRejeitar" class="btn btn-danger btn-sm me-2" data-bs-toggle="modal" data-bs-target="#modalRejeicao">Rejeitar</button>
-            <button id="btnAprovar" class="btn btn-success btn-sm">Aprovar</button>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <div class="di-label">ID</div>
+            <div class="di-value" id="detalheId"></div>
           </div>
-
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-
-        <div class="modal-body">
-          <div class="detail-grid">
-            <div class="detail-item">
-              <div class="detail-label">ID</div>
-              <div class="detail-value" id="detalheId"></div>
-            </div>
-
-            <div class="detail-item">
-              <div class="detail-label">Status</div>
-              <div class="detail-value" id="detalheStatus"></div>
-            </div>
-
-            <div class="detail-item">
-              <div class="detail-label">Técnico</div>
-              <div class="detail-value" id="detalheTecnico"></div>
-            </div>
-
-            <div class="detail-item">
-              <div class="detail-label">Encarregado</div>
-              <div class="detail-value" id="detalheEncarregado"></div>
-            </div>
-
-            <div class="detail-item">
-              <div class="detail-label">Supervisor da Obra</div>
-              <div class="detail-value" id="detalheSupervisor"></div>
-            </div>
-
-            <div class="detail-item">
-              <div class="detail-label">Área</div>
-              <div class="detail-value" id="detalheArea"></div>
-            </div>
-
-            <div class="detail-item">
-              <div class="detail-label">Classificação</div>
-              <div class="detail-value" id="detalheClassificacao"></div>
-            </div>
-
-            <div class="detail-item">
-              <div class="detail-label">NR Relacionada</div>
-              <div class="detail-value" id="detalheNR"></div>
-            </div>
-
-            <div class="detail-item">
-              <div class="detail-label">Data de Registro</div>
-              <div class="detail-value" id="detalheDataRegistro"></div>
-            </div>
-
-            <div class="detail-item">
-              <div class="detail-label">Prazo</div>
-              <div class="detail-value" id="detalhePrazo"></div>
-            </div>
-
-            <div class="detail-item full">
-              <div class="detail-label">Descrição da Atividade</div>
-              <div class="detail-value" id="detalheDescricaoAtividade"></div>
-            </div>
-
-            <div class="detail-item full">
-              <div class="detail-label">Descrição da Condição de Risco</div>
-              <div class="detail-value" id="detalheDescricao"></div>
-            </div>
-
-            <div class="detail-item full">
-              <div class="detail-label">Ações Recomendadas</div>
-              <div class="detail-value" id="detalheAcoesRecomendadas"></div>
-            </div>
-
-            <div class="detail-item full">
-              <div class="detail-label">Justificativa do Gestor</div>
-              <div class="detail-value" id="detalheJustificativa">—</div>
-            </div>
+          <div class="detail-item">
+            <div class="di-label">Status</div>
+            <div class="di-value" id="detalheStatus"></div>
           </div>
-
-          <div class="section-title">Fotos da Notificação</div>
-          <div id="detalheFotosNotificacao" class="d-flex flex-wrap gap-2 mb-3"></div>
-
-          <hr />
-
-          <div class="section-title">Baixa / Resolução</div>
-          <div class="detail-grid">
-            <div class="detail-item">
-              <div class="detail-label">Resolvido Por</div>
-              <div class="detail-value" id="detalheResolvidoPor"></div>
-            </div>
-
-            <div class="detail-item">
-              <div class="detail-label">Data da Baixa</div>
-              <div class="detail-value" id="detalheDataBaixa"></div>
-            </div>
-
-            <div class="detail-item full">
-              <div class="detail-label">Comentário da Baixa</div>
-              <div class="detail-value" id="detalheComentario"></div>
-            </div>
+          <div class="detail-item">
+            <div class="di-label">Técnico</div>
+            <div class="di-value" id="detalheTecnico"></div>
           </div>
-
-          <div class="section-title">Fotos da Baixa</div>
-          <div id="detalheFotos" class="d-flex flex-wrap gap-2"></div>
+          <div class="detail-item">
+            <div class="di-label">Encarregado</div>
+            <div class="di-value" id="detalheEncarregado"></div>
+          </div>
+          <div class="detail-item">
+            <div class="di-label">Supervisor da Obra</div>
+            <div class="di-value" id="detalheSupervisor"></div>
+          </div>
+          <div class="detail-item">
+            <div class="di-label">Área</div>
+            <div class="di-value" id="detalheArea"></div>
+          </div>
+          <div class="detail-item">
+            <div class="di-label">Classificação</div>
+            <div class="di-value" id="detalheClassificacao"></div>
+          </div>
+          <div class="detail-item">
+            <div class="di-label">Prazo</div>
+            <div class="di-value" id="detalhePrazo"></div>
+          </div>
+          <div class="detail-item">
+            <div class="di-label">NR Relacionada</div>
+            <div class="di-value" id="detalheNR"></div>
+          </div>
+          <div class="detail-item">
+            <div class="di-label">Data de Registro</div>
+            <div class="di-value" id="detalheDataRegistro"></div>
+          </div>
+          <div class="detail-item full">
+            <div class="di-label">Descrição da Atividade</div>
+            <div class="di-value" id="detalheDescricaoAtividade"></div>
+          </div>
+          <div class="detail-item full">
+            <div class="di-label">Ações Recomendadas</div>
+            <div class="di-value" id="detalheAcoesRecomendadas"></div>
+          </div>
+          <div class="detail-item full">
+            <div class="di-label">Descrição</div>
+            <div class="di-value" id="detalheDescricao"></div>
+          </div>
         </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        <div class="section-title">Justificativa do Gestor</div>
+        <p id="detalheJustificativa" style="font-size:13px;color:var(--muted);">—</p>
+
+        <div class="section-title">Fotos da Notificação</div>
+        <div id="detalheFotosNotificacao" class="d-flex flex-wrap gap-2 mb-2"></div>
+
+        <div class="section-title">Baixa (Resolução)</div>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <div class="di-label">Resolvido Por</div>
+            <div class="di-value" id="detalheResolvidoPor"></div>
+          </div>
+          <div class="detail-item">
+            <div class="di-label">Data da Baixa</div>
+            <div class="di-value" id="detalheDataBaixa"></div>
+          </div>
+          <div class="detail-item full">
+            <div class="di-label">Comentário da Baixa</div>
+            <div class="di-value" id="detalheComentario"></div>
+          </div>
         </div>
+        <div id="detalheFotos" class="d-flex flex-wrap gap-2"></div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary-custom" data-bs-dismiss="modal">Fechar</button>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- MODAL REJEIÇÃO -->
-  <div class="modal fade" id="modalRejeicao" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-      <form id="formRejeicao" class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title fw-bold">Justificativa de Rejeição</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-
-        <div class="modal-body">
-          <input type="hidden" name="id" id="rejeicaoId">
-          <div class="mb-3">
-            <label for="justificativa" class="form-label">Motivo da Rejeição</label>
-            <textarea name="justificativa" id="justificativa" class="form-control" rows="4" required></textarea>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-danger">Confirmar Rejeição</button>
-        </div>
-      </form>
-    </div>
+<!-- ── MODAL REJEIÇÃO ─────────────────────────────────────────── -->
+<div class="modal fade" id="modalRejeicao" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="formRejeicao" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Justificativa de Rejeição</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" name="id" id="rejeicaoId">
+        <label style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:block;">
+          Motivo da Rejeição
+        </label>
+        <textarea name="justificativa" id="justificativa" rows="4" required
+          placeholder="Descreva o motivo da rejeição..."></textarea>
+      </div>
+      <div class="modal-footer" style="gap:8px;">
+        <button type="button" class="btn-secondary-custom" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn-danger-custom">Confirmar Rejeição</button>
+      </div>
+    </form>
   </div>
+</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-  <script>
-    const DAY = 24 * 60 * 60 * 1000;
-    let ULTIMA_LISTA = [];
-    let LIGHTBOX_INSTANCE = null;
+<script>
+  const DAY = 24 * 60 * 60 * 1000;
 
-    function prazoDiffDays(prazoISO) {
-      if (!prazoISO) return null;
+  // ── Datas / prazo ───────────────────────────────────────────
+  function prazoDiffDays(prazoISO) {
+    if (!prazoISO) return null;
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+    const prazo = new Date(prazoISO); prazo.setHours(0,0,0,0);
+    return Math.round((prazo - hoje) / DAY);
+  }
 
-      const hoje = new Date();
-      hoje.setHours(0, 0, 0, 0);
+  function prazoTexto(prazoISO, status) {
+    if (!prazoISO) return null;
+    if (status === 'Aprovada') return 'Finalizado';
+    const diff = prazoDiffDays(prazoISO);
+    if (diff > 0)   return `${diff}d restante${diff > 1 ? 's' : ''}`;
+    if (diff === 0) return 'Vence hoje';
+    const atras = Math.abs(diff);
+    return `${atras}d vencido${atras > 1 ? 's' : ''}`;
+  }
 
-      const prazo = new Date(prazoISO);
-      prazo.setHours(0, 0, 0, 0);
+  function prazoCssClass(diff, status) {
+    if (status === 'Aprovada') return 'done';
+    if (diff === null) return 'none';
+    if (diff < 0)   return 'overdue';
+    if (diff === 0) return 'soon';
+    if (diff <= 3)  return 'soon';
+    return 'ok';
+  }
 
-      return Math.round((prazo - hoje) / DAY);
+  // ── Prazo para modal (exibe data + info) ────────────────────
+  function prazoTextoModal(prazoISO, status) {
+    if (!prazoISO) return '-';
+    const d = new Date(prazoISO);
+    const base = d.toLocaleDateString('pt-BR');
+    if (status === 'Aprovada') return `${base} (Finalizado)`;
+    const diff = prazoDiffDays(prazoISO);
+    if (diff > 0)   return `${base} — ${diff}d restante${diff > 1 ? 's' : ''}`;
+    if (diff === 0) return `${base} — Vence hoje`;
+    const atras = Math.abs(diff);
+    return `${base} — ${atras}d vencido${atras > 1 ? 's' : ''}`;
+  }
+
+  // ── Imagens ─────────────────────────────────────────────────
+  function resolveImgSrc(f) {
+    if (!f) return null;
+    if (typeof f === 'object' && f.url) return f.url;
+    if (typeof f === 'string' && f.startsWith('http')) return f;
+    return '/uploads/' + f;
+  }
+
+  let ULTIMA_LISTA = [];
+
+  // ── Carregar notificações ───────────────────────────────────
+  async function carregarNotificacoes() {
+    document.getElementById('tbodyNotificacoes').innerHTML =
+      '<tr class="loading-row"><td colspan="8" style="text-align:center;padding:40px 0;">Carregando...</td></tr>';
+
+    try {
+      const url = new URL('/api/notificacoes', window.location.origin);
+      const status = document.getElementById('status').value;
+
+      if (status) url.searchParams.append('status', status);
+
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+
+      const lista = await res.json();
+      ULTIMA_LISTA = lista;
+
+      popularFiltrosDinamicos(lista);
+      const filtrada = aplicarFiltrosCliente(lista);
+      renderTabela(filtrada);
+      atualizarKPIs(filtrada);
+    } catch (err) {
+      console.error(err);
+      document.getElementById('tbodyNotificacoes').innerHTML =
+        '<tr><td colspan="8" style="text-align:center;padding:40px 0;color:var(--danger);">Erro ao carregar notificações.</td></tr>';
+    }
+  }
+
+  // ── Filtros cliente ─────────────────────────────────────────
+  function aplicarFiltrosCliente(listaBase) {
+    const mesSel   = document.getElementById('filtroMes').value;
+    const prazoSel = document.getElementById('filtroPrazo').value;
+    const areaSel  = document.getElementById('filtroArea').value;
+    const tecSel   = document.getElementById('filtroTecnico').value;
+    const classSel = document.getElementById('filtroClassificacao').value;
+    const idBusca  = document.getElementById('idBusca').value.trim();
+
+    return listaBase.filter(n => {
+      // Filtro por ID sequencial
+      if (idBusca !== '') {
+        const numBusca = parseInt(idBusca, 10);
+        if (isNaN(numBusca)) return false;
+        if (n.idSequencial !== numBusca) return false;
+      }
+
+      if (mesSel !== '') {
+        if (!n.dataRegistro) return false;
+        const m = new Date(n.dataRegistro).getMonth();
+        if (String(m) !== mesSel) return false;
+      }
+
+      if (prazoSel) {
+        const diff = prazoDiffDays(n.prazo);
+        if (prazoSel === 'noprazo' && !(diff === 0 || diff > 0)) return false;
+        if (prazoSel === 'vencidas' && !(diff < 0)) return false;
+      }
+
+      if (areaSel  && (n.area    || '') !== areaSel)  return false;
+      if (tecSel   && (n.tecnico || '') !== tecSel)   return false;
+      if (classSel && (n.classificacao || '') !== classSel) return false;
+
+      return true;
+    });
+  }
+
+  // ── Filtros dinâmicos ───────────────────────────────────────
+  function popularFiltrosDinamicos(lista) {
+    const areaSel = document.getElementById('filtroArea');
+    const tecSel  = document.getElementById('filtroTecnico');
+
+    const areas = Array.from(new Set(lista.map(n => n.area).filter(Boolean))).sort();
+    const tecs  = Array.from(new Set(lista.map(n => n.tecnico).filter(Boolean))).sort();
+
+    const areaVal = areaSel.value;
+    const tecVal  = tecSel.value;
+
+    areaSel.innerHTML = '<option value="">Todas</option>' +
+      areas.map(a => `<option value="${a}">${a}</option>`).join('');
+    tecSel.innerHTML  = '<option value="">Todos</option>' +
+      tecs.map(t => `<option value="${t}">${t}</option>`).join('');
+
+    if (areas.includes(areaVal)) areaSel.value = areaVal;
+    if (tecs.includes(tecVal))   tecSel.value  = tecVal;
+  }
+
+  // ── KPIs ────────────────────────────────────────────────────
+  function atualizarKPIs(lista) {
+    document.getElementById('kpiTotal').textContent        = lista.length;
+    document.getElementById('kpiAbertas').textContent      = lista.filter(n => n.status === 'Aberta').length;
+    document.getElementById('kpiPendentes').textContent    = lista.filter(n => n.status === 'Pendente de aprovação').length;
+    document.getElementById('kpiNotificacoes').textContent = lista.filter(n => (n.classificacao || '').toLowerCase().includes('notificação')).length;
+    document.getElementById('kpiInterdicoes').textContent  = lista.filter(n => (n.classificacao || '').toLowerCase().includes('interdição')).length;
+  }
+
+  // ── Render tabela ───────────────────────────────────────────
+  function renderTabela(lista) {
+    const tbody = document.getElementById('tbodyNotificacoes');
+    tbody.innerHTML = '';
+
+    if (!lista.length) {
+      tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state">Nenhuma notificação encontrada.</div></td></tr>';
+      atualizarBulkBar();
+      return;
     }
 
-    function prazoTextoTabela(prazoISO, status) {
-      if (!prazoISO) return '-';
+    lista.forEach(n => {
+      const tr = document.createElement('tr');
+      tr.dataset.id = n._id;
 
-      if (status === 'Aprovada') return 'Finalizado';
+      // Checkbox
+      const tdChk = document.createElement('td');
+      const chk = document.createElement('input');
+      chk.type = 'checkbox';
+      chk.className = 'row-check';
+      chk.value = n._id;
+      // Prevent row click when clicking checkbox
+      chk.addEventListener('click', e => e.stopPropagation());
+      chk.addEventListener('change', () => {
+        tr.classList.toggle('row-selected', chk.checked);
+        atualizarBulkBar();
+        syncSelectAll();
+      });
+      tdChk.appendChild(chk);
+      tr.appendChild(tdChk);
 
-      const diff = prazoDiffDays(prazoISO);
+      // ID sequencial
+      const tdId = document.createElement('td');
+      tdId.textContent = (typeof n.idSequencial === 'number') ? n.idSequencial : (n._id || '-');
+      tdId.style.fontFamily = "'IBM Plex Mono', monospace";
+      tdId.style.fontSize = '12px';
+      tr.appendChild(tdId);
 
-      if (diff > 0) return `${diff} dia${diff > 1 ? 's' : ''} para vencer`;
-      if (diff === 0) return 'Vence hoje';
+      // Técnico
+      const tdTec = document.createElement('td');
+      tdTec.textContent = n.tecnico || '-';
+      tr.appendChild(tdTec);
 
-      const atraso = Math.abs(diff);
-      return `${atraso} dia${atraso > 1 ? 's' : ''} vencido`;
-    }
+      // Área
+      const tdAr = document.createElement('td');
+      tdAr.textContent = n.area || '-';
+      tdAr.style.color = 'var(--muted)';
+      tr.appendChild(tdAr);
 
-    function prazoTextoModal(prazoISO, status) {
-      if (!prazoISO) return '-';
+      // Classificação
+      const tdClass = document.createElement('td');
+      const cls = (n.classificacao || '').toLowerCase();
+      const badgeClass = cls.includes('interdição') ? 'interdicao' : 'notificacao';
+      tdClass.innerHTML = `<span class="badge-class ${badgeClass}">${n.classificacao || '-'}</span>`;
+      tr.appendChild(tdClass);
 
-      const data = new Date(prazoISO).toLocaleDateString();
+      // Status
+      const tdStatus = document.createElement('td');
+      const statusKey = (n.status || '').toLowerCase().replace(/\s+/g,'');
+      let badgeS = 'aberta';
+      if (statusKey.includes('pendente')) badgeS = 'pendente';
+      else if (statusKey.includes('aprovada')) badgeS = 'aprovada';
+      else if (statusKey.includes('rejeitada')) badgeS = 'rejeitada';
+      tdStatus.innerHTML = `<span class="badge-status ${badgeS}">${n.status || '-'}</span>`;
+      tr.appendChild(tdStatus);
 
-      if (status === 'Aprovada') return `${data} - Finalizado`;
+      // Data
+      const tdData = document.createElement('td');
+      tdData.textContent = n.dataRegistro ? new Date(n.dataRegistro).toLocaleDateString('pt-BR') : '-';
+      tdData.style.color = 'var(--muted)';
+      tdData.style.fontSize = '12px';
+      tr.appendChild(tdData);
 
-      const diff = prazoDiffDays(prazoISO);
+      // Prazo
+      const tdPrazo = document.createElement('td');
+      const diff = prazoDiffDays(n.prazo);
+      const txt  = prazoTexto(n.prazo, n.status);
+      if (txt) {
+        const cc = prazoCssClass(diff, n.status);
+        tdPrazo.innerHTML = `<span class="prazo-chip ${cc}">${txt}</span>`;
+      } else {
+        tdPrazo.innerHTML = '<span class="prazo-chip none">—</span>';
+      }
+      tr.appendChild(tdPrazo);
 
-      if (diff > 0) return `${data} - ${diff} dia${diff > 1 ? 's' : ''} para vencer`;
-      if (diff === 0) return `${data} - Vence hoje`;
+      // Click on row → open modal
+      tr.addEventListener('click', (e) => {
+        if (e.target.type === 'checkbox') return;
+        visualizarDetalhes(n._id);
+        const modal = new bootstrap.Modal(document.getElementById('modalDetalhes'));
+        modal.show();
+      });
 
-      const atraso = Math.abs(diff);
-      return `${data} - ${atraso} dia${atraso > 1 ? 's' : ''} vencido`;
-    }
+      tbody.appendChild(tr);
+    });
 
-    function prazoClasseTabela(prazoISO, status) {
-      if (!prazoISO) return '';
+    // Select all
+    document.getElementById('selectAll').onchange = (e) => {
+      document.querySelectorAll('.row-check').forEach(c => {
+        c.checked = e.target.checked;
+        c.closest('tr').classList.toggle('row-selected', c.checked);
+      });
+      atualizarBulkBar();
+    };
+  }
 
-      if (status === 'Aprovada') return 'prazo-pill prazo-finalizado';
+  function syncSelectAll() {
+    const checks  = document.querySelectorAll('.row-check');
+    const checked = document.querySelectorAll('.row-check:checked');
+    const sa = document.getElementById('selectAll');
+    sa.checked       = checked.length === checks.length && checks.length > 0;
+    sa.indeterminate = checked.length > 0 && checked.length < checks.length;
+  }
 
-      const diff = prazoDiffDays(prazoISO);
+  function getSelectedIds() {
+    return Array.from(document.querySelectorAll('.row-check:checked')).map(i => i.value);
+  }
 
-      if (diff < 0) return 'prazo-pill prazo-vencido';
-      if (diff === 0 || diff <= 3) return 'prazo-pill prazo-alerta';
+  function atualizarBulkBar() {
+    const ids = getSelectedIds();
+    const bar = document.getElementById('bulkBar');
+    document.getElementById('bulkCount').textContent = ids.length;
+    bar.classList.toggle('visible', ids.length > 0);
+  }
 
-      return 'prazo-pill prazo-ok';
-    }
+  // Bulk: aprovar
+  document.getElementById('btnAprovarSelecionadas').addEventListener('click', async () => {
+    const ids = getSelectedIds();
+    if (!ids.length) return;
+    if (!confirm(`Aprovar ${ids.length} notificação(ões)?`)) return;
 
-    function statusClasse(status) {
-      if (status === 'Aberta') return 'status-badge status-aberta';
-      if (status === 'Pendente de aprovação') return 'status-badge status-pendente';
-      if (status === 'Aprovada') return 'status-badge status-aprovada';
-      if (status === 'Rejeitada') return 'status-badge status-rejeitada';
-      return 'status-badge';
-    }
-
-    function escapeHtml(value) {
-      return String(value ?? '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
-    }
-
-    function resolveImgSrc(f) {
-      if (!f) return null;
-      if (typeof f === 'object' && f.url) return f.url;
-      if (typeof f === 'string' && f.startsWith('http')) return f;
-      return '/uploads/' + f;
-    }
-
-    async function carregarNotificacoes() {
+    for (const id of ids) {
       try {
-        const url = new URL('/api/notificacoes', window.location.origin);
-        const status = document.getElementById('status').value;
-
-        if (status) url.searchParams.append('status', status);
-
-        const res = await fetch(url);
-
-        if (!res.ok) {
-          console.error('Erro ao buscar /api/notificacoes:', res.status, await res.text());
-          document.getElementById('tbodyNotificacoes').innerHTML =
-            '<tr><td colspan="8" class="text-center py-4 text-danger">Erro ao carregar notificações.</td></tr>';
-          return;
-        }
-
-        const lista = await res.json();
-        ULTIMA_LISTA = lista;
-
-        popularFiltrosDinamicos(lista);
-
-        const filtrada = aplicarFiltrosCliente(lista);
-        renderTabela(filtrada);
-        atualizarKPIs(filtrada);
-      } catch (err) {
-        console.error('Falha geral em carregarNotificacoes:', err);
-        document.getElementById('tbodyNotificacoes').innerHTML =
-          '<tr><td colspan="8" class="text-center py-4 text-danger">Erro ao carregar notificações.</td></tr>';
-      }
-    }
-
-    function aplicarFiltrosCliente(listaBase) {
-      const mesSel = document.getElementById('filtroMes').value;
-      const prazoSel = document.getElementById('filtroPrazo').value;
-      const areaSel = document.getElementById('filtroArea').value;
-      const tecSel = document.getElementById('filtroTecnico').value;
-      const classSel = document.getElementById('filtroClassificacao').value;
-      const idBusca = document.getElementById('idBusca').value.trim().toLowerCase();
-
-      return listaBase.filter(n => {
-        if (idBusca) {
-          const idSequencial = String(n.idSequencial ?? '').toLowerCase();
-          if (idSequencial !== idBusca) return false;
-        }
-
-        if (mesSel !== '') {
-          if (!n.dataRegistro) return false;
-          const m = new Date(n.dataRegistro).getMonth();
-          if (String(m) !== mesSel) return false;
-        }
-
-        if (prazoSel) {
-          const diff = prazoDiffDays(n.prazo);
-          if (prazoSel === 'noprazo' && !(diff === 0 || diff > 0)) return false;
-          if (prazoSel === 'vencidas' && !(diff < 0)) return false;
-        }
-
-        if (areaSel && (n.area || '') !== areaSel) return false;
-        if (tecSel && (n.tecnico || '') !== tecSel) return false;
-        if (classSel && (n.classificacao || '') !== classSel) return false;
-
-        return true;
-      });
-    }
-
-    function popularFiltrosDinamicos(lista) {
-      const areaSel = document.getElementById('filtroArea');
-      const tecSel = document.getElementById('filtroTecnico');
-
-      const areas = Array.from(new Set(lista.map(n => n.area).filter(Boolean))).sort();
-      const tecs = Array.from(new Set(lista.map(n => n.tecnico).filter(Boolean))).sort();
-
-      const areaVal = areaSel.value;
-      const tecVal = tecSel.value;
-
-      areaSel.innerHTML = '<option value="">Todas</option>' +
-        areas.map(a => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join('');
-
-      tecSel.innerHTML = '<option value="">Todos</option>' +
-        tecs.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
-
-      if (areas.includes(areaVal)) areaSel.value = areaVal;
-      if (tecs.includes(tecVal)) tecSel.value = tecVal;
-    }
-
-    function atualizarKPIs(lista) {
-      const total = lista.length;
-      const abertas = lista.filter(n => n.status === 'Aberta').length;
-      const pendentes = lista.filter(n => n.status === 'Pendente de aprovação').length;
-
-      const notificacoes = lista.filter(n =>
-        (n.classificacao || '').toLowerCase().includes('notificação')
-      ).length;
-
-      const interdicoes = lista.filter(n =>
-        (n.classificacao || '').toLowerCase().includes('interdição')
-      ).length;
-
-      document.getElementById('kpiTotal').textContent = total;
-      document.getElementById('kpiAbertas').textContent = abertas;
-      document.getElementById('kpiPendentes').textContent = pendentes;
-      document.getElementById('kpiNotificacoes').textContent = notificacoes;
-      document.getElementById('kpiInterdicoes').textContent = interdicoes;
-    }
-
-    function renderTabela(lista) {
-      const tbody = document.getElementById('tbodyNotificacoes');
-      tbody.innerHTML = '';
-
-      document.getElementById('selectAll').checked = false;
-      document.getElementById('selectAll').indeterminate = false;
-
-      if (!lista.length) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4">Nenhuma notificação encontrada.</td></tr>';
-        syncSelectionUI();
-        return;
-      }
-
-      lista.forEach(n => {
-        const tr = document.createElement('tr');
-        tr.className = 'row-notificacao';
-        tr.dataset.id = n._id;
-
-        const idLabel = typeof n.idSequencial === 'number' ? n.idSequencial : '-';
-
-        let statusText = n.status || '-';
-        if (n.status === 'Rejeitada' && n.comentarioAprovacao) {
-          statusText += `: ${n.comentarioAprovacao}`;
-        }
-
-        tr.innerHTML = `
-          <td>
-            <input type="checkbox" class="row-check" value="${escapeHtml(n._id)}">
-          </td>
-          <td><span class="id-pill">${escapeHtml(idLabel)}</span></td>
-          <td>${escapeHtml(n.tecnico || '-')}</td>
-          <td>${escapeHtml(n.area || '-')}</td>
-          <td>${escapeHtml(n.classificacao || '-')}</td>
-          <td><span class="${statusClasse(n.status)}">${escapeHtml(statusText)}</span></td>
-          <td>${n.dataRegistro ? escapeHtml(new Date(n.dataRegistro).toLocaleString()) : '-'}</td>
-          <td><span class="${prazoClasseTabela(n.prazo, n.status)}">${escapeHtml(prazoTextoTabela(n.prazo, n.status))}</span></td>
-        `;
-
-        tr.addEventListener('click', e => {
-          if (e.target.classList.contains('row-check')) return;
-          visualizarDetalhes(n._id);
-          const modal = new bootstrap.Modal(document.getElementById('modalDetalhes'));
-          modal.show();
+        await fetch('/aprovar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ id })
         });
+      } catch (e) { console.error('Erro ao aprovar', id, e); }
+    }
+    await carregarNotificacoes();
+    alert('Aprovações concluídas!');
+  });
 
-        tbody.appendChild(tr);
-      });
+  // Bulk: excluir
+  document.getElementById('btnExcluirSelecionadas').addEventListener('click', async () => {
+    const ids = getSelectedIds();
+    if (!ids.length) return;
+    if (!confirm(`Excluir ${ids.length} notificação(ões)?`)) return;
 
-      syncSelectionUI();
+    for (const id of ids) {
+      try { await fetch(`/excluir/${id}`, { method: 'DELETE' }); }
+      catch (e) { console.error('Erro ao excluir', id, e); }
+    }
+    await carregarNotificacoes();
+    alert('Exclusão concluída!');
+  });
+
+  // ── Modal: configurar ações ─────────────────────────────────
+  function configurarAcoes(d) {
+    const btnA = document.getElementById('btnAprovar');
+    const btnR = document.getElementById('btnRejeitar');
+
+    if (d.status === 'Aprovada' || d.status === 'Rejeitada') {
+      btnA.style.display = 'none';
+      btnR.style.display = 'none';
+    } else {
+      btnA.style.display = d.dataBaixa ? 'inline-block' : 'none';
+      btnR.style.display = 'inline-block';
     }
 
-    function getSelectedIds() {
-      return Array.from(document.querySelectorAll('.row-check:checked')).map(i => i.value);
-    }
-
-    function syncSelectionUI() {
-      const selectAll = document.getElementById('selectAll');
-      const checks = document.querySelectorAll('.row-check');
-      const bulkActions = document.getElementById('bulkActions');
-      const bulkCount = document.getElementById('bulkCount');
-
-      function updateBulkUI() {
-        const selected = getSelectedIds().length;
-        bulkCount.textContent = selected;
-
-        if (selected > 0) {
-          bulkActions.classList.add('show');
-        } else {
-          bulkActions.classList.remove('show');
-        }
-
-        const total = checks.length;
-        selectAll.checked = total > 0 && selected === total;
-        selectAll.indeterminate = selected > 0 && selected < total;
-      }
-
-      selectAll.onchange = () => {
-        checks.forEach(c => { c.checked = selectAll.checked; });
-        updateBulkUI();
-      };
-
-      checks.forEach(c => {
-        c.onclick = e => e.stopPropagation();
-        c.onchange = updateBulkUI;
-      });
-
-      updateBulkUI();
-    }
-
-    async function aprovarNotificacao(id) {
-      const res = await fetch('/aprovar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ id })
-      });
-
-      if (!res.ok) throw new Error(await res.text());
-    }
-
-    async function excluirNotificacao(id) {
-      const res = await fetch(`/excluir/${id}`, { method: 'DELETE' });
-
-      if (!res.ok) throw new Error(await res.text());
-    }
-
-    function configurarBulkActions() {
-      document.getElementById('btnExcluirSelecionadas').onclick = async () => {
-        const ids = getSelectedIds();
-        if (!ids.length) return;
-
-        if (!confirm(`Confirmar exclusão de ${ids.length} notificação(ões)?`)) return;
-
-        try {
-          for (const id of ids) {
-            await excluirNotificacao(id);
-          }
-
-          await carregarNotificacoes();
-          alert('Exclusão concluída!');
-        } catch (err) {
-          alert('Erro ao excluir selecionadas: ' + err.message);
-        }
-      };
-
-      document.getElementById('btnAprovarSelecionadas').onclick = async () => {
-        const ids = getSelectedIds();
-        if (!ids.length) return;
-
-        if (!confirm(`Confirmar aprovação de ${ids.length} notificação(ões)?`)) return;
-
-        try {
-          for (const id of ids) {
-            await aprovarNotificacao(id);
-          }
-
-          await carregarNotificacoes();
-          alert('Aprovação concluída!');
-        } catch (err) {
-          alert('Erro ao aprovar selecionadas: ' + err.message);
-        }
-      };
-    }
-
-    function configurarAcoes(d) {
-      const btnA = document.getElementById('btnAprovar');
-      const btnR = document.getElementById('btnRejeitar');
-
-      if (d.status === 'Aprovada' || d.status === 'Rejeitada') {
-        btnA.style.display = 'none';
-        btnR.style.display = 'none';
-      } else {
-        btnA.style.display = d.dataBaixa ? 'inline-block' : 'none';
-        btnR.style.display = 'inline-block';
-      }
-
-      btnA.onclick = async () => {
-        try {
-          await aprovarNotificacao(d._id);
-          alert('Notificação aprovada com sucesso!');
-          bootstrap.Modal.getInstance(document.getElementById('modalDetalhes')).hide();
-          await carregarNotificacoes();
-        } catch (err) {
-          alert('Erro ao aprovar: ' + err.message);
-        }
-      };
-
-      btnR.onclick = () => {
-        document.getElementById('rejeicaoId').value = d._id;
-      };
-
-      document.getElementById('btnExcluir').onclick = async () => {
-        if (!confirm('Tem certeza que deseja excluir esta notificação?')) return;
-
-        try {
-          await excluirNotificacao(d._id);
-          bootstrap.Modal.getInstance(document.getElementById('modalDetalhes')).hide();
-          await carregarNotificacoes();
-          alert('Notificação excluída com sucesso!');
-        } catch (err) {
-          alert('Erro ao excluir: ' + err.message);
-        }
-      };
-
-      const justifEl = document.getElementById('detalheJustificativa');
-
-      if (d.status === 'Rejeitada') {
-        justifEl.textContent = d.comentarioAprovacao || '—';
-      } else if (d.status === 'Aprovada') {
-        justifEl.textContent =
-          `Aprovado por ${d.aprovadoPor || '—'} em ${d.dataAprovacao ? new Date(d.dataAprovacao).toLocaleString() : '—'}`;
-      } else {
-        justifEl.textContent = '—';
-      }
-    }
-
-    async function visualizarDetalhes(id) {
-      const res = await fetch(`/api/notificacoes/${id}`);
-
-      if (!res.ok) {
-        alert('Erro ao carregar detalhes da notificação.');
-        return;
-      }
-
-      const d = await res.json();
-
-      const idLabel =
-        typeof d.idSequencial === 'number'
-          ? d.idSequencial
-          : d._id;
-
-      document.getElementById('detalheId').textContent = idLabel;
-      document.getElementById('detalheTecnico').textContent = d.tecnico || '-';
-      document.getElementById('detalheEncarregado').textContent = d.encarregado || '-';
-
-      const supervisor = d.supervisorObra ?? d.supervisor ?? d.supervisorDaObra ?? '-';
-      const descAtiv = d.descricaoAtividade ?? d.atividade ?? d.descricao_atividade ?? '-';
-
-      document.getElementById('detalheSupervisor').textContent = supervisor || '-';
-      document.getElementById('detalheDescricaoAtividade').textContent = descAtiv || '-';
-      document.getElementById('detalheNR').textContent = d.nr || '-';
-      document.getElementById('detalheAcoesRecomendadas').textContent = d.acao || '-';
-
-      document.getElementById('detalheArea').textContent = d.area || '-';
-      document.getElementById('detalheClassificacao').textContent = d.classificacao || '-';
-      document.getElementById('detalheDescricao').textContent = d.descricao || '-';
-      document.getElementById('detalheDataRegistro').textContent =
-        d.dataRegistro ? new Date(d.dataRegistro).toLocaleString() : '-';
-      document.getElementById('detalheStatus').textContent = d.status || '-';
-      document.getElementById('detalhePrazo').textContent = prazoTextoModal(d.prazo, d.status);
-
-      const notifFotosDiv = document.getElementById('detalheFotosNotificacao');
-      notifFotosDiv.innerHTML = '';
-
-      if (d.notificacaoFotos?.length) {
-        d.notificacaoFotos.forEach(f => {
-          const src = resolveImgSrc(f);
-          if (!src) return;
-
-          const link = document.createElement('a');
-          link.href = src;
-          link.className = 'glightbox';
-          link.setAttribute('data-gallery', 'notificacao');
-
-          const img = document.createElement('img');
-          img.src = src;
-          img.className = 'photo-thumb';
-
-          link.appendChild(img);
-          notifFotosDiv.appendChild(link);
-        });
-      } else {
-        notifFotosDiv.textContent = 'Sem fotos da notificação.';
-      }
-
-      document.getElementById('detalheResolvidoPor').textContent = d.resolvidoPor || '—';
-      document.getElementById('detalheDataBaixa').textContent =
-        d.dataBaixa ? new Date(d.dataBaixa).toLocaleString() : '—';
-      document.getElementById('detalheComentario').textContent = d.resolucaoComentario || 'Sem comentário';
-
-      const fotosDiv = document.getElementById('detalheFotos');
-      fotosDiv.innerHTML = '';
-
-      if (d.resolucaoFotos?.length) {
-        d.resolucaoFotos.forEach(f => {
-          const src = resolveImgSrc(f);
-          if (!src) return;
-
-          const link = document.createElement('a');
-          link.href = src;
-          link.className = 'glightbox';
-          link.setAttribute('data-gallery', 'baixa');
-
-          const img = document.createElement('img');
-          img.src = src;
-          img.className = 'photo-thumb';
-
-          link.appendChild(img);
-          fotosDiv.appendChild(link);
-        });
-      } else {
-        fotosDiv.textContent = 'Sem fotos da baixa.';
-      }
-
-      if (LIGHTBOX_INSTANCE) {
-        LIGHTBOX_INSTANCE.destroy();
-      }
-
-      LIGHTBOX_INSTANCE = GLightbox({ selector: '.glightbox' });
-
-      configurarAcoes(d);
-    }
-
-    document.getElementById('formRejeicao').addEventListener('submit', async e => {
-      e.preventDefault();
-
-      const data = new URLSearchParams(new FormData(e.target));
-
+    btnA.onclick = async () => {
       try {
-        const res = await fetch('/rejeitar', { method: 'POST', body: data });
-
+        const res = await fetch('/aprovar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ id: d._id })
+        });
         if (!res.ok) throw new Error(await res.text());
+        alert('Notificação aprovada com sucesso!');
+        location.reload();
+      } catch (err) { alert('Erro ao aprovar: ' + err.message); }
+    };
 
-        alert('Notificação rejeitada com sucesso!');
+    btnR.onclick = () => { document.getElementById('rejeicaoId').value = d._id; };
 
-        const modalRejeicao = bootstrap.Modal.getInstance(document.getElementById('modalRejeicao'));
-        if (modalRejeicao) modalRejeicao.hide();
-
-        const id = e.target.rejeicaoId.value;
-        await visualizarDetalhes(id);
-        await carregarNotificacoes();
-      } catch (err) {
-        alert('Erro ao rejeitar: ' + err.message);
+    document.getElementById('btnExcluir').onclick = async () => {
+      if (confirm('Excluir esta notificação?')) {
+        await fetch(`/excluir/${d._id}`, { method: 'DELETE' });
+        location.reload();
       }
-    });
+    };
 
-    document.getElementById('filtroForm').addEventListener('submit', e => {
-      e.preventDefault();
-      carregarNotificacoes();
-    });
+    const justifEl = document.getElementById('detalheJustificativa');
+    if (d.status === 'Rejeitada') {
+      justifEl.textContent = d.comentarioAprovacao || '—';
+    } else if (d.status === 'Aprovada') {
+      justifEl.textContent = `Aprovado por ${d.aprovadoPor || '—'} em ${d.dataAprovacao ? new Date(d.dataAprovacao).toLocaleString('pt-BR') : '—'}`;
+    } else {
+      justifEl.textContent = '—';
+    }
+  }
 
-    document.getElementById('btnLimparFiltros').addEventListener('click', () => {
-      document.getElementById('status').value = '';
-      document.getElementById('filtroMes').value = '';
-      document.getElementById('filtroPrazo').value = '';
-      document.getElementById('filtroClassificacao').value = '';
-      document.getElementById('filtroArea').value = '';
-      document.getElementById('filtroTecnico').value = '';
-      document.getElementById('idBusca').value = '';
+  // ── Visualizar detalhes ─────────────────────────────────────
+  async function visualizarDetalhes(id) {
+    const res = await fetch(`/api/notificacoes/${id}`);
+    const d   = await res.json();
 
-      document.querySelectorAll('.chip-status').forEach(c => c.classList.remove('active'));
-      document.querySelector('.chip-status[data-status=""]').classList.add('active');
+    const idLabel = (typeof d.idSequencial === 'number') ? d.idSequencial : d._id;
 
-      carregarNotificacoes();
-    });
+    document.getElementById('detalheId').textContent          = idLabel;
+    document.getElementById('detalheTecnico').textContent     = d.tecnico || '-';
+    document.getElementById('detalheEncarregado').textContent = d.encarregado || '-';
 
-    function configurarChips() {
-      const chips = document.querySelectorAll('.chip-status');
+    const supervisor = d.supervisorObra ?? d.supervisor ?? d.supervisorDaObra ?? '-';
+    const descAtiv   = d.descricaoAtividade ?? d.atividade ?? d.descricao_atividade ?? '-';
 
-      chips.forEach(chip => {
-        chip.addEventListener('click', () => {
-          chips.forEach(c => c.classList.remove('active'));
-          chip.classList.add('active');
+    document.getElementById('detalheSupervisor').textContent         = supervisor || '-';
+    document.getElementById('detalheDescricaoAtividade').textContent = descAtiv || '-';
+    document.getElementById('detalheNR').textContent                 = d.nr || '-';
+    document.getElementById('detalheAcoesRecomendadas').textContent  = d.acao || '-';
+    document.getElementById('detalheArea').textContent               = d.area || '-';
+    document.getElementById('detalheClassificacao').textContent      = d.classificacao || '-';
+    document.getElementById('detalheDescricao').textContent          = d.descricao || '-';
+    document.getElementById('detalheDataRegistro').textContent       = d.dataRegistro ? new Date(d.dataRegistro).toLocaleString('pt-BR') : '-';
+    document.getElementById('detalheStatus').textContent             = d.status || '-';
+    document.getElementById('detalhePrazo').textContent              = prazoTextoModal(d.prazo, d.status);
 
-          const status = chip.getAttribute('data-status') || '';
-          document.getElementById('status').value = status;
-
-          carregarNotificacoes();
-        });
+    // Fotos notificação
+    const notifFotosDiv = document.getElementById('detalheFotosNotificacao');
+    notifFotosDiv.innerHTML = '';
+    if (d.notificacaoFotos?.length) {
+      d.notificacaoFotos.forEach(f => {
+        const src = resolveImgSrc(f); if (!src) return;
+        const link = document.createElement('a');
+        link.href = src; link.className = 'glightbox'; link.setAttribute('data-gallery', 'notificacao');
+        const img = document.createElement('img');
+        img.src = src; img.width = 110; img.style.borderRadius = '8px'; img.style.border = '1px solid var(--border)';
+        link.appendChild(img); notifFotosDiv.appendChild(link);
       });
+      GLightbox({ selector: '.glightbox' });
+    } else {
+      notifFotosDiv.innerHTML = '<span style="font-size:13px;color:var(--muted);">Sem fotos.</span>';
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      configurarChips();
-      configurarBulkActions();
+    document.getElementById('detalheResolvidoPor').textContent = d.resolvidoPor || '—';
+    document.getElementById('detalheDataBaixa').textContent    = d.dataBaixa ? new Date(d.dataBaixa).toLocaleString('pt-BR') : '—';
+    document.getElementById('detalheComentario').textContent   = d.resolucaoComentario || 'Sem comentário';
+
+    const fotosDiv = document.getElementById('detalheFotos');
+    fotosDiv.innerHTML = '';
+    if (d.resolucaoFotos?.length) {
+      d.resolucaoFotos.forEach(f => {
+        const src = resolveImgSrc(f); if (!src) return;
+        const link = document.createElement('a');
+        link.href = src; link.className = 'glightbox'; link.setAttribute('data-gallery', 'baixa');
+        const img = document.createElement('img');
+        img.src = src; img.width = 110; img.style.borderRadius = '8px'; img.style.border = '1px solid var(--border)';
+        link.appendChild(img); fotosDiv.appendChild(link);
+      });
+      GLightbox({ selector: '.glightbox' });
+    } else {
+      fotosDiv.innerHTML = '<span style="font-size:13px;color:var(--muted);">Sem fotos da baixa.</span>';
+    }
+
+    configurarAcoes(d);
+  }
+
+  // ── Rejeição ────────────────────────────────────────────────
+  document.getElementById('formRejeicao').addEventListener('submit', async e => {
+    e.preventDefault();
+    const data = new URLSearchParams(new FormData(e.target));
+    try {
+      const res = await fetch('/rejeitar', { method: 'POST', body: data });
+      if (!res.ok) throw new Error(await res.text());
+      alert('Notificação rejeitada com sucesso!');
+      bootstrap.Modal.getInstance(document.getElementById('modalRejeicao')).hide();
+      visualizarDetalhes(e.target.rejeicaoId.value);
+    } catch (err) { alert('Erro ao rejeitar: ' + err.message); }
+  });
+
+  // ── Filtro form ─────────────────────────────────────────────
+  document.getElementById('filtroForm').addEventListener('submit', e => {
+    e.preventDefault();
+    carregarNotificacoes();
+  });
+
+  // ── Chips ───────────────────────────────────────────────────
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      document.getElementById('status').value = chip.getAttribute('data-status') || '';
       carregarNotificacoes();
     });
-  </script>
+  });
+
+  // ── Init ────────────────────────────────────────────────────
+  window.addEventListener('DOMContentLoaded', carregarNotificacoes);
+</script>
+
 </body>
 </html>
