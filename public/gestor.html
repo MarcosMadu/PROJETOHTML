@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Painel do Gestor - Notificações e Interdições</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -10,201 +10,497 @@
   <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
 
   <style>
+    :root {
+      --bg: #f3f6fb;
+      --card: #ffffff;
+      --text: #162033;
+      --muted: #6b7280;
+      --primary: #16a34a;
+      --primary-dark: #15803d;
+      --danger: #dc2626;
+      --warning: #f59e0b;
+      --border: #e5e7eb;
+      --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      background: #f4f4f7;
-      font-family: "Arial", sans-serif;
-      transition: margin-left 0.3s ease;
+      background:
+        radial-gradient(circle at top left, rgba(22, 163, 74, 0.10), transparent 30%),
+        linear-gradient(180deg, #f7fafc 0%, var(--bg) 100%);
+      font-family: Arial, sans-serif;
+      color: var(--text);
     }
 
-    /* SIDEBAR ------------------------------------------------------ */
-    .sidebar {
-      width: 250px;
-      height: 100vh;
-      position: fixed;
-      left: 0;
-      top: 0;
-      background: linear-gradient(180deg, #0d1117, #050608);
-      color: white;
-      padding: 25px 15px;
-      box-shadow: 4px 0 10px rgba(0, 0, 0, 0.4);
-      z-index: 1000;
-      transition: transform 0.3s ease;
+    .page-shell {
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 28px;
     }
 
-    .sidebar .logo {
-      font-size: 20px;
-      font-weight: bold;
-      margin-bottom: 30px;
+    .topbar {
+      background: linear-gradient(135deg, #0f172a, #14532d);
+      border-radius: 24px;
+      padding: 26px;
+      color: #fff;
+      box-shadow: var(--shadow);
+      margin-bottom: 22px;
+      position: relative;
+      overflow: hidden;
     }
 
-    .sidebar-menu-title {
-      font-size: 13px;
-      opacity: 0.6;
-      margin: 20px 0 10px;
+    .topbar::after {
+      content: "";
+      position: absolute;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      right: -80px;
+      top: -110px;
     }
 
-    .sidebar a {
-      display: block;
-      padding: 10px 12px;
-      color: #d9d9d9;
-      border-radius: 8px;
-      margin-bottom: 6px;
-      text-decoration: none;
-      transition: 0.2s;
-      font-size: 14px;
-    }
-
-    .sidebar a:hover,
-    .sidebar a.active {
-      background: #00cc66;
-      color: #000;
-      font-weight: 600;
-      box-shadow: 0 0 15px #00ff8855;
-    }
-
-    /* CONTENT ------------------------------------------------------ */
-    .content {
-      margin-left: 260px;
-      padding: 25px;
-      transition: margin-left 0.3s ease;
-    }
-
-    body.sidebar-closed .sidebar {
-      transform: translateX(-260px);
-    }
-    body.sidebar-closed .content {
-      margin-left: 20px;
+    .topbar-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: center;
+      flex-wrap: wrap;
     }
 
     .page-title {
-      font-size: 26px;
-      font-weight: bold;
+      font-size: 30px;
+      font-weight: 800;
+      margin: 0;
+    }
+
+    .page-subtitle {
+      margin-top: 6px;
+      color: rgba(255,255,255,0.78);
+      font-size: 14px;
+    }
+
+    .topbar-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-soft-light {
+      background: rgba(255,255,255,0.14);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 14px;
+      padding: 10px 14px;
+      font-weight: 700;
+    }
+
+    .btn-soft-light:hover {
+      background: rgba(255,255,255,0.22);
+      color: #fff;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(160px, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
     }
 
     .card-kpi {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
       padding: 18px;
-      background: white;
-      border-radius: 14px;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
-      height: 110px;
-      transition: 0.2s;
+      box-shadow: var(--shadow);
+      min-height: 112px;
     }
 
-    .card-kpi:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 5px 12px rgba(0,0,0,0.15);
+    .kpi-label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: 8px;
+    }
+
+    .kpi-value {
+      font-size: 32px;
+      line-height: 1;
+      font-weight: 800;
+      margin: 0;
+    }
+
+    .chip-panel,
+    .filter-card,
+    .table-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .chip-panel {
+      padding: 14px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
     }
 
     .chip-status {
-      padding: 7px 16px;
-      border-radius: 25px;
-      background: #e9ecef;
+      padding: 9px 16px;
+      border-radius: 999px;
+      background: #f3f4f6;
+      color: #374151;
       font-size: 14px;
-      font-weight: 500;
+      font-weight: 700;
       cursor: pointer;
-      margin-right: 8px;
+      border: 1px solid #e5e7eb;
+      transition: .2s;
+      user-select: none;
+    }
+
+    .chip-status:hover {
+      transform: translateY(-1px);
     }
 
     .chip-status.active {
-      background: #00cc66;
+      background: var(--primary);
       color: #fff;
-      box-shadow: 0 0 10px #00ff8850;
+      border-color: var(--primary);
+      box-shadow: 0 8px 18px rgba(22, 163, 74, .25);
     }
 
-    table thead {
-      background: #e2e6ef;
+    .filter-card {
+      padding: 18px;
+      margin-bottom: 18px;
     }
 
-    .table-placeholder {
-      height: 80px;
+    .form-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #374151;
+    }
+
+    .form-control,
+    .form-select {
+      border-radius: 12px;
+      min-height: 43px;
+      border-color: #d1d5db;
+    }
+
+    .bulk-actions {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(22, 163, 74, .25);
+      background: rgba(22, 163, 74, .08);
+      border-radius: var(--radius);
+    }
+
+    .bulk-actions.show {
+      display: flex;
+    }
+
+    .bulk-info {
+      font-weight: 800;
+      color: #14532d;
+    }
+
+    .bulk-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .table-card {
+      overflow: hidden;
+    }
+
+    .table-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .table-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .table-subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 3px;
+    }
+
+    table {
+      margin-bottom: 0 !important;
+    }
+
+    table thead th {
+      background: #f8fafc !important;
+      color: #475569;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      border-bottom: 1px solid var(--border);
+      padding: 14px 12px !important;
+      white-space: nowrap;
+    }
+
+    table tbody td {
+      padding: 15px 12px !important;
+      vertical-align: middle;
+      border-color: #eef2f7;
+      font-size: 14px;
+    }
+
+    .row-notificacao {
+      cursor: pointer;
+      transition: .15s;
+    }
+
+    .row-notificacao:hover {
+      background: #f0fdf4;
+    }
+
+    .id-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 44px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #ecfdf5;
+      color: #166534;
+      font-weight: 800;
+      border: 1px solid #bbf7d0;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .status-aberta {
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    .status-pendente {
+      background: #fffbeb;
+      color: #b45309;
+    }
+
+    .status-aprovada {
+      background: #ecfdf5;
+      color: #15803d;
+    }
+
+    .status-rejeitada {
+      background: #fef2f2;
+      color: #b91c1c;
+    }
+
+    .prazo-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 11px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .prazo-ok {
+      background: #ecfdf5;
+      color: #15803d;
+    }
+
+    .prazo-alerta {
+      background: #fffbeb;
+      color: #b45309;
+    }
+
+    .prazo-vencido {
+      background: #fef2f2;
+      color: #b91c1c;
+    }
+
+    .prazo-finalizado {
+      background: #eef2ff;
+      color: #4338ca;
+    }
+
+    .modal-content {
+      border-radius: 20px;
+      border: 0;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, #0f172a, #14532d);
+      color: #fff;
+      border-bottom: 0;
+    }
+
+    .modal-header .btn-close {
+      filter: invert(1);
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .detail-item {
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .detail-item.full {
+      grid-column: 1 / -1;
+    }
+
+    .detail-label {
+      font-size: 12px;
+      font-weight: 800;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: 5px;
+    }
+
+    .detail-value {
+      font-size: 14px;
+      color: #111827;
+      white-space: pre-wrap;
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 800;
+      margin: 18px 0 10px;
+      color: #0f172a;
+    }
+
+    .photo-thumb {
+      width: 128px;
+      height: 92px;
+      object-fit: cover;
+      border-radius: 14px;
+      border: 1px solid #e5e7eb;
+    }
+
+    @media (max-width: 1100px) {
+      .kpi-grid {
+        grid-template-columns: repeat(2, minmax(160px, 1fr));
+      }
+    }
+
+    @media (max-width: 768px) {
+      .page-shell {
+        padding: 16px;
+      }
+
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .bulk-actions {
+        align-items: flex-start;
+        flex-direction: column;
+      }
     }
   </style>
 </head>
 
 <body>
+  <main class="page-shell">
 
-<!-- SIDEBAR ----------------------------------------------------------- -->
-<div class="sidebar">
-  <div class="logo">🛡️ Painel SESMT</div>
+    <section class="topbar">
+      <div class="topbar-content">
+        <div>
+          <h1 class="page-title">Painel do Gestor</h1>
+          <div class="page-subtitle">Gerencie notificações, interdições, baixas, aprovações e prazos.</div>
+        </div>
 
-  <div class="sidebar-menu-title">NAVEGAÇÃO</div>
-  <a href="/dashboard.html">Dashboard</a>
-  <a href="/index.html">Formulário Notificação</a>
-  <a href="/status.html">Status das Notificações</a>
-  <a href="/baixa.html">Baixa de Notificação</a>
-
-  <div class="sidebar-menu-title">PAINÉIS</div>
-  <a class="active" href="#">Painel do Gestor</a>
-</div>
-
-<!-- CONTEÚDO ----------------------------------------------------------- -->
-<div class="content">
-
-  <!-- Header -->
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <div class="d-flex align-items-center">
-      <button id="btnToggleSidebar" class="btn btn-outline-secondary me-3">
-        ☰
-      </button>
-      <div>
-        <div class="page-title">Painel do Gestor</div>
-        <small class="text-muted">Gerencie notificações, interdições e prazos</small>
+        <div class="topbar-actions">
+          <button class="btn btn-soft-light" onclick="window.location.href='/dashboard.html'">Dashboard</button>
+          <button class="btn btn-soft-light" onclick="window.location.href='/status.html'">Status</button>
+          <button class="btn btn-success px-4 fw-bold" onclick="window.location.href='/index.html'">
+            + Nova Notificação
+          </button>
+        </div>
       </div>
-    </div>
+    </section>
 
-    <button class="btn btn-success px-3" onclick="window.location.href='/index.html'">
-      + Nova Notificação
-    </button>
-  </div>
-
-  <!-- KPIs -->
-  <div class="row g-3 mb-4">
-    <div class="col-md-3 col-xl-2">
+    <section class="kpi-grid">
       <div class="card-kpi">
-        <h6 class="mb-1">Total Exibido</h6>
-        <h3 id="kpiTotal">0</h3>
+        <div class="kpi-label">Total Exibido</div>
+        <h3 class="kpi-value" id="kpiTotal">0</h3>
       </div>
-    </div>
-    <div class="col-md-3 col-xl-2">
       <div class="card-kpi">
-        <h6 class="mb-1">Abertas</h6>
-        <h3 id="kpiAbertas">0</h3>
+        <div class="kpi-label">Abertas</div>
+        <h3 class="kpi-value" id="kpiAbertas">0</h3>
       </div>
-    </div>
-    <div class="col-md-3 col-xl-2">
       <div class="card-kpi">
-        <h6 class="mb-1">Pendentes</h6>
-        <h3 id="kpiPendentes">0</h3>
+        <div class="kpi-label">Pendentes</div>
+        <h3 class="kpi-value" id="kpiPendentes">0</h3>
       </div>
-    </div>
-    <div class="col-md-3 col-xl-2">
       <div class="card-kpi">
-        <h6 class="mb-1">Notificações</h6>
-        <h3 id="kpiNotificacoes">0</h3>
+        <div class="kpi-label">Notificações</div>
+        <h3 class="kpi-value" id="kpiNotificacoes">0</h3>
       </div>
-    </div>
-    <div class="col-md-3 col-xl-2">
       <div class="card-kpi">
-        <h6 class="mb-1">Interdições</h6>
-        <h3 id="kpiInterdicoes">0</h3>
+        <div class="kpi-label">Interdições</div>
+        <h3 class="kpi-value" id="kpiInterdicoes">0</h3>
       </div>
-    </div>
-  </div>
+    </section>
 
-  <!-- Chips de status rápido -->
-  <div class="mb-3">
-    <span class="chip-status active" data-status="">Todas</span>
-    <span class="chip-status" data-status="Aberta">Abertas</span>
-    <span class="chip-status" data-status="Pendente de aprovação">Pendentes</span>
-    <span class="chip-status" data-status="Aprovada">Aprovadas</span>
-    <span class="chip-status" data-status="Rejeitada">Rejeitadas</span>
-  </div>
+    <section class="chip-panel">
+      <span class="chip-status active" data-status="">Todas</span>
+      <span class="chip-status" data-status="Aberta">Abertas</span>
+      <span class="chip-status" data-status="Pendente de aprovação">Pendentes</span>
+      <span class="chip-status" data-status="Aprovada">Aprovadas</span>
+      <span class="chip-status" data-status="Rejeitada">Rejeitadas</span>
+    </section>
 
-  <!-- Filtros avançados -->
-  <div class="card mb-3">
-    <div class="card-body">
-      <form id="filtroForm" class="row g-2 align-items-end">
+    <section class="filter-card">
+      <form id="filtroForm" class="row g-3 align-items-end">
         <div class="col-md-2">
           <label for="status" class="form-label">Status</label>
           <select id="status" class="form-select">
@@ -244,7 +540,6 @@
           </select>
         </div>
 
-        <!-- Filtro de Classificação -->
         <div class="col-md-2">
           <label for="filtroClassificacao" class="form-label">Classificação</label>
           <select id="filtroClassificacao" class="form-select">
@@ -254,14 +549,14 @@
           </select>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-2">
           <label for="filtroArea" class="form-label">Área</label>
           <select id="filtroArea" class="form-select">
             <option value="">Todas</option>
           </select>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-2">
           <label for="filtroTecnico" class="form-label">Técnico</label>
           <select id="filtroTecnico" class="form-select">
             <option value="">Todos</option>
@@ -269,31 +564,50 @@
         </div>
 
         <div class="col-md-3">
-          <label for="idBusca" class="form-label">Buscar por ID</label>
-          <input type="text" id="idBusca" class="form-control" placeholder="Digite o ID (_id do Mongo)" />
+          <label for="idBusca" class="form-label">Buscar por ID Sequencial</label>
+          <input type="text" id="idBusca" class="form-control" placeholder="Ex: 12, 25, 103" />
         </div>
 
         <div class="col-md-2">
-          <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+          <button type="submit" class="btn btn-primary w-100 fw-bold">Filtrar</button>
         </div>
 
-        <div class="col-md-3 ms-auto text-end">
-          <button id="btnExcluirSelecionadas" type="button" class="btn btn-outline-danger" disabled>
-            Excluir Selecionadas
+        <div class="col-md-2">
+          <button type="button" id="btnLimparFiltros" class="btn btn-outline-secondary w-100 fw-bold">
+            Limpar
           </button>
         </div>
       </form>
-    </div>
-  </div>
+    </section>
 
-  <!-- Tabela -->
-  <div class="card">
-    <div class="card-body">
+    <section id="bulkActions" class="bulk-actions">
+      <div class="bulk-info">
+        <span id="bulkCount">0</span> notificação(ões) selecionada(s)
+      </div>
+
+      <div class="bulk-buttons">
+        <button id="btnAprovarSelecionadas" type="button" class="btn btn-success fw-bold">
+          Aprovar Selecionadas
+        </button>
+        <button id="btnExcluirSelecionadas" type="button" class="btn btn-outline-danger fw-bold">
+          Excluir Selecionadas
+        </button>
+      </div>
+    </section>
+
+    <section class="table-card">
+      <div class="table-header">
+        <div>
+          <h2 class="table-title">Notificações e Interdições</h2>
+          <div class="table-subtitle">Clique em uma notificação para visualizar os detalhes.</div>
+        </div>
+      </div>
+
       <div class="table-responsive">
         <table class="table table-hover align-middle" id="tabelaNotificacoes">
           <thead>
             <tr>
-              <th style="width:36px;">
+              <th style="width:44px;">
                 <input type="checkbox" id="selectAll">
               </th>
               <th>ID</th>
@@ -303,566 +617,711 @@
               <th>Status</th>
               <th>Data</th>
               <th>Prazo</th>
-              <th>Ações</th>
             </tr>
           </thead>
           <tbody id="tbodyNotificacoes">
-            <tr><td colspan="9" class="text-center py-4">Carregando...</td></tr>
+            <tr><td colspan="8" class="text-center py-4">Carregando...</td></tr>
           </tbody>
         </table>
       </div>
+    </section>
+  </main>
+
+  <!-- MODAL DETALHES -->
+  <div class="modal fade" id="modalDetalhes" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header d-flex align-items-center">
+          <h5 class="modal-title fw-bold">Detalhes da Notificação</h5>
+
+          <div class="ms-auto me-3">
+            <button id="btnExcluir" class="btn btn-outline-light btn-sm me-2">Excluir</button>
+            <button id="btnRejeitar" class="btn btn-danger btn-sm me-2" data-bs-toggle="modal" data-bs-target="#modalRejeicao">Rejeitar</button>
+            <button id="btnAprovar" class="btn btn-success btn-sm">Aprovar</button>
+          </div>
+
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="detail-grid">
+            <div class="detail-item">
+              <div class="detail-label">ID</div>
+              <div class="detail-value" id="detalheId"></div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Status</div>
+              <div class="detail-value" id="detalheStatus"></div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Técnico</div>
+              <div class="detail-value" id="detalheTecnico"></div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Encarregado</div>
+              <div class="detail-value" id="detalheEncarregado"></div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Supervisor da Obra</div>
+              <div class="detail-value" id="detalheSupervisor"></div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Área</div>
+              <div class="detail-value" id="detalheArea"></div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Classificação</div>
+              <div class="detail-value" id="detalheClassificacao"></div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">NR Relacionada</div>
+              <div class="detail-value" id="detalheNR"></div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Data de Registro</div>
+              <div class="detail-value" id="detalheDataRegistro"></div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Prazo</div>
+              <div class="detail-value" id="detalhePrazo"></div>
+            </div>
+
+            <div class="detail-item full">
+              <div class="detail-label">Descrição da Atividade</div>
+              <div class="detail-value" id="detalheDescricaoAtividade"></div>
+            </div>
+
+            <div class="detail-item full">
+              <div class="detail-label">Descrição da Condição de Risco</div>
+              <div class="detail-value" id="detalheDescricao"></div>
+            </div>
+
+            <div class="detail-item full">
+              <div class="detail-label">Ações Recomendadas</div>
+              <div class="detail-value" id="detalheAcoesRecomendadas"></div>
+            </div>
+
+            <div class="detail-item full">
+              <div class="detail-label">Justificativa do Gestor</div>
+              <div class="detail-value" id="detalheJustificativa">—</div>
+            </div>
+          </div>
+
+          <div class="section-title">Fotos da Notificação</div>
+          <div id="detalheFotosNotificacao" class="d-flex flex-wrap gap-2 mb-3"></div>
+
+          <hr />
+
+          <div class="section-title">Baixa / Resolução</div>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <div class="detail-label">Resolvido Por</div>
+              <div class="detail-value" id="detalheResolvidoPor"></div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Data da Baixa</div>
+              <div class="detail-value" id="detalheDataBaixa"></div>
+            </div>
+
+            <div class="detail-item full">
+              <div class="detail-label">Comentário da Baixa</div>
+              <div class="detail-value" id="detalheComentario"></div>
+            </div>
+          </div>
+
+          <div class="section-title">Fotos da Baixa</div>
+          <div id="detalheFotos" class="d-flex flex-wrap gap-2"></div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- MODAL DETALHES -------------------------------------------------- -->
-<div class="modal fade" id="modalDetalhes" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header d-flex align-items-center">
-        <h5 class="modal-title">Detalhes da Notificação</h5>
-        <div class="ms-auto">
-          <button id="btnExcluir" class="btn btn-outline-danger btn-sm me-2">Excluir</button>
-          <button id="btnRejeitar" class="btn btn-danger btn-sm me-2" data-bs-toggle="modal" data-bs-target="#modalRejeicao">Rejeitar</button>
-          <button id="btnAprovar" class="btn btn-success btn-sm">Aprovar</button>
-        </div>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-
-      <div class="modal-body">
-        <div class="mb-2"><strong>ID:</strong> <span id="detalheId"></span></div>
-        <div class="mb-2"><strong>Técnico:</strong> <span id="detalheTecnico"></span></div>
-        <div class="mb-2"><strong>Encarregado:</strong> <span id="detalheEncarregado"></span></div>
-        <div class="mb-2"><strong>Supervisor da Obra:</strong> <span id="detalheSupervisor"></span></div>
-        <div class="mb-2"><strong>Descrição da Atividade:</strong> <span id="detalheDescricaoAtividade"></span></div>
-        <div class="mb-2"><strong>NR Relacionada:</strong> <span id="detalheNR"></span></div>
-        <div class="mb-2"><strong>Ações Recomendadas:</strong> <span id="detalheAcoesRecomendadas"></span></div>
-
-        <div class="mb-2"><strong>Área:</strong> <span id="detalheArea"></span></div>
-        <div class="mb-2"><strong>Classificação:</strong> <span id="detalheClassificacao"></span></div>
-        <div class="mb-2"><strong>Descrição:</strong> <span id="detalheDescricao"></span></div>
-        <div class="mb-2"><strong>Data de Registro:</strong> <span id="detalheDataRegistro"></span></div>
-        <div class="mb-2"><strong>Status:</strong> <span id="detalheStatus"></span></div>
-        <div class="mb-2"><strong>Prazo:</strong> <span id="detalhePrazo"></span></div>
-
-        <hr />
-        <div class="mb-2">
-          <strong>Justificativa do Gestor:</strong>
-          <p id="detalheJustificativa" class="mb-0">—</p>
+  <!-- MODAL REJEIÇÃO -->
+  <div class="modal fade" id="modalRejeicao" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <form id="formRejeicao" class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Justificativa de Rejeição</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
 
-        <hr />
-        <h6>Fotos da Notificação</h6>
-        <div id="detalheFotosNotificacao" class="d-flex flex-wrap gap-2 mb-3"></div>
+        <div class="modal-body">
+          <input type="hidden" name="id" id="rejeicaoId">
+          <div class="mb-3">
+            <label for="justificativa" class="form-label">Motivo da Rejeição</label>
+            <textarea name="justificativa" id="justificativa" class="form-control" rows="4" required></textarea>
+          </div>
+        </div>
 
-        <hr />
-        <h6>Baixa (Resolução)</h6>
-        <div class="mb-2"><strong>Resolvido Por:</strong> <span id="detalheResolvidoPor"></span></div>
-        <div class="mb-2"><strong>Data da Baixa:</strong> <span id="detalheDataBaixa"></span></div>
-        <div class="mb-2"><strong>Comentário da Baixa:</strong> <span id="detalheComentario"></span></div>
-        <div class="mb-2"><strong>Fotos da Baixa:</strong></div>
-        <div id="detalheFotos" class="d-flex flex-wrap gap-2"></div>
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-      </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger">Confirmar Rejeição</button>
+        </div>
+      </form>
     </div>
   </div>
-</div>
 
-<!-- MODAL REJEIÇÃO -------------------------------------------------- -->
-<div class="modal fade" id="modalRejeicao" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <form id="formRejeicao" class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Justificativa de Rejeição</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <input type="hidden" name="id" id="rejeicaoId">
-        <div class="mb-3">
-          <label for="justificativa" class="form-label">Motivo da Rejeição</label>
-          <textarea name="justificativa" id="justificativa" class="form-control" rows="3" required></textarea>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="submit" class="btn btn-danger">Confirmar Rejeição</button>
-      </div>
-    </form>
-  </div>
-</div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const DAY = 24 * 60 * 60 * 1000;
+    let ULTIMA_LISTA = [];
+    let LIGHTBOX_INSTANCE = null;
 
-<script>
-  // ---------- Datas / prazo ----------
-  const DAY = 24 * 60 * 60 * 1000;
+    function prazoDiffDays(prazoISO) {
+      if (!prazoISO) return null;
 
-  function prazoDiffDays(prazoISO) {
-    if (!prazoISO) return null;
-    const hoje = new Date(); hoje.setHours(0,0,0,0);
-    const prazo = new Date(prazoISO); prazo.setHours(0,0,0,0);
-    return Math.round((prazo - hoje)/DAY);
-  }
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
 
-  function prazoTexto(prazoISO, status) {
-    if (!prazoISO) return '-';
-    const d = new Date(prazoISO);
+      const prazo = new Date(prazoISO);
+      prazo.setHours(0, 0, 0, 0);
 
-    if (status === 'Aprovada') {
-      return d.toLocaleDateString();
+      return Math.round((prazo - hoje) / DAY);
     }
 
-    const diff = prazoDiffDays(prazoISO);
-    const base = d.toLocaleDateString();
-    if (diff > 0)  return `${base} (em ${diff} dia${diff>1?'s':''})`;
-    if (diff === 0) return `${base} (vence hoje)`;
-    const atras = Math.abs(diff);
-    return `${base} (vencido há ${atras} dia${atras>1?'s':''})`;
-  }
+    function prazoTextoTabela(prazoISO, status) {
+      if (!prazoISO) return '-';
 
-  function prazoClasse(diff, status) {
-    if (diff === null) return '';
-    if (status === 'Aprovada') return '';
-    if (diff < 0)  return 'text-danger fw-semibold';
-    if (diff === 0) return 'text-warning fw-semibold';
-    if (diff <= 3) return 'text-warning';
-    return 'text-success';
-  }
+      if (status === 'Aprovada') return 'Finalizado';
 
-  // ---------- Imagens ----------
-  function resolveImgSrc(f) {
-    if (!f) return null;
-    if (typeof f === 'object' && f.url) return f.url;
-    if (typeof f === 'string' && f.startsWith('http')) return f;
-    return '/uploads/' + f;
-  }
+      const diff = prazoDiffDays(prazoISO);
 
-  let ULTIMA_LISTA = [];
+      if (diff > 0) return `${diff} dia${diff > 1 ? 's' : ''} para vencer`;
+      if (diff === 0) return 'Vence hoje';
 
-  // ---------- Carregar notificações ----------
-  async function carregarNotificacoes() {
-    try {
-      const url = new URL('/api/notificacoes', window.location.origin);
+      const atraso = Math.abs(diff);
+      return `${atraso} dia${atraso > 1 ? 's' : ''} vencido`;
+    }
 
-      const status = document.getElementById('status').value;
-      const id     = document.getElementById('idBusca').value.trim();
+    function prazoTextoModal(prazoISO, status) {
+      if (!prazoISO) return '-';
 
-      if (status) url.searchParams.append('status', status);
-      if (id)     url.searchParams.append('id', id); // ainda busca pelo _id do Mongo
+      const data = new Date(prazoISO).toLocaleDateString();
 
-      const res = await fetch(url);
-      if (!res.ok) {
-        console.error('Erro ao buscar /api/notificacoes:', res.status, await res.text());
+      if (status === 'Aprovada') return `${data} - Finalizado`;
+
+      const diff = prazoDiffDays(prazoISO);
+
+      if (diff > 0) return `${data} - ${diff} dia${diff > 1 ? 's' : ''} para vencer`;
+      if (diff === 0) return `${data} - Vence hoje`;
+
+      const atraso = Math.abs(diff);
+      return `${data} - ${atraso} dia${atraso > 1 ? 's' : ''} vencido`;
+    }
+
+    function prazoClasseTabela(prazoISO, status) {
+      if (!prazoISO) return '';
+
+      if (status === 'Aprovada') return 'prazo-pill prazo-finalizado';
+
+      const diff = prazoDiffDays(prazoISO);
+
+      if (diff < 0) return 'prazo-pill prazo-vencido';
+      if (diff === 0 || diff <= 3) return 'prazo-pill prazo-alerta';
+
+      return 'prazo-pill prazo-ok';
+    }
+
+    function statusClasse(status) {
+      if (status === 'Aberta') return 'status-badge status-aberta';
+      if (status === 'Pendente de aprovação') return 'status-badge status-pendente';
+      if (status === 'Aprovada') return 'status-badge status-aprovada';
+      if (status === 'Rejeitada') return 'status-badge status-rejeitada';
+      return 'status-badge';
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function resolveImgSrc(f) {
+      if (!f) return null;
+      if (typeof f === 'object' && f.url) return f.url;
+      if (typeof f === 'string' && f.startsWith('http')) return f;
+      return '/uploads/' + f;
+    }
+
+    async function carregarNotificacoes() {
+      try {
+        const url = new URL('/api/notificacoes', window.location.origin);
+        const status = document.getElementById('status').value;
+
+        if (status) url.searchParams.append('status', status);
+
+        const res = await fetch(url);
+
+        if (!res.ok) {
+          console.error('Erro ao buscar /api/notificacoes:', res.status, await res.text());
+          document.getElementById('tbodyNotificacoes').innerHTML =
+            '<tr><td colspan="8" class="text-center py-4 text-danger">Erro ao carregar notificações.</td></tr>';
+          return;
+        }
+
+        const lista = await res.json();
+        ULTIMA_LISTA = lista;
+
+        popularFiltrosDinamicos(lista);
+
+        const filtrada = aplicarFiltrosCliente(lista);
+        renderTabela(filtrada);
+        atualizarKPIs(filtrada);
+      } catch (err) {
+        console.error('Falha geral em carregarNotificacoes:', err);
         document.getElementById('tbodyNotificacoes').innerHTML =
-          '<tr><td colspan="9" class="text-center py-4 text-danger">Erro ao carregar notificações.</td></tr>';
+          '<tr><td colspan="8" class="text-center py-4 text-danger">Erro ao carregar notificações.</td></tr>';
+      }
+    }
+
+    function aplicarFiltrosCliente(listaBase) {
+      const mesSel = document.getElementById('filtroMes').value;
+      const prazoSel = document.getElementById('filtroPrazo').value;
+      const areaSel = document.getElementById('filtroArea').value;
+      const tecSel = document.getElementById('filtroTecnico').value;
+      const classSel = document.getElementById('filtroClassificacao').value;
+      const idBusca = document.getElementById('idBusca').value.trim().toLowerCase();
+
+      return listaBase.filter(n => {
+        if (idBusca) {
+          const idSequencial = String(n.idSequencial ?? '').toLowerCase();
+          if (idSequencial !== idBusca) return false;
+        }
+
+        if (mesSel !== '') {
+          if (!n.dataRegistro) return false;
+          const m = new Date(n.dataRegistro).getMonth();
+          if (String(m) !== mesSel) return false;
+        }
+
+        if (prazoSel) {
+          const diff = prazoDiffDays(n.prazo);
+          if (prazoSel === 'noprazo' && !(diff === 0 || diff > 0)) return false;
+          if (prazoSel === 'vencidas' && !(diff < 0)) return false;
+        }
+
+        if (areaSel && (n.area || '') !== areaSel) return false;
+        if (tecSel && (n.tecnico || '') !== tecSel) return false;
+        if (classSel && (n.classificacao || '') !== classSel) return false;
+
+        return true;
+      });
+    }
+
+    function popularFiltrosDinamicos(lista) {
+      const areaSel = document.getElementById('filtroArea');
+      const tecSel = document.getElementById('filtroTecnico');
+
+      const areas = Array.from(new Set(lista.map(n => n.area).filter(Boolean))).sort();
+      const tecs = Array.from(new Set(lista.map(n => n.tecnico).filter(Boolean))).sort();
+
+      const areaVal = areaSel.value;
+      const tecVal = tecSel.value;
+
+      areaSel.innerHTML = '<option value="">Todas</option>' +
+        areas.map(a => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join('');
+
+      tecSel.innerHTML = '<option value="">Todos</option>' +
+        tecs.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+
+      if (areas.includes(areaVal)) areaSel.value = areaVal;
+      if (tecs.includes(tecVal)) tecSel.value = tecVal;
+    }
+
+    function atualizarKPIs(lista) {
+      const total = lista.length;
+      const abertas = lista.filter(n => n.status === 'Aberta').length;
+      const pendentes = lista.filter(n => n.status === 'Pendente de aprovação').length;
+
+      const notificacoes = lista.filter(n =>
+        (n.classificacao || '').toLowerCase().includes('notificação')
+      ).length;
+
+      const interdicoes = lista.filter(n =>
+        (n.classificacao || '').toLowerCase().includes('interdição')
+      ).length;
+
+      document.getElementById('kpiTotal').textContent = total;
+      document.getElementById('kpiAbertas').textContent = abertas;
+      document.getElementById('kpiPendentes').textContent = pendentes;
+      document.getElementById('kpiNotificacoes').textContent = notificacoes;
+      document.getElementById('kpiInterdicoes').textContent = interdicoes;
+    }
+
+    function renderTabela(lista) {
+      const tbody = document.getElementById('tbodyNotificacoes');
+      tbody.innerHTML = '';
+
+      document.getElementById('selectAll').checked = false;
+      document.getElementById('selectAll').indeterminate = false;
+
+      if (!lista.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4">Nenhuma notificação encontrada.</td></tr>';
+        syncSelectionUI();
         return;
       }
 
-      const lista = await res.json();
-      ULTIMA_LISTA = lista;
+      lista.forEach(n => {
+        const tr = document.createElement('tr');
+        tr.className = 'row-notificacao';
+        tr.dataset.id = n._id;
 
-      popularFiltrosDinamicos(lista);
-      const filtrada = aplicarFiltrosCliente(lista);
-      renderTabela(filtrada);
-      atualizarKPIs(filtrada);
-    } catch (err) {
-      console.error('Falha geral em carregarNotificacoes:', err);
-      document.getElementById('tbodyNotificacoes').innerHTML =
-        '<tr><td colspan="9" class="text-center py-4 text-danger">Erro ao carregar notificações.</td></tr>';
-    }
-  }
+        const idLabel = typeof n.idSequencial === 'number' ? n.idSequencial : '-';
 
-  // ---------- Filtros cliente ----------
-  function aplicarFiltrosCliente(listaBase) {
-    const mesSel    = document.getElementById('filtroMes').value;
-    const prazoSel  = document.getElementById('filtroPrazo').value;
-    const areaSel   = document.getElementById('filtroArea').value;
-    const tecSel    = document.getElementById('filtroTecnico').value;
-    const classSel  = document.getElementById('filtroClassificacao').value;
-
-    return listaBase.filter(n => {
-      if (mesSel !== '') {
-        if (!n.dataRegistro) return false;
-        const m = new Date(n.dataRegistro).getMonth();
-        if (String(m) !== mesSel) return false;
-      }
-
-      if (prazoSel) {
-        const diff = prazoDiffDays(n.prazo);
-        if (prazoSel === 'noprazo' && !(diff === 0 || diff > 0)) return false;
-        if (prazoSel === 'vencidas' && !(diff < 0)) return false;
-      }
-
-      if (areaSel && (n.area || '') !== areaSel) return false;
-      if (tecSel && (n.tecnico || '') !== tecSel) return false;
-
-      if (classSel) {
-        if ((n.classificacao || '') !== classSel) return false;
-      }
-
-      return true;
-    });
-  }
-
-  // ---------- Filtros dinâmicos ----------
-  function popularFiltrosDinamicos(lista) {
-    const areaSel = document.getElementById('filtroArea');
-    const tecSel  = document.getElementById('filtroTecnico');
-
-    const areas = Array.from(new Set(lista.map(n => n.area).filter(Boolean))).sort();
-    const tecs  = Array.from(new Set(lista.map(n => n.tecnico).filter(Boolean))).sort();
-
-    const areaVal = areaSel.value;
-    const tecVal  = tecSel.value;
-
-    areaSel.innerHTML = '<option value="">Todas</option>' +
-      areas.map(a => `<option value="${a}">${a}</option>`).join('');
-    tecSel.innerHTML  = '<option value="">Todos</option>' +
-      tecs.map(t => `<option value="${t}">${t}</option>`).join('');
-
-    if (areas.includes(areaVal)) areaSel.value = areaVal;
-    if (tecs.includes(tecVal))   tecSel.value  = tecVal;
-  }
-
-  // ---------- KPIs ----------
-  function atualizarKPIs(lista) {
-    const total      = lista.length;
-    const abertas    = lista.filter(n => n.status === 'Aberta').length;
-    const pendentes  = lista.filter(n => n.status === 'Pendente de aprovação').length;
-
-    const notificacoes = lista.filter(n =>
-      (n.classificacao || '').toLowerCase().includes('notificação')
-    ).length;
-
-    const interds = lista.filter(n =>
-      (n.classificacao || '').toLowerCase().includes('interdição')
-    ).length;
-
-    document.getElementById('kpiTotal').textContent        = total;
-    document.getElementById('kpiAbertas').textContent      = abertas;
-    document.getElementById('kpiPendentes').textContent    = pendentes;
-    document.getElementById('kpiNotificacoes').textContent = notificacoes;
-    document.getElementById('kpiInterdicoes').textContent  = interds;
-  }
-
-  // ---------- Tabela + seleção múltipla ----------
-  function renderTabela(lista) {
-    const tbody = document.getElementById('tbodyNotificacoes');
-    tbody.innerHTML = '';
-
-    const btnBulk = document.getElementById('btnExcluirSelecionadas');
-    btnBulk.disabled = true;
-
-    if (!lista.length) {
-      tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4">Nenhuma notificação encontrada.</td></tr>';
-      return;
-    }
-
-    lista.forEach(n => {
-      const tr = document.createElement('tr');
-
-      // checkbox
-      const tdChk = document.createElement('td');
-      tdChk.innerHTML = `<input type="checkbox" class="row-check" value="${n._id}">`;
-      tr.appendChild(tdChk);
-
-      // ID (sequencial se existir, senão _id)
-      const tdId = document.createElement('td');
-      tdId.textContent =
-        (typeof n.idSequencial === 'number')
-          ? n.idSequencial
-          : (n._id || '-');
-      tr.appendChild(tdId);
-
-      // Técnico e Área
-      const tdTec = document.createElement('td'); tdTec.textContent = n.tecnico || '-';
-      const tdAr  = document.createElement('td'); tdAr.textContent  = n.area || '-';
-
-      tr.appendChild(tdTec);
-      tr.appendChild(tdAr);
-
-      // Classificação
-      const tdClass = document.createElement('td');
-      tdClass.textContent = n.classificacao || '-';
-      tr.appendChild(tdClass);
-
-      // Status
-      const tdStatus = document.createElement('td');
-      let statusText = n.status || '-';
-      if (n.status === 'Rejeitada' && n.comentarioAprovacao) {
-        statusText += `: ${n.comentarioAprovacao}`;
-      }
-      tdStatus.textContent = statusText;
-      tr.appendChild(tdStatus);
-
-      // Data
-      const tdData = document.createElement('td');
-      tdData.textContent = n.dataRegistro ? new Date(n.dataRegistro).toLocaleString() : '-';
-      tr.appendChild(tdData);
-
-      // Prazo
-      const tdPrazo = document.createElement('td');
-      if (n.prazo) {
-        const diff = prazoDiffDays(n.prazo);
-        tdPrazo.innerHTML =
-          `<span class="${prazoClasse(diff, n.status)}">${prazoTexto(n.prazo, n.status)}</span>`;
-      } else {
-        tdPrazo.textContent = '-';
-      }
-      tr.appendChild(tdPrazo);
-
-      // Ações
-      const tdAcoes = document.createElement('td');
-      tdAcoes.innerHTML =
-        `<button class="btn btn-secondary btn-sm"
-            onclick="visualizarDetalhes('${n._id}')"
-            data-bs-toggle="modal" data-bs-target="#modalDetalhes">
-           Detalhes
-         </button>`;
-      tr.appendChild(tdAcoes);
-
-      tbody.appendChild(tr);
-    });
-
-    syncSelectionUI();
-  }
-
-  function getSelectedIds() {
-    return Array.from(document.querySelectorAll('.row-check:checked')).map(i => i.value);
-  }
-
-  function syncSelectionUI() {
-    const selectAll = document.getElementById('selectAll');
-    const checks    = document.querySelectorAll('.row-check');
-    const btnBulk   = document.getElementById('btnExcluirSelecionadas');
-
-    btnBulk.disabled = getSelectedIds().length === 0;
-
-    selectAll.onchange = () => {
-      checks.forEach(c => { c.checked = selectAll.checked; });
-      btnBulk.disabled = getSelectedIds().length === 0;
-    };
-
-    checks.forEach(c => {
-      c.onchange = () => {
-        const total    = checks.length;
-        const marcados = getSelectedIds().length;
-        selectAll.checked       = marcados === total;
-        selectAll.indeterminate = marcados > 0 && marcados < total;
-        btnBulk.disabled        = marcados === 0;
-      };
-    });
-
-    document.getElementById('btnExcluirSelecionadas').onclick = async () => {
-      const ids = getSelectedIds();
-      if (!ids.length) return;
-      if (!confirm(`Confirmar exclusão de ${ids.length} notificação(ões)?`)) return;
-
-      for (const id of ids) {
-        try {
-          await fetch(`/excluir/${id}`, { method: 'DELETE' });
-        } catch (e) {
-          console.error('Erro ao excluir', id, e);
+        let statusText = n.status || '-';
+        if (n.status === 'Rejeitada' && n.comentarioAprovacao) {
+          statusText += `: ${n.comentarioAprovacao}`;
         }
-      }
-      await carregarNotificacoes();
-      alert('Exclusão concluída!');
-    };
-  }
 
-  // ---------- Modal: configurar ações ----------
-  function configurarAcoes(d) {
-    const btnA = document.getElementById('btnAprovar');
-    const btnR = document.getElementById('btnRejeitar');
+        tr.innerHTML = `
+          <td>
+            <input type="checkbox" class="row-check" value="${escapeHtml(n._id)}">
+          </td>
+          <td><span class="id-pill">${escapeHtml(idLabel)}</span></td>
+          <td>${escapeHtml(n.tecnico || '-')}</td>
+          <td>${escapeHtml(n.area || '-')}</td>
+          <td>${escapeHtml(n.classificacao || '-')}</td>
+          <td><span class="${statusClasse(n.status)}">${escapeHtml(statusText)}</span></td>
+          <td>${n.dataRegistro ? escapeHtml(new Date(n.dataRegistro).toLocaleString()) : '-'}</td>
+          <td><span class="${prazoClasseTabela(n.prazo, n.status)}">${escapeHtml(prazoTextoTabela(n.prazo, n.status))}</span></td>
+        `;
 
-    if (d.status === 'Aprovada' || d.status === 'Rejeitada') {
-      btnA.style.display = 'none';
-      btnR.style.display = 'none';
-    } else {
-      btnA.style.display = d.dataBaixa ? 'inline-block' : 'none';
-      btnR.style.display = 'inline-block';
-    }
-
-    btnA.onclick = async () => {
-      try {
-        const res = await fetch('/aprovar', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({ id: d._id })
+        tr.addEventListener('click', e => {
+          if (e.target.classList.contains('row-check')) return;
+          visualizarDetalhes(n._id);
+          const modal = new bootstrap.Modal(document.getElementById('modalDetalhes'));
+          modal.show();
         });
-        if (!res.ok) throw new Error(await res.text());
-        alert('Notificação aprovada com sucesso!');
-        location.reload();
-      } catch (err) {
-        alert('Erro ao aprovar: ' + err.message);
-      }
-    };
 
-    btnR.onclick = () => {
-      document.getElementById('rejeicaoId').value = d._id;
-    };
-
-    document.getElementById('btnExcluir').onclick = async () => {
-      if (confirm('Tem certeza que deseja excluir esta notificação?')) {
-        await fetch(`/excluir/${d._id}`, { method: 'DELETE' });
-        location.reload();
-      }
-    };
-
-    const justifEl = document.getElementById('detalheJustificativa');
-    if (d.status === 'Rejeitada') {
-      justifEl.textContent = d.comentarioAprovacao || '—';
-    } else if (d.status === 'Aprovada') {
-      justifEl.textContent =
-        `Aprovado por ${d.aprovadoPor || '—'} em ${d.dataAprovacao ? new Date(d.dataAprovacao).toLocaleString() : '—'}`;
-    } else {
-      justifEl.textContent = '—';
-    }
-  }
-
-  // ---------- Visualizar detalhes ----------
-  async function visualizarDetalhes(id) {
-    const res = await fetch(`/api/notificacoes/${id}`);
-    const d   = await res.json();
-
-    // ID no modal: sequencial se existir, senão _id
-    const idLabel =
-      (typeof d.idSequencial === 'number')
-        ? d.idSequencial
-        : d._id;
-
-    document.getElementById('detalheId').textContent          = idLabel;
-    document.getElementById('detalheTecnico').textContent     = d.tecnico || '-';
-    document.getElementById('detalheEncarregado').textContent = d.encarregado || '-';
-
-    const supervisor = d.supervisorObra ?? d.supervisor ?? d.supervisorDaObra ?? '-';
-    const descAtiv   = d.descricaoAtividade ?? d.atividade ?? d.descricao_atividade ?? '-';
-    document.getElementById('detalheSupervisor').textContent         = supervisor || '-';
-    document.getElementById('detalheDescricaoAtividade').textContent = descAtiv || '-';
-    document.getElementById('detalheNR').textContent                 = d.nr || '-';
-    document.getElementById('detalheAcoesRecomendadas').textContent  = d.acao || '-';
-
-    document.getElementById('detalheArea').textContent          = d.area || '-';
-    document.getElementById('detalheClassificacao').textContent = d.classificacao || '-';
-    document.getElementById('detalheDescricao').textContent     = d.descricao || '-';
-    document.getElementById('detalheDataRegistro').textContent  =
-      d.dataRegistro ? new Date(d.dataRegistro).toLocaleString() : '-';
-    document.getElementById('detalheStatus').textContent        = d.status || '-';
-
-    const spPrazo = document.getElementById('detalhePrazo');
-    if (d.prazo) {
-      const diff = prazoDiffDays(d.prazo);
-      spPrazo.className   = prazoClasse(diff, d.status);
-      spPrazo.textContent = prazoTexto(d.prazo, d.status);
-    } else {
-      spPrazo.className = '';
-      spPrazo.textContent = '-';
-    }
-
-    const notifFotosDiv = document.getElementById('detalheFotosNotificacao');
-    notifFotosDiv.innerHTML = '';
-    if (d.notificacaoFotos?.length) {
-      d.notificacaoFotos.forEach(f => {
-        const src = resolveImgSrc(f); if (!src) return;
-        const link = document.createElement('a');
-        link.href = src;
-        link.className = 'glightbox';
-        link.setAttribute('data-gallery', 'notificacao');
-        const img = document.createElement('img');
-        img.src = src;
-        img.width = 120;
-        img.className = 'border rounded me-2 mb-2';
-        link.appendChild(img);
-        notifFotosDiv.appendChild(link);
+        tbody.appendChild(tr);
       });
-      GLightbox({ selector: '.glightbox' });
-    } else {
-      notifFotosDiv.textContent = 'Sem fotos da notificação.';
+
+      syncSelectionUI();
     }
 
-    document.getElementById('detalheResolvidoPor').textContent = d.resolvidoPor || '—';
-    document.getElementById('detalheDataBaixa').textContent   =
-      d.dataBaixa ? new Date(d.dataBaixa).toLocaleString() : '—';
-    document.getElementById('detalheComentario').textContent  = d.resolucaoComentario || 'Sem comentário';
+    function getSelectedIds() {
+      return Array.from(document.querySelectorAll('.row-check:checked')).map(i => i.value);
+    }
 
-    const fotosDiv = document.getElementById('detalheFotos');
-    fotosDiv.innerHTML = '';
-    if (d.resolucaoFotos?.length) {
-      d.resolucaoFotos.forEach(f => {
-        const src = resolveImgSrc(f); if (!src) return;
-        const link = document.createElement('a');
-        link.href = src;
-        link.className = 'glightbox';
-        link.setAttribute('data-gallery', 'baixa');
-        const img = document.createElement('img');
-        img.src = src;
-        img.width = 120;
-        img.className = 'border rounded me-2 mb-2';
-        link.appendChild(img);
-        fotosDiv.appendChild(link);
+    function syncSelectionUI() {
+      const selectAll = document.getElementById('selectAll');
+      const checks = document.querySelectorAll('.row-check');
+      const bulkActions = document.getElementById('bulkActions');
+      const bulkCount = document.getElementById('bulkCount');
+
+      function updateBulkUI() {
+        const selected = getSelectedIds().length;
+        bulkCount.textContent = selected;
+
+        if (selected > 0) {
+          bulkActions.classList.add('show');
+        } else {
+          bulkActions.classList.remove('show');
+        }
+
+        const total = checks.length;
+        selectAll.checked = total > 0 && selected === total;
+        selectAll.indeterminate = selected > 0 && selected < total;
+      }
+
+      selectAll.onchange = () => {
+        checks.forEach(c => { c.checked = selectAll.checked; });
+        updateBulkUI();
+      };
+
+      checks.forEach(c => {
+        c.onclick = e => e.stopPropagation();
+        c.onchange = updateBulkUI;
       });
-      GLightbox({ selector: '.glightbox' });
-    } else {
-      fotosDiv.textContent = 'Sem fotos da baixa.';
+
+      updateBulkUI();
     }
 
-    configurarAcoes(d);
-  }
+    async function aprovarNotificacao(id) {
+      const res = await fetch('/aprovar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ id })
+      });
 
-  // ---------- Rejeição ----------
-  document.getElementById('formRejeicao').addEventListener('submit', async e => {
-    e.preventDefault();
-    const data = new URLSearchParams(new FormData(e.target));
-    try {
-      const res = await fetch('/rejeitar', { method: 'POST', body: data });
       if (!res.ok) throw new Error(await res.text());
-      alert('Notificação rejeitada com sucesso!');
-      bootstrap.Modal.getInstance(document.getElementById('modalRejeicao')).hide();
-      visualizarDetalhes(e.target.rejeicaoId.value);
-    } catch (err) {
-      alert('Erro ao rejeitar: ' + err.message);
     }
-  });
 
-  // ---------- Submeter filtros ----------
-  document.getElementById('filtroForm').addEventListener('submit', e => {
-    e.preventDefault();
-    carregarNotificacoes();
-  });
+    async function excluirNotificacao(id) {
+      const res = await fetch(`/excluir/${id}`, { method: 'DELETE' });
 
-  // ---------- Chips de status ----------
-  function configurarChips() {
-    const chips = document.querySelectorAll('.chip-status');
-    chips.forEach(chip => {
-      chip.addEventListener('click', () => {
-        chips.forEach(c => c.classList.remove('active'));
-        chip.classList.add('active');
+      if (!res.ok) throw new Error(await res.text());
+    }
 
-        const status = chip.getAttribute('data-status') || '';
-        document.getElementById('status').value = status;
-        carregarNotificacoes();
+    function configurarBulkActions() {
+      document.getElementById('btnExcluirSelecionadas').onclick = async () => {
+        const ids = getSelectedIds();
+        if (!ids.length) return;
+
+        if (!confirm(`Confirmar exclusão de ${ids.length} notificação(ões)?`)) return;
+
+        try {
+          for (const id of ids) {
+            await excluirNotificacao(id);
+          }
+
+          await carregarNotificacoes();
+          alert('Exclusão concluída!');
+        } catch (err) {
+          alert('Erro ao excluir selecionadas: ' + err.message);
+        }
+      };
+
+      document.getElementById('btnAprovarSelecionadas').onclick = async () => {
+        const ids = getSelectedIds();
+        if (!ids.length) return;
+
+        if (!confirm(`Confirmar aprovação de ${ids.length} notificação(ões)?`)) return;
+
+        try {
+          for (const id of ids) {
+            await aprovarNotificacao(id);
+          }
+
+          await carregarNotificacoes();
+          alert('Aprovação concluída!');
+        } catch (err) {
+          alert('Erro ao aprovar selecionadas: ' + err.message);
+        }
+      };
+    }
+
+    function configurarAcoes(d) {
+      const btnA = document.getElementById('btnAprovar');
+      const btnR = document.getElementById('btnRejeitar');
+
+      if (d.status === 'Aprovada' || d.status === 'Rejeitada') {
+        btnA.style.display = 'none';
+        btnR.style.display = 'none';
+      } else {
+        btnA.style.display = d.dataBaixa ? 'inline-block' : 'none';
+        btnR.style.display = 'inline-block';
+      }
+
+      btnA.onclick = async () => {
+        try {
+          await aprovarNotificacao(d._id);
+          alert('Notificação aprovada com sucesso!');
+          bootstrap.Modal.getInstance(document.getElementById('modalDetalhes')).hide();
+          await carregarNotificacoes();
+        } catch (err) {
+          alert('Erro ao aprovar: ' + err.message);
+        }
+      };
+
+      btnR.onclick = () => {
+        document.getElementById('rejeicaoId').value = d._id;
+      };
+
+      document.getElementById('btnExcluir').onclick = async () => {
+        if (!confirm('Tem certeza que deseja excluir esta notificação?')) return;
+
+        try {
+          await excluirNotificacao(d._id);
+          bootstrap.Modal.getInstance(document.getElementById('modalDetalhes')).hide();
+          await carregarNotificacoes();
+          alert('Notificação excluída com sucesso!');
+        } catch (err) {
+          alert('Erro ao excluir: ' + err.message);
+        }
+      };
+
+      const justifEl = document.getElementById('detalheJustificativa');
+
+      if (d.status === 'Rejeitada') {
+        justifEl.textContent = d.comentarioAprovacao || '—';
+      } else if (d.status === 'Aprovada') {
+        justifEl.textContent =
+          `Aprovado por ${d.aprovadoPor || '—'} em ${d.dataAprovacao ? new Date(d.dataAprovacao).toLocaleString() : '—'}`;
+      } else {
+        justifEl.textContent = '—';
+      }
+    }
+
+    async function visualizarDetalhes(id) {
+      const res = await fetch(`/api/notificacoes/${id}`);
+
+      if (!res.ok) {
+        alert('Erro ao carregar detalhes da notificação.');
+        return;
+      }
+
+      const d = await res.json();
+
+      const idLabel =
+        typeof d.idSequencial === 'number'
+          ? d.idSequencial
+          : d._id;
+
+      document.getElementById('detalheId').textContent = idLabel;
+      document.getElementById('detalheTecnico').textContent = d.tecnico || '-';
+      document.getElementById('detalheEncarregado').textContent = d.encarregado || '-';
+
+      const supervisor = d.supervisorObra ?? d.supervisor ?? d.supervisorDaObra ?? '-';
+      const descAtiv = d.descricaoAtividade ?? d.atividade ?? d.descricao_atividade ?? '-';
+
+      document.getElementById('detalheSupervisor').textContent = supervisor || '-';
+      document.getElementById('detalheDescricaoAtividade').textContent = descAtiv || '-';
+      document.getElementById('detalheNR').textContent = d.nr || '-';
+      document.getElementById('detalheAcoesRecomendadas').textContent = d.acao || '-';
+
+      document.getElementById('detalheArea').textContent = d.area || '-';
+      document.getElementById('detalheClassificacao').textContent = d.classificacao || '-';
+      document.getElementById('detalheDescricao').textContent = d.descricao || '-';
+      document.getElementById('detalheDataRegistro').textContent =
+        d.dataRegistro ? new Date(d.dataRegistro).toLocaleString() : '-';
+      document.getElementById('detalheStatus').textContent = d.status || '-';
+      document.getElementById('detalhePrazo').textContent = prazoTextoModal(d.prazo, d.status);
+
+      const notifFotosDiv = document.getElementById('detalheFotosNotificacao');
+      notifFotosDiv.innerHTML = '';
+
+      if (d.notificacaoFotos?.length) {
+        d.notificacaoFotos.forEach(f => {
+          const src = resolveImgSrc(f);
+          if (!src) return;
+
+          const link = document.createElement('a');
+          link.href = src;
+          link.className = 'glightbox';
+          link.setAttribute('data-gallery', 'notificacao');
+
+          const img = document.createElement('img');
+          img.src = src;
+          img.className = 'photo-thumb';
+
+          link.appendChild(img);
+          notifFotosDiv.appendChild(link);
+        });
+      } else {
+        notifFotosDiv.textContent = 'Sem fotos da notificação.';
+      }
+
+      document.getElementById('detalheResolvidoPor').textContent = d.resolvidoPor || '—';
+      document.getElementById('detalheDataBaixa').textContent =
+        d.dataBaixa ? new Date(d.dataBaixa).toLocaleString() : '—';
+      document.getElementById('detalheComentario').textContent = d.resolucaoComentario || 'Sem comentário';
+
+      const fotosDiv = document.getElementById('detalheFotos');
+      fotosDiv.innerHTML = '';
+
+      if (d.resolucaoFotos?.length) {
+        d.resolucaoFotos.forEach(f => {
+          const src = resolveImgSrc(f);
+          if (!src) return;
+
+          const link = document.createElement('a');
+          link.href = src;
+          link.className = 'glightbox';
+          link.setAttribute('data-gallery', 'baixa');
+
+          const img = document.createElement('img');
+          img.src = src;
+          img.className = 'photo-thumb';
+
+          link.appendChild(img);
+          fotosDiv.appendChild(link);
+        });
+      } else {
+        fotosDiv.textContent = 'Sem fotos da baixa.';
+      }
+
+      if (LIGHTBOX_INSTANCE) {
+        LIGHTBOX_INSTANCE.destroy();
+      }
+
+      LIGHTBOX_INSTANCE = GLightbox({ selector: '.glightbox' });
+
+      configurarAcoes(d);
+    }
+
+    document.getElementById('formRejeicao').addEventListener('submit', async e => {
+      e.preventDefault();
+
+      const data = new URLSearchParams(new FormData(e.target));
+
+      try {
+        const res = await fetch('/rejeitar', { method: 'POST', body: data });
+
+        if (!res.ok) throw new Error(await res.text());
+
+        alert('Notificação rejeitada com sucesso!');
+
+        const modalRejeicao = bootstrap.Modal.getInstance(document.getElementById('modalRejeicao'));
+        if (modalRejeicao) modalRejeicao.hide();
+
+        const id = e.target.rejeicaoId.value;
+        await visualizarDetalhes(id);
+        await carregarNotificacoes();
+      } catch (err) {
+        alert('Erro ao rejeitar: ' + err.message);
+      }
+    });
+
+    document.getElementById('filtroForm').addEventListener('submit', e => {
+      e.preventDefault();
+      carregarNotificacoes();
+    });
+
+    document.getElementById('btnLimparFiltros').addEventListener('click', () => {
+      document.getElementById('status').value = '';
+      document.getElementById('filtroMes').value = '';
+      document.getElementById('filtroPrazo').value = '';
+      document.getElementById('filtroClassificacao').value = '';
+      document.getElementById('filtroArea').value = '';
+      document.getElementById('filtroTecnico').value = '';
+      document.getElementById('idBusca').value = '';
+
+      document.querySelectorAll('.chip-status').forEach(c => c.classList.remove('active'));
+      document.querySelector('.chip-status[data-status=""]').classList.add('active');
+
+      carregarNotificacoes();
+    });
+
+    function configurarChips() {
+      const chips = document.querySelectorAll('.chip-status');
+
+      chips.forEach(chip => {
+        chip.addEventListener('click', () => {
+          chips.forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+
+          const status = chip.getAttribute('data-status') || '';
+          document.getElementById('status').value = status;
+
+          carregarNotificacoes();
+        });
       });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      configurarChips();
+      configurarBulkActions();
+      carregarNotificacoes();
     });
-  }
-
-  // ---------- Toggle da sidebar ----------
-  function configurarToggleSidebar() {
-    const btn = document.getElementById('btnToggleSidebar');
-    btn.addEventListener('click', () => {
-      document.body.classList.toggle('sidebar-closed');
-    });
-  }
-
-  // ---------- Inicialização ----------
-  window.addEventListener('DOMContentLoaded', () => {
-    configurarChips();
-    configurarToggleSidebar();
-    carregarNotificacoes();
-  });
-</script>
-
+  </script>
 </body>
 </html>
