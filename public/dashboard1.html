@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard SESMT</title>
+
+  <link rel="stylesheet" href="style.css" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+  :root {
+  --bg: #080b12;
+  --bg-soft: #0f172a;
+  --card: rgba(15, 23, 42, 0.72);
+  --card-strong: rgba(30, 41, 59, 0.82);
+  --border: rgba(148, 163, 184, 0.18);
+  --text: #f8fafc;
+  --muted: #94a3b8;
+  --cyan: #22d3ee;
+  --purple: #a855f7;
+  --blue: #38bdf8;
+  --green: #22c55e;
+  --orange: #f59e0b;
+  --red: #ef4444;
+  --radius: 22px;
+  --shadow: 0 20px 60px rgba(0, 0, 0, 0.32);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.14), transparent 28%),
+    radial-gradient(circle at top right, rgba(168, 85, 247, 0.12), transparent 30%),
+    var(--bg);
+  color: var(--text);
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: 100vh;
+}
+
+.glass {
+  background: var(--card);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow);
+}
+
+.sidebar {
+  padding: 26px 20px;
+  background: rgba(2, 6, 23, 0.82);
+  border-right: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 34px;
+}
+
+.brand-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--cyan), var(--purple));
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 21px;
+}
+
+.brand h1 {
+  font-size: 18px;
+  margin: 0;
+}
+
+.brand span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  color: var(--muted);
+  text-decoration: none;
+  border-radius: 16px;
+  transition: 0.2s;
+  font-weight: 600;
+}
+
+.nav a:hover,
+.nav a.active {
+  color: #fff;
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.18), rgba(168, 85, 247, 0.18));
+  border: 1px solid var(--border);
+}
+
+.main {
+  padding: 26px;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: var(--cyan);
+  font-weight: 800;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 30px;
+  letter-spacing: -0.04em;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.search-box {
+  width: 340px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+.search-box input {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  outline: none;
+  color: var(--text);
+}
+
+.search-box input::placeholder {
+  color: var(--muted);
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 8px 12px;
+}
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--cyan), var(--purple));
+}
+
+.profile strong {
+  display: block;
+  font-size: 13px;
+}
+
+.profile span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.filters {
+  border-radius: var(--radius);
+  padding: 18px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(160px, 1fr)) auto;
+  gap: 14px;
+  margin-bottom: 20px;
+  align-items: end;
+}
+
+.filters label {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 7px;
+}
+
+.filters select {
+  width: 100%;
+  height: 44px;
+  border: 1px solid var(--border);
+  background: rgba(15, 23, 42, 0.9);
+  color: var(--text);
+  border-radius: 14px;
+  padding: 0 12px;
+  outline: none;
+}
+
+.btn-primary {
+  height: 44px;
+  border: 0;
+  border-radius: 14px;
+  padding: 0 16px;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--cyan), var(--purple));
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(150px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.metric-card {
+  border-radius: var(--radius);
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.metric-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 15px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+}
+
+.metric-icon.cyan { background: rgba(34, 211, 238, 0.18); color: var(--cyan); }
+.metric-icon.blue { background: rgba(56, 189, 248, 0.18); color: var(--blue); }
+.metric-icon.orange { background: rgba(245, 158, 11, 0.18); color: var(--orange); }
+.metric-icon.green { background: rgba(34, 197, 94, 0.18); color: var(--green); }
+.metric-icon.red { background: rgba(239, 68, 68, 0.18); color: var(--red); }
+.metric-icon.purple { background: rgba(168, 85, 247, 0.18); color: var(--purple); }
+
+.metric-card span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.metric-card h3 {
+  margin: 4px 0 0;
+  font-size: 28px;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+
+.panel {
+  border-radius: var(--radius);
+  padding: 20px;
+  min-height: 350px;
+}
+
+.panel.large {
+  grid-column: span 2;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.panel-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.panel-header p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+canvas {
+  width: 100% !important;
+  height: 260px !important;
+}
+
+.ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ranking-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: #e2e8f0;
+  font-size: 14px;
+}
+
+.ranking-top strong {
+  color: var(--cyan);
+}
+
+.bar {
+  margin-top: 8px;
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.16);
+  overflow: hidden;
+}
+
+.bar div {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--cyan), var(--purple));
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  color: var(--muted);
+  text-align: left;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+td {
+  padding: 13px 12px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+  color: #e2e8f0;
+  font-size: 14px;
+}
+
+.status {
+  display: inline-flex;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(34, 211, 238, 0.12);
+  color: var(--cyan);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.empty {
+  color: var(--muted);
+}
+
+@media (max-width: 1300px) {
+  .metrics-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .panel.large {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 920px) {
+  .app {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: relative;
+    height: auto;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-box {
+    width: 100%;
+  }
+
+  .filters {
+    grid-template-columns: 1fr;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .panel.large {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 560px) {
+  .main {
+    padding: 16px;
+  }
+
+  .header h2 {
+    font-size: 24px;
+  }
+
+  .panel {
+    padding: 16px;
+  }
+}
+  
+</style>
+  
+</head>
+
+<body>
+  <div class="app">
+
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <div>
+          <h1>Painel SESMT</h1>
+          <span>Gestão de Riscos</span>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a href="/dashboard.html" class="active">
+          <i class="fa-solid fa-chart-line"></i>
+          Dashboard
+        </a>
+        <a href="/gestor.html">
+          <i class="fa-solid fa-list-check"></i>
+          Painel Gestor
+        </a>
+        <a href="/index.html">
+          <i class="fa-solid fa-plus"></i>
+          Nova Notificação
+        </a>
+        <a href="/status.html">
+          <i class="fa-solid fa-clock"></i>
+          Status
+        </a>
+        <a href="/baixa.html">
+          <i class="fa-solid fa-check-double"></i>
+          Baixa
+        </a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <header class="header">
+        <div>
+          <p class="eyebrow">Dashboard Administrativo</p>
+          <h2>Indicadores de Notificações e Interdições</h2>
+        </div>
+
+        <div class="header-actions">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input id="globalSearch" type="text" placeholder="Buscar técnico, área ou status..." />
+          </div>
+
+          <div class="profile">
+            <div class="avatar">M</div>
+            <div>
+              <strong>Gestor</strong>
+              <span>Administrador</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <section class="filters glass">
+        <div>
+          <label>Status</label>
+          <select id="filtroStatus">
+            <option value="">Todos</option>
+            <option value="Aberta">Aberta</option>
+            <option value="Pendente de aprovação">Pendente de aprovação</option>
+            <option value="Aprovada">Aprovada</option>
+            <option value="Rejeitada">Rejeitada</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Classificação</label>
+          <select id="filtroClassificacao">
+            <option value="">Todas</option>
+            <option value="Notificação">Notificação</option>
+            <option value="Interdição">Interdição</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Mês</label>
+          <select id="filtroMes">
+            <option value="">Todos</option>
+            <option value="0">Janeiro</option>
+            <option value="1">Fevereiro</option>
+            <option value="2">Março</option>
+            <option value="3">Abril</option>
+            <option value="4">Maio</option>
+            <option value="5">Junho</option>
+            <option value="6">Julho</option>
+            <option value="7">Agosto</option>
+            <option value="8">Setembro</option>
+            <option value="9">Outubro</option>
+            <option value="10">Novembro</option>
+            <option value="11">Dezembro</option>
+          </select>
+        </div>
+
+        <button id="btnLimpar" class="btn-primary">
+          <i class="fa-solid fa-rotate-left"></i>
+          Limpar
+        </button>
+      </section>
+
+      <section class="metrics-grid">
+        <article class="metric-card glass">
+          <div class="metric-icon cyan">
+            <i class="fa-solid fa-clipboard-list"></i>
+          </div>
+          <div>
+            <span>Total de Registros</span>
+            <h3 id="kpiTotal">0</h3>
+          </div>
+        </article>
+
+        <article class="metric-card glass">
+          <div class="metric-icon blue">
+            <i class="fa-solid fa-folder-open"></i>
+          </div>
+          <div>
+            <span>Abertas</span>
+            <h3 id="kpiAbertas">0</h3>
+          </div>
+        </article>
+
+        <article class="metric-card glass">
+          <div class="metric-icon orange">
+            <i class="fa-solid fa-hourglass-half"></i>
+          </div>
+          <div>
+            <span>Pendentes</span>
+            <h3 id="kpiPendentes">0</h3>
+          </div>
+        </article>
+
+        <article class="metric-card glass">
+          <div class="metric-icon green">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <div>
+            <span>Aprovadas</span>
+            <h3 id="kpiAprovadas">0</h3>
+          </div>
+        </article>
+
+        <article class="metric-card glass">
+          <div class="metric-icon red">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <div>
+            <span>Vencidas</span>
+            <h3 id="kpiVencidas">0</h3>
+          </div>
+        </article>
+
+        <article class="metric-card glass">
+          <div class="metric-icon purple">
+            <i class="fa-solid fa-ban"></i>
+          </div>
+          <div>
+            <span>Interdições</span>
+            <h3 id="kpiInterdicoes">0</h3>
+          </div>
+        </article>
+      </section>
+
+      <section class="dashboard-grid">
+        <article class="panel glass large">
+          <div class="panel-header">
+            <div>
+              <h3>Registros por Mês</h3>
+              <p>Evolução mensal dos registros</p>
+            </div>
+          </div>
+          <canvas id="graficoMes"></canvas>
+        </article>
+
+        <article class="panel glass">
+          <div class="panel-header">
+            <div>
+              <h3>Notificações x Interdições</h3>
+              <p>Distribuição por classificação</p>
+            </div>
+          </div>
+          <canvas id="graficoClassificacao"></canvas>
+        </article>
+
+        <article class="panel glass">
+          <div class="panel-header">
+            <div>
+              <h3>Status dos Registros</h3>
+              <p>Abertas, pendentes, aprovadas e rejeitadas</p>
+            </div>
+          </div>
+          <canvas id="graficoStatus"></canvas>
+        </article>
+
+        <article class="panel glass">
+          <div class="panel-header">
+            <div>
+              <h3>Ranking por Técnico</h3>
+              <p>Técnicos com mais registros</p>
+            </div>
+          </div>
+          <div id="rankingTecnicos" class="ranking-list"></div>
+        </article>
+
+        <article class="panel glass">
+          <div class="panel-header">
+            <div>
+              <h3>Ranking por Local</h3>
+              <p>Áreas com maior volume de registros</p>
+            </div>
+          </div>
+          <div id="rankingAreas" class="ranking-list"></div>
+        </article>
+
+        <article class="panel glass large">
+          <div class="panel-header">
+            <div>
+              <h3>Últimos Registros</h3>
+              <p>Notificações mais recentes</p>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Técnico</th>
+                  <th>Área</th>
+                  <th>Classificação</th>
+                  <th>Status</th>
+                  <th>Data</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyRecentes"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const DAY = 24 * 60 * 60 * 1000;
+    let LISTA_ORIGINAL = [];
+    let chartMes;
+    let chartClassificacao;
+    let chartStatus;
+
+    const meses = [
+      'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
+      'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
+    ];
+
+    function prazoDiffDays(prazoISO) {
+      if (!prazoISO) return null;
+
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+
+      const prazo = new Date(prazoISO);
+      prazo.setHours(0, 0, 0, 0);
+
+      return Math.round((prazo - hoje) / DAY);
+    }
+
+    function contarPorCampo(lista, campo) {
+      return lista.reduce((acc, item) => {
+        const chave = item[campo] || 'Não informado';
+        acc[chave] = (acc[chave] || 0) + 1;
+        return acc;
+      }, {});
+    }
+
+    function ordenarRanking(obj) {
+      return Object.entries(obj).sort((a, b) => b[1] - a[1]);
+    }
+
+    function filtrarLista() {
+      const status = document.getElementById('filtroStatus').value;
+      const classificacao = document.getElementById('filtroClassificacao').value;
+      const mes = document.getElementById('filtroMes').value;
+      const busca = document.getElementById('globalSearch').value.toLowerCase().trim();
+
+      return LISTA_ORIGINAL.filter(n => {
+        if (status && n.status !== status) return false;
+        if (classificacao && n.classificacao !== classificacao) return false;
+
+        if (mes !== '') {
+          if (!n.dataRegistro) return false;
+          if (String(new Date(n.dataRegistro).getMonth()) !== mes) return false;
+        }
+
+        if (busca) {
+          const texto = [
+            n.idSequencial,
+            n.tecnico,
+            n.area,
+            n.status,
+            n.classificacao,
+            n.descricao
+          ].join(' ').toLowerCase();
+
+          if (!texto.includes(busca)) return false;
+        }
+
+        return true;
+      });
+    }
+
+    function atualizarKPIs(lista) {
+      document.getElementById('kpiTotal').textContent = lista.length;
+      document.getElementById('kpiAbertas').textContent = lista.filter(n => n.status === 'Aberta').length;
+      document.getElementById('kpiPendentes').textContent = lista.filter(n => n.status === 'Pendente de aprovação').length;
+      document.getElementById('kpiAprovadas').textContent = lista.filter(n => n.status === 'Aprovada').length;
+
+      document.getElementById('kpiVencidas').textContent = lista.filter(n => {
+        const diff = prazoDiffDays(n.prazo);
+        return diff !== null && diff < 0 && n.status !== 'Aprovada';
+      }).length;
+
+      document.getElementById('kpiInterdicoes').textContent = lista.filter(n =>
+        (n.classificacao || '').toLowerCase().includes('interdição')
+      ).length;
+    }
+
+    function montarGraficoMes(lista) {
+      const dados = new Array(12).fill(0);
+
+      lista.forEach(n => {
+        if (!n.dataRegistro) return;
+        const mes = new Date(n.dataRegistro).getMonth();
+        dados[mes]++;
+      });
+
+      if (chartMes) chartMes.destroy();
+
+      chartMes = new Chart(document.getElementById('graficoMes'), {
+        type: 'line',
+        data: {
+          labels: meses,
+          datasets: [{
+            label: 'Registros',
+            data: dados,
+            borderWidth: 3,
+            tension: 0.4,
+            fill: true,
+            borderColor: '#22d3ee',
+            backgroundColor: 'rgba(34, 211, 238, 0.12)',
+            pointBackgroundColor: '#22d3ee'
+          }]
+        },
+        options: chartOptions()
+      });
+    }
+
+    function montarGraficoClassificacao(lista) {
+      const notificacoes = lista.filter(n => (n.classificacao || '').includes('Notificação')).length;
+      const interdicoes = lista.filter(n => (n.classificacao || '').includes('Interdição')).length;
+
+      if (chartClassificacao) chartClassificacao.destroy();
+
+      chartClassificacao = new Chart(document.getElementById('graficoClassificacao'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Notificações', 'Interdições'],
+          datasets: [{
+            data: [notificacoes, interdicoes],
+            backgroundColor: ['#22d3ee', '#a855f7'],
+            borderWidth: 0
+          }]
+        },
+        options: doughnutOptions()
+      });
+    }
+
+    function montarGraficoStatus(lista) {
+      const status = contarPorCampo(lista, 'status');
+      const labels = Object.keys(status);
+      const dados = Object.values(status);
+
+      if (chartStatus) chartStatus.destroy();
+
+      chartStatus = new Chart(document.getElementById('graficoStatus'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Registros',
+            data: dados,
+            backgroundColor: ['#38bdf8', '#f59e0b', '#22c55e', '#ef4444'],
+            borderRadius: 12
+          }]
+        },
+        options: chartOptions()
+      });
+    }
+
+    function chartOptions() {
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            labels: {
+              color: '#cbd5e1'
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: '#94a3b8' },
+            grid: { color: 'rgba(148, 163, 184, 0.08)' }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { color: '#94a3b8', precision: 0 },
+            grid: { color: 'rgba(148, 163, 184, 0.08)' }
+          }
+        }
+      };
+    }
+
+    function doughnutOptions() {
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#cbd5e1',
+              padding: 18
+            }
+          }
+        }
+      };
+    }
+
+    function montarRanking(containerId, ranking) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+
+      const top = ranking.slice(0, 8);
+      const maior = top[0]?.[1] || 1;
+
+      if (!top.length) {
+        container.innerHTML = '<p class="empty">Nenhum dado encontrado.</p>';
+        return;
+      }
+
+      top.forEach(([nome, total], index) => {
+        const width = Math.max((total / maior) * 100, 8);
+
+        container.innerHTML += `
+          <div class="ranking-item">
+            <div class="ranking-top">
+              <span><strong>${index + 1}º</strong> ${nome}</span>
+              <b>${total}</b>
+            </div>
+            <div class="bar">
+              <div style="width:${width}%"></div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function montarTabelaRecentes(lista) {
+      const tbody = document.getElementById('tbodyRecentes');
+      tbody.innerHTML = '';
+
+      const recentes = [...lista]
+        .sort((a, b) => new Date(b.dataRegistro || 0) - new Date(a.dataRegistro || 0))
+        .slice(0, 8);
+
+      if (!recentes.length) {
+        tbody.innerHTML = '<tr><td colspan="6">Nenhum registro encontrado.</td></tr>';
+        return;
+      }
+
+      recentes.forEach(n => {
+        tbody.innerHTML += `
+          <tr>
+            <td>#${n.idSequencial || '-'}</td>
+            <td>${n.tecnico || '-'}</td>
+            <td>${n.area || '-'}</td>
+            <td>${n.classificacao || '-'}</td>
+            <td><span class="status">${n.status || '-'}</span></td>
+            <td>${n.dataRegistro ? new Date(n.dataRegistro).toLocaleDateString() : '-'}</td>
+          </tr>
+        `;
+      });
+    }
+
+    function atualizarDashboard() {
+      const lista = filtrarLista();
+
+      atualizarKPIs(lista);
+      montarGraficoMes(lista);
+      montarGraficoClassificacao(lista);
+      montarGraficoStatus(lista);
+      montarRanking('rankingTecnicos', ordenarRanking(contarPorCampo(lista, 'tecnico')));
+      montarRanking('rankingAreas', ordenarRanking(contarPorCampo(lista, 'area')));
+      montarTabelaRecentes(lista);
+    }
+
+    async function carregarDados() {
+      try {
+        const res = await fetch('/api/notificacoes');
+
+        if (!res.ok) throw new Error('Erro ao buscar notificações');
+
+        LISTA_ORIGINAL = await res.json();
+        atualizarDashboard();
+      } catch (err) {
+        console.error(err);
+        alert('Erro ao carregar dados do dashboard.');
+      }
+    }
+
+    document.getElementById('filtroStatus').addEventListener('change', atualizarDashboard);
+    document.getElementById('filtroClassificacao').addEventListener('change', atualizarDashboard);
+    document.getElementById('filtroMes').addEventListener('change', atualizarDashboard);
+    document.getElementById('globalSearch').addEventListener('input', atualizarDashboard);
+
+    document.getElementById('btnLimpar').addEventListener('click', () => {
+      document.getElementById('filtroStatus').value = '';
+      document.getElementById('filtroClassificacao').value = '';
+      document.getElementById('filtroMes').value = '';
+      document.getElementById('globalSearch').value = '';
+      atualizarDashboard();
+    });
+
+    carregarDados();
+  </script>
+</body>
+</html>
