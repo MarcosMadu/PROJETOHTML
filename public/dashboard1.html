@@ -471,9 +471,10 @@ td {
   max-height: 90vh;
   overflow: auto;
   border-radius: 26px;
-  background: rgba(15, 23, 42, 0.96);
+  background: var(--card-strong);
   border: 1px solid var(--border);
-  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--shadow);
+  color: var(--text);
 }
 
 .export-modal-header {
@@ -501,9 +502,10 @@ td {
   height: 38px;
   border: 1px solid var(--border);
   border-radius: 14px;
-  background: rgba(148, 163, 184, 0.10);
+  background: var(--card);
   color: var(--text);
   cursor: pointer;
+  transition: 0.2s ease;
 }
 
 .export-modal-body {
@@ -522,9 +524,10 @@ td {
   align-items: flex-start;
   padding: 14px;
   border-radius: 18px;
-  background: rgba(30, 41, 59, 0.62);
+  background: var(--card);
   border: 1px solid var(--border);
   cursor: pointer;
+  transition: 0.2s ease;
 }
 
 .export-option input {
@@ -627,6 +630,66 @@ body.light-mode .status {
 
 .theme-toggle i {
   color: var(--cyan);
+}
+
+
+/* Correções de contraste do modal de exportação no tema claro */
+body.light-mode .modal-overlay {
+  background: rgba(15, 23, 42, 0.42);
+}
+
+body.light-mode .export-modal {
+  background: rgba(255, 255, 255, 0.96);
+  color: #0f172a;
+  border-color: rgba(15, 23, 42, 0.12);
+  box-shadow: 0 30px 90px rgba(15, 23, 42, 0.22);
+}
+
+body.light-mode .export-modal-header {
+  border-bottom-color: rgba(15, 23, 42, 0.10);
+}
+
+body.light-mode .export-modal-header h3,
+body.light-mode .export-option strong {
+  color: #0f172a;
+}
+
+body.light-mode .export-modal-header p,
+body.light-mode .export-option span,
+body.light-mode .export-note {
+  color: #475569;
+}
+
+body.light-mode .export-option {
+  background: rgba(248, 250, 252, 0.96);
+  border-color: rgba(15, 23, 42, 0.10);
+}
+
+body.light-mode .export-option:hover {
+  background: #ffffff;
+  border-color: rgba(34, 211, 238, 0.45);
+}
+
+body.light-mode .modal-close,
+body.light-mode .btn-secondary {
+  background: rgba(15, 23, 42, 0.06);
+  color: #0f172a;
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+body.light-mode .modal-close:hover,
+body.light-mode .btn-secondary:hover {
+  background: rgba(15, 23, 42, 0.10);
+}
+
+body.light-mode .filters select {
+  background: rgba(255, 255, 255, 0.92);
+  color: #0f172a;
+}
+
+body.light-mode .filters select option {
+  background: #ffffff;
+  color: #0f172a;
 }
 
 @media (max-width: 1300px) {
