@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Painel de Gestão de Notificações</title>
+
+  <script src="./dados/notificacoes-static.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg:#f0f4fa; --bg-2:#e6ecf8; --surface:#ffffff; --surface-2:rgba(255,255,255,.86); --surface-3:#f7f9fd;
+      --border:#e1e8f5; --border-2:#cdd8ef; --text:#0d1526; --text-2:#3d5275; --muted:#6b7fa3; --muted-2:#96a8c4;
+      --primary:#2451e8; --primary-d:#1a3ec0; --primary-l:#dde8ff; --primary-ll:#eef3ff;
+      --emerald:#059669; --emerald-l:#d1fae5; --ruby:#e02020; --ruby-l:#fee2e2; --amber:#d97706; --amber-l:#fef3c7;
+      --sky:#0284c7; --sky-l:#e0f2fe; --violet:#7c3aed; --violet-l:#ede9fe;
+      --radius-xs:8px; --radius-sm:12px; --radius-md:16px; --radius-lg:22px; --radius-xl:28px;
+      --shadow-xs:0 2px 8px rgba(13,21,38,.04); --shadow-sm:0 4px 16px rgba(13,21,38,.06); --shadow-md:0 8px 28px rgba(13,21,38,.09);
+      --shadow-lg:0 16px 48px rgba(13,21,38,.13); --shadow-xl:0 24px 64px rgba(13,21,38,.16);
+      --transition:.22s cubic-bezier(.4,0,.2,1);
+    }
+    [data-theme="dark"] {
+      --bg:#090e1b; --bg-2:#0e1628; --surface:#131d35; --surface-2:rgba(19,29,53,.92); --surface-3:#192240;
+      --border:#1e2e52; --border-2:#253660; --text:#e8eef8; --text-2:#8fa8d4; --muted:#6b85b5; --muted-2:#4a6090;
+      --primary:#4e78f5; --primary-d:#3662e0; --primary-l:#1a2e5a; --primary-ll:#111f42;
+      --emerald:#34d399; --emerald-l:#0e2e23; --ruby:#f87171; --ruby-l:#2e1515; --amber:#fbbf24; --amber-l:#2e2008;
+      --sky:#38bdf8; --sky-l:#0c2035; --violet:#a78bfa; --violet-l:#1e1240;
+      --shadow-xs:0 2px 8px rgba(0,0,0,.20); --shadow-sm:0 4px 16px rgba(0,0,0,.28); --shadow-md:0 8px 28px rgba(0,0,0,.35);
+      --shadow-lg:0 16px 48px rgba(0,0,0,.42); --shadow-xl:0 24px 64px rgba(0,0,0,.50);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--text);background-color:var(--bg);background-image:radial-gradient(ellipse 60% 40% at 8% 6%,rgba(36,81,232,.12) 0%,transparent 55%),radial-gradient(ellipse 40% 30% at 92% 4%,rgba(124,58,237,.08) 0%,transparent 45%);min-height:100vh;transition:background-color var(--transition),color var(--transition)}
+    [data-theme="dark"] body{background-image:radial-gradient(ellipse 60% 40% at 8% 6%,rgba(78,120,245,.10) 0%,transparent 55%),radial-gradient(ellipse 40% 30% at 92% 4%,rgba(167,139,250,.07) 0%,transparent 45%)}
+    .container{width:min(1560px,calc(100% - 40px));margin:28px auto 56px}
+    .hero{position:relative;overflow:hidden;border-radius:var(--radius-xl);padding:32px 36px 28px;margin-bottom:20px;background:linear-gradient(135deg,#1637b8 0%,#2451e8 45%,#1a3ec0 100%);box-shadow:var(--shadow-xl),inset 0 1px 0 rgba(255,255,255,.12);color:#fff}
+    [data-theme="dark"] .hero{background:linear-gradient(135deg,#0e1f5e 0%,#1b3298 45%,#111f56 100%)}
+    .hero::before{content:'';position:absolute;width:420px;height:420px;border-radius:50%;top:-180px;right:-120px;background:radial-gradient(circle,rgba(255,255,255,.14) 0%,transparent 70%)}
+    .hero::after{content:'';position:absolute;width:220px;height:220px;border-radius:50%;bottom:-80px;left:60px;background:radial-gradient(circle,rgba(255,255,255,.08) 0%,transparent 70%)}
+    .hero-inner{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap}
+    .hero-icon{width:52px;height:52px;border-radius:var(--radius-md);background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:14px;backdrop-filter:blur(8px)}
+    .hero h1{font-size:clamp(22px,2.5vw,32px);font-weight:800;letter-spacing:-.035em;line-height:1.1;margin-bottom:8px}
+    .hero p{font-size:13.5px;color:rgba(255,255,255,.78);max-width:760px;line-height:1.55}
+    .hero-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}.hero-chip{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:999px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.20);backdrop-filter:blur(8px);font-size:12px;font-weight:700;color:#fff;letter-spacing:.01em}
+    .hero-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end;max-width:520px}
+    .theme-toggle,.btn{display:inline-flex;align-items:center;gap:8px;border-radius:999px;border:0;font:700 13px/1 'Plus Jakarta Sans',sans-serif;cursor:pointer;transition:var(--transition);white-space:nowrap}
+    .theme-toggle{padding:10px 15px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.14);backdrop-filter:blur(10px);color:#fff}.theme-toggle:hover{background:rgba(255,255,255,.22)}.theme-toggle .icon-sun{display:none}[data-theme="dark"] .theme-toggle .icon-sun{display:inline}[data-theme="dark"] .theme-toggle .icon-moon{display:none}
+    .btn{padding:11px 18px;border-radius:var(--radius-sm)}.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-d));color:#fff;box-shadow:0 6px 20px rgba(36,81,232,.30)}.btn-primary:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(36,81,232,.38)}
+    .btn-ghost{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.25);backdrop-filter:blur(8px)}.btn-ghost:hover{background:rgba(255,255,255,.22)}
+    .btn-outline{background:var(--surface);color:var(--text-2);border:1px solid var(--border);box-shadow:var(--shadow-xs)}.btn-outline:hover{box-shadow:var(--shadow-sm);border-color:var(--primary);color:var(--primary)}
+    .btn-danger{background:var(--ruby-l);color:var(--ruby);border:1px solid rgba(224,32,32,.20)}.btn-danger:hover{filter:brightness(.98);transform:translateY(-1px)}
+    .btn-success{background:var(--emerald-l);color:var(--emerald);border:1px solid rgba(5,150,105,.20)}.btn-success:hover{filter:brightness(.98);transform:translateY(-1px)}
+    .btn-small{padding:8px 12px;font-size:12px;border-radius:10px}
+    .filters-section,.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);box-shadow:var(--shadow-sm);transition:background var(--transition),border-color var(--transition)}
+    .filters-section{padding:22px 24px;margin-bottom:20px}.filters-head{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px;flex-wrap:wrap}.filters-title h2{font-size:16px;font-weight:800;letter-spacing:-.02em}.filters-title p{font-size:12.5px;color:var(--muted)}
+    .period-chip{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:999px;background:var(--primary-ll);color:var(--primary);border:1px solid var(--primary-l);font-size:12.5px;font-weight:700;font-family:'DM Mono',monospace}.period-chip::before{content:'📅';font-size:12px}
+    .filters-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:12px}.field{display:flex;flex-direction:column;gap:6px;min-width:0}.field label{font-size:10.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.09em}
+    .field select,.field input,.field textarea{width:100%;min-height:42px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface-3);color:var(--text);padding:0 14px;outline:none;font:600 13px 'Plus Jakarta Sans',sans-serif;transition:border-color .15s,box-shadow .15s,background var(--transition),color var(--transition)}
+    .field textarea{padding:12px 14px;min-height:92px;resize:vertical}.field select:focus,.field input:focus,.field textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3.5px rgba(36,81,232,.14)}
+    .cards{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px}.card{position:relative;overflow:hidden;padding:20px;border-radius:var(--radius-lg);background:var(--surface);border:1.5px solid var(--border);box-shadow:var(--shadow-sm);transition:transform var(--transition),box-shadow var(--transition),background var(--transition),border-color var(--transition);min-height:130px}.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+    .card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;opacity:1}.accent-primary::before{background:linear-gradient(90deg,var(--primary),#818cf8)}.accent-emerald::before{background:linear-gradient(90deg,var(--emerald),#6ee7b7)}.accent-amber::before{background:linear-gradient(90deg,var(--amber),#fde68a)}.accent-sky::before{background:linear-gradient(90deg,var(--sky),#7dd3fc)}.accent-ruby::before{background:linear-gradient(90deg,var(--ruby),#fca5a5)}.accent-violet::before{background:linear-gradient(90deg,var(--violet),#c4b5fd)}
+    .kpi-label{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:10px}.kpi-value{font-size:34px;font-weight:800;line-height:1;letter-spacing:-.04em;margin-bottom:8px;font-variant-numeric:tabular-nums}.accent-primary .kpi-value{color:var(--primary)}.accent-emerald .kpi-value{color:var(--emerald)}.accent-amber .kpi-value{color:var(--amber)}.accent-sky .kpi-value{color:var(--sky)}.accent-ruby .kpi-value{color:var(--ruby)}.accent-violet .kpi-value{color:var(--violet)}.kpi-sub{font-size:12px;color:var(--muted);line-height:1.4}
+    .section-label{display:flex;align-items:center;gap:10px;margin-bottom:14px}.section-label span{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);white-space:nowrap}.section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+    .operation-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;align-items:start}.panel{padding:20px}.panel-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap}.panel-head h2{font-size:17px;font-weight:800;letter-spacing:-.02em}.panel-head p{font-size:12.5px;color:var(--muted);margin-top:3px}.panel-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .table-wrap{overflow:auto;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface-3)}table{width:100%;border-collapse:separate;border-spacing:0;min-width:980px}th,td{padding:13px 14px;text-align:left;border-bottom:1px solid var(--border);vertical-align:middle}th{position:sticky;top:0;background:var(--surface);z-index:2;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}td{font-size:12.7px;color:var(--text-2);font-weight:600}tr:last-child td{border-bottom:0}tbody tr{cursor:pointer;transition:background var(--transition)}tbody tr:hover{background:var(--primary-ll)}.check-cell{width:42px}.id-mono{font-family:'DM Mono',monospace;color:var(--text);font-weight:800}.desc-cell{max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+    .badge{display:inline-flex;align-items:center;justify-content:center;padding:5px 12px;border-radius:999px;font-size:11.5px;font-weight:800;letter-spacing:.01em;white-space:nowrap}.badge.resolvido{background:var(--emerald-l);color:var(--emerald)}.badge.atraso{background:var(--amber-l);color:var(--amber)}.badge.aberto{background:var(--primary-l);color:var(--primary)}.badge.vencido{background:var(--ruby-l);color:var(--ruby)}.badge.prazo{background:var(--sky-l);color:var(--sky)}
+    .history-list{display:grid;gap:12px;max-height:672px;overflow:auto;padding-right:4px}.history-card{border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:15px;background:var(--surface-3);box-shadow:var(--shadow-xs)}.history-top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}.history-date{font-family:'DM Mono',monospace;font-weight:800;color:var(--text)}.history-final{font-size:12px;font-weight:800;color:var(--primary);background:var(--primary-ll);border:1px solid var(--primary-l);padding:5px 10px;border-radius:999px}.history-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.hm{padding:10px;border-radius:var(--radius-sm);background:var(--surface);border:1px solid var(--border)}.hm strong{display:block;font-size:16px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums}.hm span{font-size:10.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}.muted{color:var(--muted)}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(9,14,27,.58);opacity:0;visibility:hidden;transition:opacity .22s ease,visibility .22s ease;z-index:90;backdrop-filter:blur(4px)}.modal-backdrop.open{opacity:1;visibility:visible}.modal{position:fixed;inset:50% auto auto 50%;transform:translate(-50%,-46%) scale(.98);width:min(820px,calc(100% - 24px));max-height:92vh;overflow:auto;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);box-shadow:var(--shadow-xl);z-index:100;opacity:0;visibility:hidden;transition:opacity .22s ease,transform .22s ease,visibility .22s ease}.modal.open{opacity:1;visibility:visible;transform:translate(-50%,-50%) scale(1)}.modal-header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding:22px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:2}.modal-header h3{font-size:20px;font-weight:800;letter-spacing:-.03em}.modal-header p{font-size:13px;color:var(--muted);margin-top:4px}.modal-close{width:38px;height:38px;border:1.5px solid var(--border);border-radius:var(--radius-xs);background:var(--surface-3);cursor:pointer;font-size:16px;color:var(--muted);transition:var(--transition)}.modal-close:hover{background:var(--ruby-l);color:var(--ruby);border-color:var(--ruby)}.modal-body{padding:20px 22px 22px}.modal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.modal-grid .full{grid-column:1/-1}.modal-footer{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;padding:18px 22px;border-top:1px solid var(--border);background:var(--surface-3)}
+    .detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px 12px;margin-bottom:16px}.detail-item{display:flex;flex-direction:column;gap:3px;padding:10px 12px;background:var(--surface-3);border:1px solid var(--border);border-radius:var(--radius-sm);min-width:0}.detail-item strong{font-size:10px;font-weight:800;color:var(--muted-2);text-transform:uppercase;letter-spacing:.08em}.detail-item span{font-size:12.7px;color:var(--text);font-weight:650;word-break:break-word}.empty{padding:24px;text-align:center;color:var(--muted);border:1.5px dashed var(--border);border-radius:var(--radius-md);background:var(--surface-3);font-size:13.5px}
+    .toast{position:fixed;right:20px;bottom:20px;z-index:200;background:var(--text);color:var(--surface);padding:12px 16px;border-radius:14px;box-shadow:var(--shadow-lg);font-weight:800;font-size:13px;opacity:0;transform:translateY(10px);pointer-events:none;transition:.22s ease}.toast.show{opacity:1;transform:translateY(0)}
+    ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:999px}::-webkit-scrollbar-thumb:hover{background:var(--muted-2)}
+    @media(max-width:1300px){.filters-grid{grid-template-columns:repeat(4,1fr)}.cards{grid-template-columns:repeat(3,1fr)}.operation-grid{grid-template-columns:1fr}.history-list{max-height:none}}
+    @media(max-width:860px){.container{width:calc(100% - 20px)}.hero{padding:22px 20px}.filters-grid{grid-template-columns:repeat(2,1fr)}.cards{grid-template-columns:1fr}.modal-grid,.detail-grid{grid-template-columns:1fr}.history-metrics{grid-template-columns:repeat(2,1fr)}}
+  </style>
+</head>
+<body>
+<div class="container">
+  <section class="hero">
+    <div class="hero-inner">
+      <div>
+        <div class="hero-icon">📋</div>
+        <h1>Painel de Gestão de Notificações</h1>
+        <p>Tela operacional para consultar, adicionar, excluir e dar baixa em notificações. O histórico diário registra o saldo inicial do dia, novas notificações, baixas realizadas e saldo final da carteira.</p>
+        <div class="hero-chips">
+          <span class="hero-chip">➕ Adicionar notificação</span>
+          <span class="hero-chip">✅ Baixa com data</span>
+          <span class="hero-chip">📆 Histórico diário</span>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <button class="theme-toggle" id="themeToggle" title="Alternar tema"><span class="icon-moon">🌙</span><span class="icon-sun">☀️</span><span id="themeLabel">Modo Escuro</span></button>
+        <button class="btn btn-ghost" id="btnLimparFiltros">✕ Limpar filtros</button>
+        <button class="btn btn-ghost" id="btnAdicionarHero">➕ Adicionar</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="filters-section">
+    <div class="filters-head">
+      <div class="filters-title"><h2>Filtros da gestão</h2><p>Use os filtros para refinar a lista e os indicadores operacionais.</p></div>
+      <div class="period-chip" id="periodoLabel">base completa</div>
+    </div>
+    <div class="filters-grid">
+      <div class="field"><label for="fAno">Ano</label><select id="fAno"></select></div>
+      <div class="field"><label for="fMes">Mês</label><select id="fMes"></select></div>
+      <div class="field"><label for="fSemana">Semana</label><select id="fSemana"></select></div>
+      <div class="field"><label for="fArea">Área</label><select id="fArea"></select></div>
+      <div class="field"><label for="fTipo">Tipo de Registro</label><select id="fTipo"></select></div>
+      <div class="field"><label for="fStatus">Status</label><select id="fStatus"></select></div>
+      <div class="field"><label for="fEmissor">Emissor</label><select id="fEmissor"></select></div>
+    </div>
+  </section>
+
+  <div class="section-label"><span>Indicadores operacionais</span></div>
+  <section class="cards">
+    <div class="card accent-primary"><div class="kpi-label">Total atual</div><div class="kpi-value" id="kpiTotal">0</div><div class="kpi-sub">Registros no filtro atual</div></div>
+    <div class="card accent-sky"><div class="kpi-label">Em aberto</div><div class="kpi-value" id="kpiAberto">0</div><div class="kpi-sub">Pendentes de baixa</div></div>
+    <div class="card accent-emerald"><div class="kpi-label">Baixadas</div><div class="kpi-value" id="kpiResolvidas">0</div><div class="kpi-sub">Concluídas com data registrada</div></div>
+    <div class="card accent-amber"><div class="kpi-label">Baixas hoje</div><div class="kpi-value" id="kpiBaixasHoje">0</div><div class="kpi-sub">Resolvidas na data de hoje</div></div>
+    <div class="card accent-violet"><div class="kpi-label">Tempo médio</div><div class="kpi-value" id="kpiTempoMedio">0 d</div><div class="kpi-sub">Média entre emissão e baixa</div></div>
+  </section>
+
+  <div class="operation-grid">
+    <section class="panel">
+      <div class="panel-head">
+        <div><h2>Registros de notificações</h2><p>Clique em uma linha para visualizar os detalhes, dar baixa ou excluir.</p></div>
+        <div class="panel-actions">
+          <button class="btn btn-primary" id="btnAdicionar">➕ Adicionar notificação</button>
+          <button class="btn btn-danger" id="btnExcluirSelecionados">🗑 Excluir selecionadas</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="check-cell"><input type="checkbox" id="checkAll"></th>
+              <th>ID</th><th>Data</th><th>Tipo</th><th>Status</th><th>Área</th><th>Emissor</th><th>Prazo</th><th>Baixa</th><th>Descrição</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyRegistros"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div><h2>Status / histórico do dia</h2><p>Resumo diário: iniciou, baixas, novas notificações e saldo final.</p></div>
+      </div>
+      <div class="history-list" id="historyList"></div>
+    </section>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modalBackdrop"></div>
+<section class="modal" id="recordModal" aria-modal="true" role="dialog">
+  <div class="modal-header">
+    <div><h3 id="modalTitle">Detalhes da notificação</h3><p id="modalSubtitle">Visualização e ações do registro selecionado</p></div>
+    <button class="modal-close" id="modalClose">✕</button>
+  </div>
+  <div class="modal-body" id="modalBody"></div>
+  <div class="modal-footer" id="modalFooter"></div>
+</section>
+
+<div class="toast" id="toast">Salvo</div>
+
+<script>
+  const STORAGE_KEY = 'pgn-operacional-registros-v1';
+  const HISTORY_KEY = 'pgn-operacional-historico-v1';
+  const html = document.documentElement;
+  const themeToggle = document.getElementById('themeToggle');
+  const themeLabel = document.getElementById('themeLabel');
+  const monthNames = ['', 'Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+  let normalizedData = [];
+  let filteredData = [];
+  let currentRecordId = null;
+
+  const filterEls = {
+    ano: document.getElementById('fAno'), mes: document.getElementById('fMes'), semana: document.getElementById('fSemana'),
+    area: document.getElementById('fArea'), tipo: document.getElementById('fTipo'), status: document.getElementById('fStatus'), emissor: document.getElementById('fEmissor')
+  };
+
+  const els = {
+    periodoLabel: document.getElementById('periodoLabel'), tbody: document.getElementById('tbodyRegistros'), historyList: document.getElementById('historyList'),
+    kpiTotal: document.getElementById('kpiTotal'), kpiAberto: document.getElementById('kpiAberto'), kpiResolvidas: document.getElementById('kpiResolvidas'),
+    kpiBaixasHoje: document.getElementById('kpiBaixasHoje'), kpiTempoMedio: document.getElementById('kpiTempoMedio'), checkAll: document.getElementById('checkAll'),
+    modal: document.getElementById('recordModal'), modalBackdrop: document.getElementById('modalBackdrop'), modalTitle: document.getElementById('modalTitle'),
+    modalSubtitle: document.getElementById('modalSubtitle'), modalBody: document.getElementById('modalBody'), modalFooter: document.getElementById('modalFooter'), toast: document.getElementById('toast')
+  };
+
+  const savedTheme = localStorage.getItem('pgn-theme');
+  if (savedTheme === 'dark') { html.setAttribute('data-theme','dark'); themeLabel.textContent = 'Modo Claro'; }
+  themeToggle.addEventListener('click', () => {
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    themeLabel.textContent = isDark ? 'Modo Escuro' : 'Modo Claro';
+    localStorage.setItem('pgn-theme', isDark ? 'light' : 'dark');
+  });
+
+  document.getElementById('btnLimparFiltros').addEventListener('click', () => { clearFilters(); applyFiltersAndRender(); });
+  document.getElementById('btnAdicionar').addEventListener('click', openAddModal);
+  document.getElementById('btnAdicionarHero').addEventListener('click', openAddModal);
+  document.getElementById('btnExcluirSelecionados').addEventListener('click', deleteSelected);
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  els.modalBackdrop.addEventListener('click', closeModal);
+  els.checkAll.addEventListener('change', () => document.querySelectorAll('.row-check').forEach(cb => cb.checked = els.checkAll.checked));
+  Object.values(filterEls).forEach(el => el.addEventListener('change', applyFiltersAndRender));
+
+  init();
+
+  function init() {
+    normalizedData = loadStoredData();
+    if (!normalizedData.length) normalizedData = loadStaticData();
+    normalizedData = normalizedData.map(normalizeRecord).filter(Boolean);
+    saveData();
+    populateFilters();
+    applyFiltersAndRender();
+  }
+
+  function loadStoredData() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; }
+  }
+
+  function loadStaticData() {
+    if (window.NOTIFICACOES_STATIC && Array.isArray(window.NOTIFICACOES_STATIC)) return window.NOTIFICACOES_STATIC;
+    return [
+      { id:'NOT-001', dataEmissao:'2026-05-01', prazo:'2026-05-08', dataConclusao:null, tipoRegistro:'Notificação', status:'Em aberto', area:'Operação', emissor:'Marcos Augusto', categoria:'Condição insegura', descricao:'Exemplo de notificação em aberto.' },
+      { id:'NOT-002', dataEmissao:'2026-05-02', prazo:'2026-05-07', dataConclusao:'2026-05-06', tipoRegistro:'Interdição', status:'Resolvido', area:'Manutenção', emissor:'Jailton Pacheco', categoria:'Bloqueio', descricao:'Exemplo de notificação baixada.' },
+      { id:'NOT-003', dataEmissao:'2026-05-03', prazo:'2026-05-05', dataConclusao:null, tipoRegistro:'Notificação', status:'Vencido', area:'Pátio', emissor:'Diego Silva', categoria:'Organização', descricao:'Exemplo de notificação vencida.' }
+    ];
+  }
+
+  function normalizeRecord(item) {
+    const dataEmissao = parseDate(item.dataEmissao || item['Data Emissão'] || item.data || item.Data);
+    if (!dataEmissao) return null;
+    const prazo = parseDate(item.prazo || item.Prazo);
+    const dataConclusao = parseDate(item.dataConclusao || item['Data Conclusão'] || item.baixa || item.dataBaixa);
+    const status = resolveStatus(item.status || item.Status, prazo, dataConclusao);
+    const id = String(item.id || item.ID || item.codigo || item.Código || generateId()).trim();
+    const record = {
+      id,
+      dataEmissao: toIsoDate(dataEmissao),
+      prazo: prazo ? toIsoDate(prazo) : '',
+      dataConclusao: dataConclusao ? toIsoDate(dataConclusao) : '',
+      tipoRegistro: String(item.tipoRegistro || item['Tipo de Registro'] || item.tipo || 'Notificação').trim(),
+      status,
+      area: String(item.area || item['Área'] || item.local || item.Local || 'Não informada').trim(),
+      emissor: String(item.emissor || item.Emissor || item.responsavel || item.Responsável || 'Não informado').trim(),
+      categoria: String(item.categoria || item.Categoria || 'Não informada').trim(),
+      descricao: String(item.descricao || item.Descrição || item.description || 'Não informada').trim()
+    };
+    return enrichRecord(record);
+  }
+
+  function enrichRecord(r) {
+    const data = parseDate(r.dataEmissao);
+    const prazo = parseDate(r.prazo);
+    const baixa = parseDate(r.dataConclusao);
+    const hoje = startOfDay(new Date());
+    r.anoEmissao = data.getFullYear();
+    r.mesEmissao = data.getMonth() + 1;
+    r.diaEmissao = data.getDate();
+    r.semanaEmissao = getWeekNumber(data);
+    r.resolvida = !!baixa;
+    r.aberta = !baixa;
+    r.vencida = !baixa && prazo && startOfDay(prazo) < hoje;
+    r.noPrazo = !baixa && prazo && startOfDay(prazo) >= hoje;
+    r.resolvidaAtraso = baixa && prazo && startOfDay(baixa) > startOfDay(prazo);
+    r.diasResolucao = baixa ? daysBetween(data, baixa) : null;
+    r.status = resolveStatus(r.status, prazo, baixa);
+    return r;
+  }
+
+  function resolveStatus(status, prazo, baixa) {
+    if (baixa) return prazo && startOfDay(baixa) > startOfDay(prazo) ? 'Resolvido com atraso' : 'Resolvido';
+    const s = String(status || '').trim();
+    if (s && !['Resolvido','Resolvido com atraso'].includes(s)) return s;
+    if (prazo && startOfDay(prazo) < startOfDay(new Date())) return 'Vencido';
+    return 'Em aberto';
+  }
+
+  function populateFilters() {
+    setOptions(filterEls.ano, [{value:'',label:'Todos'}, ...unique(normalizedData.map(r => r.anoEmissao)).sort((a,b)=>a-b).map(v => ({value:String(v),label:String(v)}))]);
+    setOptions(filterEls.mes, [{value:'',label:'Todos'}, ...monthNames.slice(1).map((m,i)=>({value:String(i+1),label:m}))]);
+    setOptions(filterEls.semana, [{value:'',label:'Todas'}, ...unique(normalizedData.map(r => r.semanaEmissao)).sort((a,b)=>a-b).map(v => ({value:String(v),label:`Semana ${v}`}))]);
+    setOptions(filterEls.area, [{value:'',label:'Todas'}, ...unique(normalizedData.map(r => r.area)).map(v => ({value:v,label:v}))]);
+    setOptions(filterEls.tipo, [{value:'',label:'Todos'}, ...unique(normalizedData.map(r => r.tipoRegistro)).map(v => ({value:v,label:v}))]);
+    setOptions(filterEls.status, [{value:'',label:'Todos'}, ...unique(normalizedData.map(r => r.status)).map(v => ({value:v,label:v}))]);
+    setOptions(filterEls.emissor, [{value:'',label:'Todos'}, ...unique(normalizedData.map(r => r.emissor)).map(v => ({value:v,label:v}))]);
+  }
+
+  function setOptions(select, items) {
+    const current = select.value;
+    select.innerHTML = '';
+    items.forEach(({value,label}) => { const opt = document.createElement('option'); opt.value = value; opt.textContent = label; select.appendChild(opt); });
+    if ([...select.options].some(o => o.value === current)) select.value = current;
+  }
+
+  function clearFilters() { Object.values(filterEls).forEach(el => el.value = ''); }
+
+  function applyFiltersAndRender() {
+    normalizedData = normalizedData.map(enrichRecord);
+    filteredData = normalizedData.filter(r => {
+      if (filterEls.ano.value && String(r.anoEmissao) !== filterEls.ano.value) return false;
+      if (filterEls.mes.value && String(r.mesEmissao) !== filterEls.mes.value) return false;
+      if (filterEls.semana.value && String(r.semanaEmissao) !== filterEls.semana.value) return false;
+      if (filterEls.area.value && r.area !== filterEls.area.value) return false;
+      if (filterEls.tipo.value && r.tipoRegistro !== filterEls.tipo.value) return false;
+      if (filterEls.status.value && r.status !== filterEls.status.value) return false;
+      if (filterEls.emissor.value && r.emissor !== filterEls.emissor.value) return false;
+      return true;
+    });
+    updatePeriodLabel();
+    renderKPIs();
+    renderTable();
+    renderHistory();
+    saveData();
+  }
+
+  function updatePeriodLabel() {
+    const parts = [];
+    if (filterEls.ano.value) parts.push(`Ano ${filterEls.ano.value}`);
+    if (filterEls.mes.value) parts.push(monthNames[Number(filterEls.mes.value)]);
+    if (filterEls.semana.value) parts.push(`Semana ${filterEls.semana.value}`);
+    if (filterEls.area.value) parts.push(`Área: ${filterEls.area.value}`);
+    if (filterEls.tipo.value) parts.push(`Tipo: ${filterEls.tipo.value}`);
+    if (filterEls.status.value) parts.push(`Status: ${filterEls.status.value}`);
+    if (filterEls.emissor.value) parts.push(`Emissor: ${filterEls.emissor.value}`);
+    els.periodoLabel.textContent = parts.length ? parts.join(' · ') : 'base completa';
+  }
+
+  function renderKPIs() {
+    const total = filteredData.length;
+    const abertas = filteredData.filter(r => r.aberta).length;
+    const resolvidas = filteredData.filter(r => r.resolvida).length;
+    const hoje = toIsoDate(new Date());
+    const baixasHoje = normalizedData.filter(r => r.dataConclusao === hoje).length;
+    const tempos = filteredData.map(r => r.diasResolucao).filter(v => Number.isFinite(v));
+    const tempoMedio = tempos.length ? tempos.reduce((a,b)=>a+b,0)/tempos.length : 0;
+    els.kpiTotal.textContent = formatNumber(total);
+    els.kpiAberto.textContent = formatNumber(abertas);
+    els.kpiResolvidas.textContent = formatNumber(resolvidas);
+    els.kpiBaixasHoje.textContent = formatNumber(baixasHoje);
+    els.kpiTempoMedio.textContent = `${tempoMedio.toFixed(1).replace('.',',')} d`;
+  }
+
+  function renderTable() {
+    const sorted = [...filteredData].sort((a,b) => parseDate(b.dataEmissao) - parseDate(a.dataEmissao));
+    if (!sorted.length) { els.tbody.innerHTML = `<tr><td colspan="10"><div class="empty">Nenhum registro encontrado.</div></td></tr>`; return; }
+    els.tbody.innerHTML = sorted.map(r => `
+      <tr data-id="${escapeAttr(r.id)}">
+        <td class="check-cell" onclick="event.stopPropagation()"><input type="checkbox" class="row-check" value="${escapeAttr(r.id)}"></td>
+        <td class="id-mono">${escapeHtml(r.id)}</td>
+        <td>${formatDate(r.dataEmissao)}</td>
+        <td>${escapeHtml(r.tipoRegistro)}</td>
+        <td>${statusBadge(r.status)}</td>
+        <td>${escapeHtml(r.area)}</td>
+        <td>${escapeHtml(r.emissor)}</td>
+        <td>${formatDate(r.prazo)}</td>
+        <td>${formatDate(r.dataConclusao)}</td>
+        <td class="desc-cell">${escapeHtml(r.descricao)}</td>
+      </tr>`).join('');
+    els.tbody.querySelectorAll('tr[data-id]').forEach(tr => tr.addEventListener('click', () => openDetailModal(tr.dataset.id)));
+  }
+
+  function renderHistory() {
+    const dates = unique([...normalizedData.map(r => r.dataEmissao), ...normalizedData.filter(r=>r.dataConclusao).map(r => r.dataConclusao)]).sort((a,b)=>parseDate(b)-parseDate(a));
+    if (!dates.length) { els.historyList.innerHTML = `<div class="empty">Sem histórico diário.</div>`; return; }
+    els.historyList.innerHTML = dates.map(date => {
+      const start = normalizedData.filter(r => r.dataEmissao < date && (!r.dataConclusao || r.dataConclusao >= date)).length;
+      const novas = normalizedData.filter(r => r.dataEmissao === date).length;
+      const baixas = normalizedData.filter(r => r.dataConclusao === date).length;
+      const final = start + novas - baixas;
+      return `<article class="history-card">
+        <div class="history-top"><div class="history-date">${formatDate(date)}</div><div class="history-final">Final: ${formatNumber(final)} registros</div></div>
+        <div class="history-metrics">
+          <div class="hm"><strong>${formatNumber(start)}</strong><span>Iniciou</span></div>
+          <div class="hm"><strong>${formatNumber(baixas)}</strong><span>Baixas</span></div>
+          <div class="hm"><strong>${formatNumber(novas)}</strong><span>Novas</span></div>
+          <div class="hm"><strong>${formatNumber(final)}</strong><span>Atual</span></div>
+        </div>
+      </article>`;
+    }).join('');
+  }
+
+  function openAddModal() {
+    currentRecordId = null;
+    els.modalTitle.textContent = 'Adicionar notificação';
+    els.modalSubtitle.textContent = 'Preencha os dados para criar um novo registro.';
+    els.modalBody.innerHTML = `
+      <form id="addForm" class="modal-grid">
+        <div class="field"><label>ID</label><input name="id" value="${generateId()}" required></div>
+        <div class="field"><label>Data de emissão</label><input type="date" name="dataEmissao" value="${toIsoDate(new Date())}" required></div>
+        <div class="field"><label>Tipo de registro</label><input name="tipoRegistro" value="Notificação" required></div>
+        <div class="field"><label>Prazo</label><input type="date" name="prazo"></div>
+        <div class="field"><label>Área / Local</label><input name="area" required></div>
+        <div class="field"><label>Emissor</label><input name="emissor" required></div>
+        <div class="field full"><label>Categoria</label><input name="categoria" value="Não informada"></div>
+        <div class="field full"><label>Descrição</label><textarea name="descricao" required></textarea></div>
+      </form>`;
+    els.modalFooter.innerHTML = `<span class="muted">A data de baixa será registrada posteriormente no botão “Dar baixa”.</span><button class="btn btn-primary" id="btnSalvarNovo">Salvar notificação</button>`;
+    document.getElementById('btnSalvarNovo').addEventListener('click', saveNewRecord);
+    openModal();
+  }
+
+  function saveNewRecord() {
+    const form = document.getElementById('addForm');
+    if (!form.reportValidity()) return;
+    const fd = new FormData(form);
+    const record = normalizeRecord({
+      id: fd.get('id'), dataEmissao: fd.get('dataEmissao'), prazo: fd.get('prazo'), dataConclusao: '',
+      tipoRegistro: fd.get('tipoRegistro'), status: 'Em aberto', area: fd.get('area'), emissor: fd.get('emissor'), categoria: fd.get('categoria'), descricao: fd.get('descricao')
+    });
+    if (normalizedData.some(r => r.id === record.id)) { alert('Já existe uma notificação com este ID.'); return; }
+    normalizedData.push(record);
+    populateFilters(); applyFiltersAndRender(); closeModal(); showToast('Notificação adicionada.');
+  }
+
+  function openDetailModal(id) {
+    currentRecordId = id;
+    const r = normalizedData.find(item => item.id === id);
+    if (!r) return;
+    els.modalTitle.textContent = `Notificação ${r.id}`;
+    els.modalSubtitle.textContent = r.aberta ? 'Registro em aberto. É possível dar baixa ou excluir.' : 'Registro baixado. A data de conclusão está registrada.';
+    els.modalBody.innerHTML = `<div class="detail-grid">
+      <div class="detail-item"><strong>Data Emissão</strong><span>${formatDate(r.dataEmissao)}</span></div>
+      <div class="detail-item"><strong>Status</strong><span>${statusBadge(r.status)}</span></div>
+      <div class="detail-item"><strong>Tipo</strong><span>${escapeHtml(r.tipoRegistro)}</span></div>
+      <div class="detail-item"><strong>Área</strong><span>${escapeHtml(r.area)}</span></div>
+      <div class="detail-item"><strong>Emissor</strong><span>${escapeHtml(r.emissor)}</span></div>
+      <div class="detail-item"><strong>Categoria</strong><span>${escapeHtml(r.categoria)}</span></div>
+      <div class="detail-item"><strong>Prazo</strong><span>${formatDate(r.prazo)}</span></div>
+      <div class="detail-item"><strong>Data da baixa</strong><span>${formatDate(r.dataConclusao)}</span></div>
+      <div class="detail-item"><strong>Dias resolução</strong><span>${r.diasResolucao ?? '—'}</span></div>
+      <div class="detail-item"><strong>Semana</strong><span>Semana ${r.semanaEmissao}</span></div>
+      <div class="detail-item" style="grid-column:1/-1"><strong>Descrição</strong><span>${escapeHtml(r.descricao)}</span></div>
+    </div>`;
+    els.modalFooter.innerHTML = `
+      <div class="panel-actions">
+        ${r.aberta ? '<button class="btn btn-success" id="btnDarBaixa">✅ Dar baixa</button>' : ''}
+        <button class="btn btn-danger" id="btnExcluirRegistro">🗑 Excluir</button>
+      </div>
+      <button class="btn btn-outline" id="btnFecharModal">Fechar</button>`;
+    document.getElementById('btnFecharModal').addEventListener('click', closeModal);
+    document.getElementById('btnExcluirRegistro').addEventListener('click', () => deleteRecord(id));
+    const baixaBtn = document.getElementById('btnDarBaixa');
+    if (baixaBtn) baixaBtn.addEventListener('click', () => openBaixaForm(id));
+    openModal();
+  }
+
+  function openBaixaForm(id) {
+    const r = normalizedData.find(item => item.id === id);
+    els.modalTitle.textContent = `Dar baixa - ${r.id}`;
+    els.modalSubtitle.textContent = 'Informe a data real da resolução para calcular o tempo médio e alimentar o histórico diário.';
+    els.modalBody.innerHTML = `
+      <form id="baixaForm" class="modal-grid">
+        <div class="field"><label>Data da baixa</label><input type="date" name="dataConclusao" value="${toIsoDate(new Date())}" required></div>
+        <div class="field"><label>Prazo original</label><input type="text" value="${formatDate(r.prazo)}" disabled></div>
+        <div class="field full"><label>Comentário da baixa</label><textarea name="comentarioBaixa" placeholder="Descreva rapidamente a ação realizada, se necessário."></textarea></div>
+      </form>`;
+    els.modalFooter.innerHTML = `<button class="btn btn-outline" id="btnVoltarDetalhe">Voltar</button><button class="btn btn-success" id="btnConfirmarBaixa">Confirmar baixa</button>`;
+    document.getElementById('btnVoltarDetalhe').addEventListener('click', () => openDetailModal(id));
+    document.getElementById('btnConfirmarBaixa').addEventListener('click', () => confirmBaixa(id));
+  }
+
+  function confirmBaixa(id) {
+    const form = document.getElementById('baixaForm');
+    if (!form.reportValidity()) return;
+    const fd = new FormData(form);
+    const idx = normalizedData.findIndex(r => r.id === id);
+    normalizedData[idx].dataConclusao = fd.get('dataConclusao');
+    normalizedData[idx].comentarioBaixa = String(fd.get('comentarioBaixa') || '').trim();
+    normalizedData[idx] = enrichRecord(normalizedData[idx]);
+    populateFilters(); applyFiltersAndRender(); closeModal(); showToast('Baixa registrada com data.');
+  }
+
+  function deleteRecord(id) {
+    if (!confirm(`Deseja excluir a notificação ${id}?`)) return;
+    normalizedData = normalizedData.filter(r => r.id !== id);
+    populateFilters(); applyFiltersAndRender(); closeModal(); showToast('Notificação excluída.');
+  }
+
+  function deleteSelected() {
+    const ids = [...document.querySelectorAll('.row-check:checked')].map(cb => cb.value);
+    if (!ids.length) { alert('Selecione pelo menos uma notificação para excluir.'); return; }
+    if (!confirm(`Deseja excluir ${ids.length} notificação(ões) selecionada(s)?`)) return;
+    normalizedData = normalizedData.filter(r => !ids.includes(r.id));
+    els.checkAll.checked = false;
+    populateFilters(); applyFiltersAndRender(); showToast('Registros selecionados excluídos.');
+  }
+
+  function openModal() { els.modal.classList.add('open'); els.modalBackdrop.classList.add('open'); }
+  function closeModal() { els.modal.classList.remove('open'); els.modalBackdrop.classList.remove('open'); currentRecordId = null; }
+  function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizedData)); }
+
+  function statusBadge(status) {
+    const s = String(status || 'Em aberto');
+    let cls = 'aberto';
+    if (s === 'Resolvido') cls = 'resolvido';
+    else if (s === 'Resolvido com atraso') cls = 'atraso';
+    else if (s === 'Vencido') cls = 'vencido';
+    else if (s === 'No prazo') cls = 'prazo';
+    return `<span class="badge ${cls}">${escapeHtml(s)}</span>`;
+  }
+
+  function parseDate(value) {
+    if (!value) return null;
+    if (value instanceof Date && !isNaN(value)) return value;
+    const s = String(value).trim();
+    if (!s) return null;
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) { const [y,m,d] = s.slice(0,10).split('-').map(Number); return new Date(y,m-1,d); }
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) { const [d,m,y] = s.split('/').map(Number); return new Date(y,m-1,d); }
+    const dt = new Date(s); return isNaN(dt) ? null : dt;
+  }
+  function toIsoDate(value) { const d = parseDate(value) || new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+  function startOfDay(date) { const d = parseDate(date); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+  function daysBetween(a,b) { return Math.max(0, Math.round((startOfDay(b) - startOfDay(a)) / 86400000)); }
+  function getWeekNumber(date) { const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())); const dayNum = d.getUTCDay() || 7; d.setUTCDate(d.getUTCDate() + 4 - dayNum); const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1) / 7); }
+  function formatDate(value) { const d = parseDate(value); return d ? `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}` : '—'; }
+  function formatNumber(n) { return new Intl.NumberFormat('pt-BR').format(Number(n || 0)); }
+  function unique(arr) { return [...new Set(arr.filter(v => v !== undefined && v !== null && String(v).trim() !== ''))].sort((a,b)=>String(a).localeCompare(String(b),'pt-BR')); }
+  function generateId() { return `NOT-${Date.now().toString().slice(-6)}`; }
+  function escapeHtml(v) { return String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+  function escapeAttr(v) { return escapeHtml(v).replace(/`/g,'&#96;'); }
+  function showToast(msg) { els.toast.textContent = msg; els.toast.classList.add('show'); setTimeout(() => els.toast.classList.remove('show'), 2200); }
+</script>
+</body>
+</html>
