@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Controle de Etiquetas de Bloqueio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f4f7f4;
+      --card: rgba(255, 255, 255, 0.94);
+      --primary: #0f4f3a;
+      --primary-2: #18775a;
+      --accent: #d8a84f;
+      --success: #1f9d63;
+      --success-soft: #e7f8ef;
+      --danger: #c44747;
+      --danger-soft: #fdecec;
+      --gray: #727b84;
+      --gray-soft: #eef1f3;
+      --text: #1d2a24;
+      --muted: #68736d;
+      --border: #dde7e1;
+      --shadow: 0 18px 45px rgba(19, 62, 45, 0.12);
+      --shadow-soft: 0 10px 25px rgba(19, 62, 45, 0.08);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(24, 119, 90, 0.18), transparent 34%),
+        radial-gradient(circle at top right, rgba(216, 168, 79, 0.16), transparent 30%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 36px;
+    }
+
+    .app-header {
+      padding: 28px 18px 42px;
+      background: linear-gradient(135deg, #0f4f3a 0%, #18775a 58%, #d8a84f 140%);
+      color: white;
+      border-radius: 0 0 34px 34px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .app-header::after {
+      content: '';
+      position: absolute;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      right: -70px;
+      top: -90px;
+      background: rgba(255,255,255,0.12);
+    }
+
+    .header-content {
+      max-width: 1220px;
+      margin: auto;
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .brand { display: flex; gap: 16px; align-items: center; }
+
+    .brand-icon {
+      width: 62px;
+      height: 62px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.16);
+      display: grid;
+      place-items: center;
+      font-size: 30px;
+      border: 1px solid rgba(255,255,255,0.22);
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      font-size: clamp(1.55rem, 4vw, 2.65rem);
+      line-height: 1.08;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+    }
+
+    .subtitle { margin-top: 8px; color: rgba(255,255,255,0.84); font-size: 0.98rem; }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .container {
+      width: min(1220px, calc(100% - 28px));
+      margin: -24px auto 0;
+      position: relative;
+      z-index: 2;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 15px;
+      padding: 13px 18px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 0.92rem;
+      min-height: 46px;
+      text-decoration: none;
+    }
+
+    .btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-soft); }
+    .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; }
+    .btn-light { background: rgba(255,255,255,0.16); color: #fff; border: 1px solid rgba(255,255,255,0.28); backdrop-filter: blur(10px); }
+    .btn-danger { background: var(--danger-soft); color: var(--danger); }
+    .btn-muted { background: var(--gray-soft); color: var(--text); }
+    .btn-gold { background: #fff4d8; color: #805a18; }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.65);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(16px);
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .panel-title { font-size: 1.15rem; font-weight: 900; letter-spacing: -0.03em; }
+    .panel-desc { color: var(--muted); margin-top: 5px; font-size: 0.9rem; line-height: 1.4; }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-left,
+    .toolbar-right { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 15px;
+      padding: 13px 14px;
+      font-family: inherit;
+      color: var(--text);
+      outline: none;
+      transition: border 0.18s ease, box-shadow 0.18s ease;
+      font-size: 0.94rem;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary-2);
+      box-shadow: 0 0 0 4px rgba(24, 119, 90, 0.12);
+    }
+
+    textarea { resize: vertical; min-height: 92px; }
+
+    label { font-size: 0.82rem; font-weight: 800; color: #425048; }
+    .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px; }
+
+    .tags-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(122px, 1fr));
+      gap: 10px;
+      max-height: calc(100vh - 260px);
+      overflow: auto;
+      padding: 3px 3px 6px;
+      scrollbar-width: thin;
+    }
+
+    .tag-card {
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 16px;
+      padding: 12px 10px;
+      min-height: 82px;
+      cursor: pointer;
+      transition: transform .18s ease, border .18s ease, background .18s ease, box-shadow .18s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .tag-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-soft); }
+    .tag-card.available { border-color: rgba(31, 157, 99, 0.38); background: linear-gradient(180deg, #ffffff, var(--success-soft)); }
+    .tag-card.used { cursor: not-allowed; opacity: 0.72; background: linear-gradient(180deg, #fff, var(--danger-soft)); border-color: rgba(196, 71, 71, 0.28); filter: grayscale(0.18); }
+
+    .tag-number { font-weight: 900; font-size: 0.98rem; letter-spacing: -0.02em; }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      width: fit-content;
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 0.72rem;
+      font-weight: 900;
+    }
+
+    .status-pill.available { color: var(--success); background: var(--success-soft); }
+    .status-pill.used { color: var(--danger); background: var(--danger-soft); }
+
+    .grid-kpis {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .kpi-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      min-height: 118px;
+    }
+
+    .kpi-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+      flex: 0 0 auto;
+    }
+
+    .kpi-icon.total { background: #edf3ff; }
+    .kpi-icon.available { background: var(--success-soft); }
+    .kpi-icon.used { background: var(--danger-soft); }
+    .kpi-icon.percent { background: #fff5dc; }
+
+    .kpi-label { color: var(--muted); font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+    .kpi-value { font-size: clamp(1.45rem, 3vw, 2.2rem); font-weight: 900; margin-top: 5px; letter-spacing: -0.04em; }
+
+    .progress-box {
+      margin-top: 16px;
+      background: #eef6f1;
+      height: 14px;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid #d8eadf;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary-2), var(--accent));
+      border-radius: inherit;
+      transition: width 0.3s ease;
+    }
+
+    .history-date-list { display: grid; gap: 10px; }
+
+    .date-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 14px;
+      border-radius: 16px;
+      background: #fff;
+      border: 1px solid var(--border);
+    }
+
+    .date-count { background: #f5eddb; color: #805a18; border-radius: 999px; padding: 7px 11px; font-weight: 900; font-size: 0.82rem; white-space: nowrap; }
+
+    .history-filters {
+      display: grid;
+      grid-template-columns: 1.3fr 0.8fr 0.8fr auto;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .table-wrap { overflow-x: auto; border-radius: 18px; border: 1px solid var(--border); background: #fff; }
+    table { width: 100%; border-collapse: collapse; min-width: 780px; }
+
+    th, td {
+      padding: 13px 14px;
+      text-align: left;
+      border-bottom: 1px solid #edf1ee;
+      font-size: 0.9rem;
+      vertical-align: top;
+    }
+
+    th { background: #f7faf8; color: #4d5a52; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 900; position: sticky; top: 0; z-index: 1; }
+    tr:last-child td { border-bottom: none; }
+
+    .empty-state { text-align: center; padding: 26px 16px; color: var(--muted); font-weight: 600; }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(11, 32, 25, 0.62);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 100;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      width: min(920px, 100%);
+      max-height: calc(100vh - 32px);
+      overflow: auto;
+      background: #fff;
+      border-radius: 26px;
+      box-shadow: 0 28px 80px rgba(0,0,0,0.28);
+      border: 1px solid rgba(255,255,255,0.65);
+    }
+
+    .modal.small { width: min(540px, 100%); }
+    .modal.large { width: min(1120px, 100%); }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 20px 20px 14px;
+      border-bottom: 1px solid #edf1ee;
+      position: sticky;
+      top: 0;
+      background: #fff;
+      z-index: 2;
+    }
+
+    .modal-title { font-size: 1.25rem; font-weight: 900; letter-spacing: -0.03em; }
+    .modal-body { padding: 18px 20px 20px; }
+    .modal-footer { display: flex; gap: 10px; flex-wrap: wrap; padding: 0 20px 20px; }
+
+    .close-btn {
+      border: none;
+      background: var(--gray-soft);
+      color: var(--text);
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .selected-box {
+      padding: 14px;
+      border-radius: 18px;
+      background: var(--success-soft);
+      border: 1px solid rgba(31, 157, 99, 0.25);
+      margin-bottom: 14px;
+    }
+
+    .selected-box strong { font-size: 1.35rem; letter-spacing: -0.04em; color: var(--primary); }
+
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      background: #102d23;
+      color: #fff;
+      padding: 14px 16px;
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      z-index: 150;
+      display: none;
+      max-width: min(420px, calc(100% - 28px));
+      font-weight: 700;
+    }
+
+    .toast.show { display: block; animation: toastIn 0.25s ease; }
+    @keyframes toastIn { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    .footer-note { width: min(1220px, calc(100% - 28px)); margin: 8px auto 0; color: var(--muted); font-size: 0.82rem; text-align: center; }
+
+    @media (max-width: 980px) {
+      .header-content { display: grid; grid-template-columns: 1fr; }
+      .header-actions { justify-content: flex-start; }
+      .grid-kpis { grid-template-columns: repeat(2, 1fr); }
+      .history-filters { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      body { background: #f6f8f6; }
+      .app-header { padding: 22px 14px 38px; border-radius: 0 0 26px 26px; }
+      .brand { align-items: flex-start; }
+      .brand-icon { width: 52px; height: 52px; border-radius: 17px; font-size: 26px; }
+      .container { width: calc(100% - 18px); margin-top: -20px; }
+      .grid-kpis, .history-filters { grid-template-columns: 1fr; }
+      .panel, .kpi-card { border-radius: 20px; }
+      .panel { padding: 16px; }
+      .panel-header, .toolbar { flex-direction: column; align-items: stretch; }
+      .toolbar-left, .toolbar-right { width: 100%; }
+      .btn, input, select, textarea { min-height: 50px; font-size: 1rem; }
+      .btn, .toolbar-left .btn, .toolbar-right .btn, .header-actions .btn { width: 100%; }
+      .tags-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); max-height: none; }
+      .tag-card { min-height: 88px; padding: 13px 12px; }
+      .modal { border-radius: 22px; max-height: calc(100vh - 18px); }
+      .modal-overlay { padding: 9px; align-items: flex-end; }
+      .modal-footer .btn { width: 100%; }
+      .table-wrap { border: none; background: transparent; overflow: visible; }
+      table, thead, tbody, th, td, tr { display: block; }
+      table { min-width: 0; }
+      thead { display: none; }
+      tr { background: #fff; border: 1px solid var(--border); border-radius: 18px; margin-bottom: 12px; box-shadow: var(--shadow-soft); overflow: hidden; }
+      td { border-bottom: 1px solid #edf1ee; display: grid; grid-template-columns: 120px 1fr; gap: 10px; padding: 12px; word-break: break-word; }
+      td::before { content: attr(data-label); font-weight: 900; color: #4d5a52; font-size: 0.77rem; text-transform: uppercase; }
+      td:last-child { border-bottom: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-content">
+      <div class="brand">
+        <div class="brand-icon">🏷️</div>
+        <div>
+          <h1>Controle de Etiquetas de Bloqueio</h1>
+          <p class="subtitle">Selecione uma etiqueta disponível para registrar o uso. As utilizadas ficam bloqueadas automaticamente.</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-light" onclick="abrirModalDashboard()">📊 Painel</button>
+        <button class="btn btn-light" onclick="abrirModalHistorico()">📜 Histórico</button>
+        <button class="btn btn-light" onclick="exportarExcel()">📤 Exportar Excel</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title">Lista de etiquetas</h2>
+          <p class="panel-desc">Clique em uma etiqueta verde para registrar o uso. As etiquetas em vermelho/cinza já foram utilizadas.</p>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <button class="btn btn-primary" onclick="selecionarPrimeiraDisponivel()">⚡ Selecionar 1ª disponível</button>
+        </div>
+        <div class="toolbar-right">
+          <button class="btn btn-muted" onclick="abrirModalDashboard()">📊 Ver indicadores</button>
+          <button class="btn btn-muted" onclick="abrirModalHistorico()">📜 Ver histórico</button>
+          <button class="btn btn-danger" onclick="confirmarReset()">🔄 Reiniciar base</button>
+        </div>
+      </div>
+
+      <div class="tags-grid" id="listaEtiquetas"></div>
+    </section>
+  </main>
+
+  <div class="modal-overlay" id="modalUso">
+    <div class="modal small">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">Registrar uso da etiqueta</h2>
+          <p class="panel-desc">Confirme o uso da etiqueta selecionada.</p>
+        </div>
+        <button class="close-btn" onclick="fecharModalUso()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="selected-box">
+          <span>Etiqueta selecionada</span><br>
+          <strong id="modalEtiquetaNumero">-</strong>
+        </div>
+
+        <div class="field">
+          <label for="funcionario">Nome do funcionário <span style="color: var(--muted); font-weight: 700;">(opcional)</span></label>
+          <input type="text" id="funcionario" placeholder="Ex.: Marcos Augusto" autocomplete="off" />
+        </div>
+
+        <div class="field">
+          <label for="observacao">Observação</label>
+          <textarea id="observacao" placeholder="Informe detalhes do uso, local, equipamento ou observações relevantes."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="confirmarUso()">🔐 Confirmar uso</button>
+        <button class="btn btn-muted" onclick="fecharModalUso()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modalDashboard">
+    <div class="modal large">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">Painel de indicadores</h2>
+          <p class="panel-desc">Resumo geral do controle de etiquetas de bloqueio.</p>
+        </div>
+        <button class="close-btn" onclick="fecharModalDashboard()">×</button>
+      </div>
+      <div class="modal-body">
+        <section class="grid-kpis">
+          <div class="kpi-card">
+            <div class="kpi-icon total">📦</div>
+            <div>
+              <div class="kpi-label">Total cadastradas</div>
+              <div class="kpi-value" id="kpiTotal">0</div>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon available">✅</div>
+            <div>
+              <div class="kpi-label">Disponíveis</div>
+              <div class="kpi-value" id="kpiDisponiveis">0</div>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon used">🔒</div>
+            <div>
+              <div class="kpi-label">Utilizadas</div>
+              <div class="kpi-value" id="kpiUtilizadas">0</div>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon percent">📊</div>
+            <div>
+              <div class="kpi-label">Percentual utilizado</div>
+              <div class="kpi-value" id="kpiPercentual">0%</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" style="box-shadow:none; border-color: var(--border);">
+          <h3 class="panel-title">Resumo de utilização</h3>
+          <p class="panel-desc">Acompanhe o avanço geral de uso das etiquetas cadastradas.</p>
+          <div class="progress-box">
+            <div class="progress-bar" id="barraPercentual"></div>
+          </div>
+        </section>
+
+        <section class="panel" style="box-shadow:none; border-color: var(--border); margin-bottom: 0;">
+          <h3 class="panel-title">Histórico por data</h3>
+          <p class="panel-desc">Quantidade de etiquetas utilizadas em cada data.</p>
+          <div class="history-date-list" id="historicoPorData"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modalHistorico">
+    <div class="modal large">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">Histórico completo de utilização</h2>
+          <p class="panel-desc">Consulte por etiqueta, funcionário, status ou data.</p>
+        </div>
+        <button class="close-btn" onclick="fecharModalHistorico()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="history-filters">
+          <input type="search" id="filtroHistoricoTexto" placeholder="Pesquisar etiqueta, funcionário ou observação" oninput="renderHistorico()" />
+          <select id="filtroHistoricoStatus" onchange="renderHistorico()">
+            <option value="todos">Todos os status</option>
+            <option value="Utilizada">Utilizada</option>
+          </select>
+          <input type="date" id="filtroHistoricoData" onchange="renderHistorico()" />
+          <button class="btn btn-muted" onclick="limparFiltrosHistorico()">🧹 Limpar</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Etiqueta</th>
+                <th>Funcionário</th>
+                <th>Data</th>
+                <th>Hora</th>
+                <th>Status</th>
+                <th>Observação</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaHistorico"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="footer-note">Sistema inicial em localStorage. Estrutura preparada para futura integração com banco de dados e autenticação.</p>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const STORAGE_KEY = 'controle_etiquetas_bloqueio_v1';
+    const TOTAL_ETIQUETAS = 1000;
+
+    let estado = carregarEstado();
+    let etiquetaAtual = null;
+
+    function gerarEtiquetas() {
+      return Array.from({ length: TOTAL_ETIQUETAS }, (_, index) => ({
+        numero: `ETQ-${String(index + 1).padStart(4, '0')}`,
+        status: 'Disponível',
+        funcionario: '',
+        data: '',
+        hora: '',
+        observacao: ''
+      }));
+    }
+
+    function carregarEstado() {
+      const salvo = localStorage.getItem(STORAGE_KEY);
+      if (salvo) {
+        try {
+          const dados = JSON.parse(salvo);
+          if (Array.isArray(dados.etiquetas) && Array.isArray(dados.historico)) return dados;
+        } catch (error) {
+          console.error('Erro ao carregar dados salvos:', error);
+        }
+      }
+      const inicial = { etiquetas: gerarEtiquetas(), historico: [] };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(inicial));
+      return inicial;
+    }
+
+    function salvarEstado() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(estado));
+    }
+
+    function formatarDataBR(dataISO) {
+      if (!dataISO) return '-';
+      const [ano, mes, dia] = dataISO.split('-');
+      return `${dia}/${mes}/${ano}`;
+    }
+
+    function hojeAgora() {
+      const agora = new Date();
+      const data = agora.toISOString().slice(0, 10);
+      const hora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      return { data, hora };
+    }
+
+    function mostrarToast(mensagem) {
+      const toast = document.getElementById('toast');
+      toast.textContent = mensagem;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3200);
+    }
+
+    function abrirModal(id) {
+      document.getElementById(id).classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function fecharModal(id) {
+      document.getElementById(id).classList.remove('open');
+      const algumAberto = document.querySelector('.modal-overlay.open');
+      if (!algumAberto) document.body.style.overflow = '';
+    }
+
+    function abrirModalUso(numero) {
+      etiquetaAtual = numero;
+      document.getElementById('modalEtiquetaNumero').textContent = numero;
+      document.getElementById('funcionario').value = '';
+      document.getElementById('observacao').value = '';
+      abrirModal('modalUso');
+      setTimeout(() => document.getElementById('funcionario').focus(), 120);
+    }
+
+    function fecharModalUso() {
+      fecharModal('modalUso');
+      etiquetaAtual = null;
+    }
+
+    function abrirModalDashboard() {
+      atualizarDashboard();
+      abrirModal('modalDashboard');
+    }
+
+    function fecharModalDashboard() {
+      fecharModal('modalDashboard');
+    }
+
+    function abrirModalHistorico() {
+      renderHistorico();
+      abrirModal('modalHistorico');
+    }
+
+    function fecharModalHistorico() {
+      fecharModal('modalHistorico');
+    }
+
+    document.addEventListener('click', function(event) {
+      if (event.target.classList.contains('modal-overlay')) {
+        fecharModal(event.target.id);
+      }
+    });
+
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.open').forEach(modal => fecharModal(modal.id));
+      }
+    });
+
+    function atualizarDashboard() {
+      const total = estado.etiquetas.length;
+      const utilizadas = estado.etiquetas.filter(e => e.status === 'Utilizada').length;
+      const disponiveis = total - utilizadas;
+      const percentual = total ? ((utilizadas / total) * 100).toFixed(1) : 0;
+
+      document.getElementById('kpiTotal').textContent = total;
+      document.getElementById('kpiDisponiveis').textContent = disponiveis;
+      document.getElementById('kpiUtilizadas').textContent = utilizadas;
+      document.getElementById('kpiPercentual').textContent = `${percentual}%`;
+      document.getElementById('barraPercentual').style.width = `${percentual}%`;
+      renderHistoricoPorData();
+    }
+
+    function renderEtiquetas() {
+      const lista = document.getElementById('listaEtiquetas');
+      lista.innerHTML = '';
+
+      const fragment = document.createDocumentFragment();
+      estado.etiquetas.forEach(etiqueta => {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = `tag-card ${etiqueta.status === 'Disponível' ? 'available' : 'used'}`;
+        card.disabled = etiqueta.status === 'Utilizada';
+        card.onclick = () => selecionarEtiqueta(etiqueta.numero);
+        card.innerHTML = `
+          <span class="tag-number">${etiqueta.numero}</span>
+          <span class="status-pill ${etiqueta.status === 'Disponível' ? 'available' : 'used'}">
+            ${etiqueta.status === 'Disponível' ? '● Disponível' : '● Utilizada'}
+          </span>
+        `;
+        fragment.appendChild(card);
+      });
+
+      lista.appendChild(fragment);
+    }
+
+    function selecionarEtiqueta(numero) {
+      const etiqueta = estado.etiquetas.find(e => e.numero === numero);
+      if (!etiqueta || etiqueta.status === 'Utilizada') {
+        mostrarToast('Esta etiqueta já foi utilizada e não pode ser selecionada novamente.');
+        return;
+      }
+      abrirModalUso(numero);
+    }
+
+    function selecionarPrimeiraDisponivel() {
+      const primeira = estado.etiquetas.find(e => e.status === 'Disponível');
+      if (!primeira) {
+        mostrarToast('Não há etiquetas disponíveis.');
+        return;
+      }
+      selecionarEtiqueta(primeira.numero);
+    }
+
+    function confirmarUso() {
+      if (!etiquetaAtual) {
+        mostrarToast('Selecione uma etiqueta disponível antes de confirmar.');
+        return;
+      }
+
+      const funcionario = document.getElementById('funcionario').value.trim() || 'Não informado';
+      const observacao = document.getElementById('observacao').value.trim();
+      const etiqueta = estado.etiquetas.find(e => e.numero === etiquetaAtual);
+
+      if (!etiqueta || etiqueta.status === 'Utilizada') {
+        mostrarToast('Etiqueta indisponível para uso.');
+        fecharModalUso();
+        return;
+      }
+
+      const { data, hora } = hojeAgora();
+
+      etiqueta.status = 'Utilizada';
+      etiqueta.funcionario = funcionario;
+      etiqueta.data = data;
+      etiqueta.hora = hora;
+      etiqueta.observacao = observacao;
+
+      estado.historico.unshift({
+        numero: etiqueta.numero,
+        funcionario,
+        data,
+        hora,
+        status: 'Utilizada',
+        observacao
+      });
+
+      salvarEstado();
+      fecharModalUso();
+      atualizarTudo();
+      mostrarToast(`Etiqueta ${etiqueta.numero} registrada como utilizada.`);
+    }
+
+    function renderHistoricoPorData() {
+      const container = document.getElementById('historicoPorData');
+      const agrupado = estado.historico.reduce((acc, item) => {
+        acc[item.data] = (acc[item.data] || 0) + 1;
+        return acc;
+      }, {});
+
+      const linhas = Object.entries(agrupado).sort((a, b) => b[0].localeCompare(a[0]));
+      if (!linhas.length) {
+        container.innerHTML = '<div class="empty-state">Nenhum uso registrado ainda.</div>';
+        return;
+      }
+
+      container.innerHTML = linhas.map(([data, quantidade]) => `
+        <div class="date-item">
+          <strong>📅 ${formatarDataBR(data)}</strong>
+          <span class="date-count">${quantidade} uso${quantidade > 1 ? 's' : ''}</span>
+        </div>
+      `).join('');
+    }
+
+    function renderHistorico() {
+      const tbody = document.getElementById('tabelaHistorico');
+      const texto = document.getElementById('filtroHistoricoTexto').value.trim().toLowerCase();
+      const status = document.getElementById('filtroHistoricoStatus').value;
+      const data = document.getElementById('filtroHistoricoData').value;
+
+      const filtrado = estado.historico.filter(item => {
+        const conteudo = `${item.numero} ${item.funcionario} ${item.observacao}`.toLowerCase();
+        const passaTexto = !texto || conteudo.includes(texto);
+        const passaStatus = status === 'todos' || item.status === status;
+        const passaData = !data || item.data === data;
+        return passaTexto && passaStatus && passaData;
+      });
+
+      if (!filtrado.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Nenhum registro encontrado.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtrado.map(item => `
+        <tr>
+          <td data-label="Etiqueta"><strong>${item.numero}</strong></td>
+          <td data-label="Funcionário">${item.funcionario}</td>
+          <td data-label="Data">${formatarDataBR(item.data)}</td>
+          <td data-label="Hora">${item.hora}</td>
+          <td data-label="Status"><span class="status-pill used">● ${item.status}</span></td>
+          <td data-label="Observação">${item.observacao || '-'}</td>
+        </tr>
+      `).join('');
+    }
+
+    function limparFiltrosHistorico() {
+      document.getElementById('filtroHistoricoTexto').value = '';
+      document.getElementById('filtroHistoricoStatus').value = 'todos';
+      document.getElementById('filtroHistoricoData').value = '';
+      renderHistorico();
+    }
+
+    function exportarExcel() {
+      const linhasEtiquetas = estado.etiquetas.map(e => `
+        <tr>
+          <td>${e.numero}</td>
+          <td>${e.status}</td>
+          <td>${e.funcionario || ''}</td>
+          <td>${e.data ? formatarDataBR(e.data) : ''}</td>
+          <td>${e.hora || ''}</td>
+          <td>${e.observacao || ''}</td>
+        </tr>
+      `).join('');
+
+      const linhasHistorico = estado.historico.map(h => `
+        <tr>
+          <td>${h.numero}</td>
+          <td>${h.funcionario}</td>
+          <td>${formatarDataBR(h.data)}</td>
+          <td>${h.hora}</td>
+          <td>${h.status}</td>
+          <td>${h.observacao || ''}</td>
+        </tr>
+      `).join('');
+
+      const html = `
+        <html>
+        <head><meta charset="UTF-8"></head>
+        <body>
+          <h2>Lista Completa de Etiquetas</h2>
+          <table border="1">
+            <thead>
+              <tr>
+                <th>Etiqueta</th>
+                <th>Status</th>
+                <th>Funcionário</th>
+                <th>Data de Utilização</th>
+                <th>Hora de Utilização</th>
+                <th>Observações</th>
+              </tr>
+            </thead>
+            <tbody>${linhasEtiquetas}</tbody>
+          </table>
+          <br><br>
+          <h2>Histórico de Uso</h2>
+          <table border="1">
+            <thead>
+              <tr>
+                <th>Etiqueta</th>
+                <th>Funcionário</th>
+                <th>Data</th>
+                <th>Hora</th>
+                <th>Status</th>
+                <th>Observações</th>
+              </tr>
+            </thead>
+            <tbody>${linhasHistorico}</tbody>
+          </table>
+        </body>
+        </html>
+      `;
+
+      const blob = new Blob(['\ufeff', html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `controle_etiquetas_bloqueio_${new Date().toISOString().slice(0, 10)}.xls`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      mostrarToast('Planilha exportada com sucesso.');
+    }
+
+    function confirmarReset() {
+      const confirmado = confirm('Tem certeza que deseja reiniciar a base? Todos os usos registrados neste navegador serão apagados.');
+      if (!confirmado) return;
+      estado = { etiquetas: gerarEtiquetas(), historico: [] };
+      salvarEstado();
+      etiquetaAtual = null;
+      atualizarTudo();
+      mostrarToast('Base reiniciada com sucesso.');
+    }
+
+    function atualizarTudo() {
+      atualizarDashboard();
+      renderEtiquetas();
+      renderHistorico();
+    }
+
+    document.addEventListener('DOMContentLoaded', atualizarTudo);
+  </script>
+</body>
+</html>
