@@ -617,57 +617,64 @@
     </div>
   </div>
 
-  <p class="footer-note">Sistema inicial em localStorage. Estrutura preparada para futura integração com banco de dados e autenticação.</p>
+  <p class="footer-note">Sistema integrado ao backend do Painel SESMT. As etiquetas são salvas no MongoDB e ficam disponíveis para todos os usuários.</p>
   <div class="toast" id="toast"></div>
 
   <script>
-    const STORAGE_KEY = 'controle_etiquetas_bloqueio_v1';
-    const TOTAL_ETIQUETAS = 1000;
+    let estado = {
+      etiquetas: [],
+      historico: []
+    };
 
-    let estado = carregarEstado();
     let etiquetaAtual = null;
+    let carregando = false;
 
-    function gerarEtiquetas() {
-      return Array.from({ length: TOTAL_ETIQUETAS }, (_, index) => ({
-        numero: `ETQ-${String(index + 1).padStart(4, '0')}`,
-        status: 'Disponível',
-        funcionario: '',
-        data: '',
-        hora: '',
-        observacao: ''
-      }));
+    function normalizarTexto(valor) {
+      return String(valor || '').trim();
     }
 
-    function carregarEstado() {
-      const salvo = localStorage.getItem(STORAGE_KEY);
-      if (salvo) {
-        try {
-          const dados = JSON.parse(salvo);
-          if (Array.isArray(dados.etiquetas) && Array.isArray(dados.historico)) return dados;
-        } catch (error) {
-          console.error('Erro ao carregar dados salvos:', error);
-        }
+    function converterDataParaBR(data) {
+      if (!data) return '-';
+
+      const valor = String(data).trim();
+
+      if (/^\d{2}\/\d{2}\/\d{4}$/.test(valor)) {
+        return valor;
       }
-      const inicial = { etiquetas: gerarEtiquetas(), historico: [] };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(inicial));
-      return inicial;
+
+      if (/^\d{4}-\d{2}-\d{2}/.test(valor)) {
+        const [ano, mes, dia] = valor.slice(0, 10).split('-');
+        return `${dia}/${mes}/${ano}`;
+      }
+
+      const dataObj = new Date(valor);
+      if (!Number.isNaN(dataObj.getTime())) {
+        return dataObj.toLocaleDateString('pt-BR');
+      }
+
+      return valor;
     }
 
-    function salvarEstado() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(estado));
-    }
+    function converterDataParaISO(data) {
+      if (!data) return '';
 
-    function formatarDataBR(dataISO) {
-      if (!dataISO) return '-';
-      const [ano, mes, dia] = dataISO.split('-');
-      return `${dia}/${mes}/${ano}`;
-    }
+      const valor = String(data).trim();
 
-    function hojeAgora() {
-      const agora = new Date();
-      const data = agora.toISOString().slice(0, 10);
-      const hora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      return { data, hora };
+      if (/^\d{4}-\d{2}-\d{2}/.test(valor)) {
+        return valor.slice(0, 10);
+      }
+
+      if (/^\d{2}\/\d{2}\/\d{4}$/.test(valor)) {
+        const [dia, mes, ano] = valor.split('/');
+        return `${ano}-${mes}-${dia}`;
+      }
+
+      const dataObj = new Date(valor);
+      if (!Number.isNaN(dataObj.getTime())) {
+        return dataObj.toISOString().slice(0, 10);
+      }
+
+      return '';
     }
 
     function mostrarToast(mensagem) {
@@ -732,6 +739,52 @@
       }
     });
 
+    async function carregarEtiquetas() {
+      if (carregando) return;
+      carregando = true;
+
+      const lista = document.getElementById('listaEtiquetas');
+      if (lista) {
+        lista.innerHTML = '<div class="empty-state">Carregando etiquetas...</div>';
+      }
+
+      try {
+        const response = await fetch('/api/etiquetas', {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+
+        const dados = await response.json();
+
+        if (!response.ok) {
+          throw new Error(dados.error || 'Erro ao buscar etiquetas.');
+        }
+
+        estado.etiquetas = Array.isArray(dados) ? dados : [];
+
+        estado.historico = estado.etiquetas
+          .filter(e => e.status === 'Utilizada')
+          .sort((a, b) => {
+            const dataA = new Date(a.updatedAt || a.createdAt || 0).getTime();
+            const dataB = new Date(b.updatedAt || b.createdAt || 0).getTime();
+            return dataB - dataA;
+          });
+
+        atualizarTudo();
+
+      } catch (error) {
+        console.error('Erro ao carregar etiquetas:', error);
+        estado.etiquetas = [];
+        estado.historico = [];
+        atualizarTudo();
+        mostrarToast('Erro ao carregar etiquetas do servidor. Verifique a rota /api/etiquetas.');
+      } finally {
+        carregando = false;
+      }
+    }
+
     function atualizarDashboard() {
       const total = estado.etiquetas.length;
       const utilizadas = estado.etiquetas.filter(e => e.status === 'Utilizada').length;
@@ -743,6 +796,7 @@
       document.getElementById('kpiUtilizadas').textContent = utilizadas;
       document.getElementById('kpiPercentual').textContent = `${percentual}%`;
       document.getElementById('barraPercentual').style.width = `${percentual}%`;
+
       renderHistoricoPorData();
     }
 
@@ -750,19 +804,29 @@
       const lista = document.getElementById('listaEtiquetas');
       lista.innerHTML = '';
 
+      if (!estado.etiquetas.length) {
+        lista.innerHTML = '<div class="empty-state">Nenhuma etiqueta carregada. Acesse primeiro /api/etiquetas/init para criar as 1000 etiquetas.</div>';
+        return;
+      }
+
       const fragment = document.createDocumentFragment();
+
       estado.etiquetas.forEach(etiqueta => {
+        const utilizada = etiqueta.status === 'Utilizada';
+
         const card = document.createElement('button');
         card.type = 'button';
-        card.className = `tag-card ${etiqueta.status === 'Disponível' ? 'available' : 'used'}`;
-        card.disabled = etiqueta.status === 'Utilizada';
+        card.className = `tag-card ${utilizada ? 'used' : 'available'}`;
+        card.disabled = utilizada;
         card.onclick = () => selecionarEtiqueta(etiqueta.numero);
+
         card.innerHTML = `
           <span class="tag-number">${etiqueta.numero}</span>
-          <span class="status-pill ${etiqueta.status === 'Disponível' ? 'available' : 'used'}">
-            ${etiqueta.status === 'Disponível' ? '● Disponível' : '● Utilizada'}
+          <span class="status-pill ${utilizada ? 'used' : 'available'}">
+            ${utilizada ? '● Utilizada' : '● Disponível'}
           </span>
         `;
+
         fragment.appendChild(card);
       });
 
@@ -771,69 +835,85 @@
 
     function selecionarEtiqueta(numero) {
       const etiqueta = estado.etiquetas.find(e => e.numero === numero);
+
       if (!etiqueta || etiqueta.status === 'Utilizada') {
         mostrarToast('Esta etiqueta já foi utilizada e não pode ser selecionada novamente.');
         return;
       }
+
       abrirModalUso(numero);
     }
 
     function selecionarPrimeiraDisponivel() {
       const primeira = estado.etiquetas.find(e => e.status === 'Disponível');
+
       if (!primeira) {
         mostrarToast('Não há etiquetas disponíveis.');
         return;
       }
+
       selecionarEtiqueta(primeira.numero);
     }
 
-    function confirmarUso() {
+    async function confirmarUso() {
       if (!etiquetaAtual) {
         mostrarToast('Selecione uma etiqueta disponível antes de confirmar.');
         return;
       }
 
-      const funcionario = document.getElementById('funcionario').value.trim() || 'Não informado';
-      const observacao = document.getElementById('observacao').value.trim();
-      const etiqueta = estado.etiquetas.find(e => e.numero === etiquetaAtual);
+      const funcionario = normalizarTexto(document.getElementById('funcionario').value);
+      const observacao = normalizarTexto(document.getElementById('observacao').value);
 
-      if (!etiqueta || etiqueta.status === 'Utilizada') {
-        mostrarToast('Etiqueta indisponível para uso.');
+      try {
+        const response = await fetch('/api/etiquetas/usar', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            numero: etiquetaAtual,
+            funcionario,
+            observacao
+          })
+        });
+
+        const dados = await response.json();
+
+        if (!response.ok) {
+          mostrarToast(dados.error || 'Erro ao registrar uso da etiqueta.');
+          await carregarEtiquetas();
+          return;
+        }
+
+        const numeroUsado = etiquetaAtual;
+
         fecharModalUso();
-        return;
+        await carregarEtiquetas();
+
+        mostrarToast(`Etiqueta ${numeroUsado} registrada como utilizada.`);
+
+      } catch (error) {
+        console.error('Erro ao registrar uso:', error);
+        mostrarToast('Erro ao registrar uso. Verifique a conexão com o servidor.');
       }
-
-      const { data, hora } = hojeAgora();
-
-      etiqueta.status = 'Utilizada';
-      etiqueta.funcionario = funcionario;
-      etiqueta.data = data;
-      etiqueta.hora = hora;
-      etiqueta.observacao = observacao;
-
-      estado.historico.unshift({
-        numero: etiqueta.numero,
-        funcionario,
-        data,
-        hora,
-        status: 'Utilizada',
-        observacao
-      });
-
-      salvarEstado();
-      fecharModalUso();
-      atualizarTudo();
-      mostrarToast(`Etiqueta ${etiqueta.numero} registrada como utilizada.`);
     }
 
     function renderHistoricoPorData() {
       const container = document.getElementById('historicoPorData');
+
       const agrupado = estado.historico.reduce((acc, item) => {
-        acc[item.data] = (acc[item.data] || 0) + 1;
+        const dataBR = converterDataParaBR(item.data || item.updatedAt || item.createdAt);
+        acc[dataBR] = (acc[dataBR] || 0) + 1;
         return acc;
       }, {});
 
-      const linhas = Object.entries(agrupado).sort((a, b) => b[0].localeCompare(a[0]));
+      const linhas = Object.entries(agrupado).sort((a, b) => {
+        const isoA = converterDataParaISO(a[0]);
+        const isoB = converterDataParaISO(b[0]);
+        return isoB.localeCompare(isoA);
+      });
+
       if (!linhas.length) {
         container.innerHTML = '<div class="empty-state">Nenhum uso registrado ainda.</div>';
         return;
@@ -841,7 +921,7 @@
 
       container.innerHTML = linhas.map(([data, quantidade]) => `
         <div class="date-item">
-          <strong>📅 ${formatarDataBR(data)}</strong>
+          <strong>📅 ${data}</strong>
           <span class="date-count">${quantidade} uso${quantidade > 1 ? 's' : ''}</span>
         </div>
       `).join('');
@@ -849,15 +929,20 @@
 
     function renderHistorico() {
       const tbody = document.getElementById('tabelaHistorico');
-      const texto = document.getElementById('filtroHistoricoTexto').value.trim().toLowerCase();
+      const texto = normalizarTexto(document.getElementById('filtroHistoricoTexto').value).toLowerCase();
       const status = document.getElementById('filtroHistoricoStatus').value;
-      const data = document.getElementById('filtroHistoricoData').value;
+      const dataFiltro = document.getElementById('filtroHistoricoData').value;
 
       const filtrado = estado.historico.filter(item => {
-        const conteudo = `${item.numero} ${item.funcionario} ${item.observacao}`.toLowerCase();
+        const funcionario = item.funcionario || 'Não informado';
+        const observacao = item.observacao || '';
+        const dataItemISO = converterDataParaISO(item.data || item.updatedAt || item.createdAt);
+        const conteudo = `${item.numero} ${funcionario} ${observacao}`.toLowerCase();
+
         const passaTexto = !texto || conteudo.includes(texto);
         const passaStatus = status === 'todos' || item.status === status;
-        const passaData = !data || item.data === data;
+        const passaData = !dataFiltro || dataItemISO === dataFiltro;
+
         return passaTexto && passaStatus && passaData;
       });
 
@@ -866,16 +951,23 @@
         return;
       }
 
-      tbody.innerHTML = filtrado.map(item => `
-        <tr>
-          <td data-label="Etiqueta"><strong>${item.numero}</strong></td>
-          <td data-label="Funcionário">${item.funcionario}</td>
-          <td data-label="Data">${formatarDataBR(item.data)}</td>
-          <td data-label="Hora">${item.hora}</td>
-          <td data-label="Status"><span class="status-pill used">● ${item.status}</span></td>
-          <td data-label="Observação">${item.observacao || '-'}</td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = filtrado.map(item => {
+        const funcionario = item.funcionario || 'Não informado';
+        const observacao = item.observacao || '-';
+        const dataBR = converterDataParaBR(item.data || item.updatedAt || item.createdAt);
+        const hora = item.hora || (item.updatedAt ? new Date(item.updatedAt).toLocaleTimeString('pt-BR') : '-');
+
+        return `
+          <tr>
+            <td data-label="Etiqueta"><strong>${item.numero}</strong></td>
+            <td data-label="Funcionário">${funcionario}</td>
+            <td data-label="Data">${dataBR}</td>
+            <td data-label="Hora">${hora}</td>
+            <td data-label="Status"><span class="status-pill used">● ${item.status}</span></td>
+            <td data-label="Observação">${observacao}</td>
+          </tr>
+        `;
+      }).join('');
     }
 
     function limparFiltrosHistorico() {
@@ -886,27 +978,37 @@
     }
 
     function exportarExcel() {
-      const linhasEtiquetas = estado.etiquetas.map(e => `
-        <tr>
-          <td>${e.numero}</td>
-          <td>${e.status}</td>
-          <td>${e.funcionario || ''}</td>
-          <td>${e.data ? formatarDataBR(e.data) : ''}</td>
-          <td>${e.hora || ''}</td>
-          <td>${e.observacao || ''}</td>
-        </tr>
-      `).join('');
+      const linhasEtiquetas = estado.etiquetas.map(e => {
+        const dataBR = converterDataParaBR(e.data || e.updatedAt || e.createdAt);
+        const hora = e.hora || (e.updatedAt ? new Date(e.updatedAt).toLocaleTimeString('pt-BR') : '');
 
-      const linhasHistorico = estado.historico.map(h => `
-        <tr>
-          <td>${h.numero}</td>
-          <td>${h.funcionario}</td>
-          <td>${formatarDataBR(h.data)}</td>
-          <td>${h.hora}</td>
-          <td>${h.status}</td>
-          <td>${h.observacao || ''}</td>
-        </tr>
-      `).join('');
+        return `
+          <tr>
+            <td>${e.numero}</td>
+            <td>${e.status}</td>
+            <td>${e.funcionario || ''}</td>
+            <td>${e.status === 'Utilizada' ? dataBR : ''}</td>
+            <td>${e.status === 'Utilizada' ? hora : ''}</td>
+            <td>${e.observacao || ''}</td>
+          </tr>
+        `;
+      }).join('');
+
+      const linhasHistorico = estado.historico.map(h => {
+        const dataBR = converterDataParaBR(h.data || h.updatedAt || h.createdAt);
+        const hora = h.hora || (h.updatedAt ? new Date(h.updatedAt).toLocaleTimeString('pt-BR') : '');
+
+        return `
+          <tr>
+            <td>${h.numero}</td>
+            <td>${h.funcionario || 'Não informado'}</td>
+            <td>${dataBR}</td>
+            <td>${hora}</td>
+            <td>${h.status}</td>
+            <td>${h.observacao || ''}</td>
+          </tr>
+        `;
+      }).join('');
 
       const html = `
         <html>
@@ -945,26 +1047,49 @@
         </html>
       `;
 
-      const blob = new Blob(['﻿', html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+      const blob = new Blob(['\ufeff', html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
+
       link.href = url;
       link.download = `controle_etiquetas_bloqueio_${new Date().toISOString().slice(0, 10)}.xls`;
+
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+
       URL.revokeObjectURL(url);
       mostrarToast('Planilha exportada com sucesso.');
     }
 
-    function confirmarReset() {
-      const confirmado = confirm('Tem certeza que deseja reiniciar a base? Todos os usos registrados neste navegador serão apagados.');
+    async function confirmarReset() {
+      const confirmado = confirm('Tem certeza que deseja reiniciar a base? Todas as etiquetas voltarão para disponível no banco de dados.');
       if (!confirmado) return;
-      estado = { etiquetas: gerarEtiquetas(), historico: [] };
-      salvarEstado();
-      etiquetaAtual = null;
-      atualizarTudo();
-      mostrarToast('Base reiniciada com sucesso.');
+
+      try {
+        const response = await fetch('/api/etiquetas/reset', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+
+        const dados = await response.json();
+
+        if (!response.ok) {
+          throw new Error(dados.error || 'Erro ao resetar etiquetas.');
+        }
+
+        etiquetaAtual = null;
+
+        await carregarEtiquetas();
+
+        mostrarToast('Base reiniciada com sucesso.');
+
+      } catch (error) {
+        console.error('Erro ao resetar etiquetas:', error);
+        mostrarToast('Erro ao resetar etiquetas no servidor.');
+      }
     }
 
     function atualizarTudo() {
@@ -973,7 +1098,7 @@
       renderHistorico();
     }
 
-    document.addEventListener('DOMContentLoaded', atualizarTudo);
+    document.addEventListener('DOMContentLoaded', carregarEtiquetas);
   </script>
 </body>
 </html>
