@@ -12,6 +12,8 @@ const ejs         = require('ejs');
 const Notificacao = require('./models/Notificacao');
 const { sendAuditoriaCreatedEmail } = require('./src/utils/mailer');
 
+const etiquetaRoutes = require('./src/routes/etiquetaRoutes');
+
 // ✅ 5S (NOVO) — model
 const Auditoria5S = require('./models/avaliacao5s/Auditoria5S');
 const Calendario5S = require('./models/avaliacao5s/Calendario5S');
@@ -73,6 +75,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Mantém por compatibilidade (se algo antigo ainda usa /uploads local)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+app.use('/api/etiquetas', etiquetaRoutes);
 
 // ========================= MongoDB ========================
 async function startServer() {
