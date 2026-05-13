@@ -457,6 +457,8 @@
         </div>
       </div>
       <div class="header-actions">
+        <button class="btn btn-light" onclick="abrirModalDashboard()">📊 Painel</button>
+        <button class="btn btn-light" onclick="abrirModalHistorico()">📜 Histórico</button>
         <button class="btn btn-light" onclick="exportarExcel()">📤 Exportar Excel</button>
       </div>
     </div>
@@ -478,6 +480,7 @@
         <div class="toolbar-right">
           <button class="btn btn-muted" onclick="abrirModalDashboard()">📊 Ver indicadores</button>
           <button class="btn btn-muted" onclick="abrirModalHistorico()">📜 Ver histórico</button>
+          <button class="btn btn-danger" onclick="confirmarReset()">🔄 Reiniciar base</button>
         </div>
       </div>
 
@@ -1059,6 +1062,17 @@
       mostrarToast('Planilha exportada com sucesso.');
     }
 
+    async function confirmarReset() {
+      const confirmado = confirm('Tem certeza que deseja reiniciar a base? Todas as etiquetas voltarão para disponível no banco de dados.');
+      if (!confirmado) return;
+
+      try {
+        const response = await fetch('/api/etiquetas/reset', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
 
         const dados = await response.json();
 
