@@ -25,17 +25,16 @@ function escapeHtml(str) {
 }
 
 function getMaturidade(auditoria) {
-  // Preferir o que já vem calculado/salvo
   const m = auditoria?.maturidade;
-  return (m === 0 || m) ? m : "—";
+  return m === 0 || m ? m : "—";
 }
 
 function getMaturidadeColor(maturidade) {
   const n = Number(maturidade);
-  if (n === 4) return "#16a34a";
-  if (n === 3) return "#2563eb";
-  if (n === 2) return "#f59e0b";
-  return "#dc2626";
+  if (n === 4) return "#15803d";
+  if (n === 3) return "#1d4ed8";
+  if (n === 2) return "#b45309";
+  return "#b91c1c";
 }
 
 function formatDateTime(value) {
@@ -50,7 +49,6 @@ function formatDateTime(value) {
 }
 
 function collectDeviations(auditoria) {
-  // Retorna lista plana: [{ itemId, texto, responsavel, descricao }]
   const itens = Array.isArray(auditoria?.itens) ? auditoria.itens : [];
   const out = [];
 
@@ -68,6 +66,7 @@ function collectDeviations(auditoria) {
       });
     }
   }
+
   return out;
 }
 
@@ -81,7 +80,6 @@ function buildAuditoriaEmailHtml(auditoria) {
   const tipoAuditoria = auditoria?.tipoAuditoria || "—";
   const setor = auditoria?.setor || "—";
 
-  // Auditor programado (automatico da semana) vs realizador (fixado no registro)
   const auditorProgramado =
     auditoria?.auditorProgramado ||
     auditoria?.auditorAuto ||
@@ -96,186 +94,212 @@ function buildAuditoriaEmailHtml(auditoria) {
 
   const itens = Array.isArray(auditoria?.itens) ? auditoria.itens : [];
   const totalItens = itens.length;
-  const totalC = itens.filter(it => it?.status === "C").length;
-  const totalNC = itens.filter(it => it?.status === "NC").length;
-  const totalNA = itens.filter(it => it?.status === "NA").length;
+  const totalC = itens.filter((it) => it?.status === "C").length;
+  const totalNC = itens.filter((it) => it?.status === "NC").length;
+  const totalNA = itens.filter((it) => it?.status === "NA").length;
 
   const desvios = collectDeviations(auditoria);
-  const hasDesvios = desvios.length > 0;
 
-  const cardsDesvios = hasDesvios
-    ? desvios.map((d, i) => `
-      <div style="border:1px solid #e4e7ec;border-radius:14px;padding:14px 16px;background:#f9fafb;margin-bottom:12px">
-        <div style="font-size:12px;color:#667085;margin-bottom:6px">NC ${escapeHtml(String(i + 1))}</div>
-        <div style="font-size:15px;font-weight:800;color:#101828;margin-bottom:8px">
-          ${escapeHtml(d.texto || "Desvio não informado")}
-        </div>
+  const cardsDesvios = desvios.length
+    ? desvios
+        .map(
+          (d, i) => `
+          <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:12px;border:1px solid #d0d5dd;">
+            <tr>
+              <td style="padding:14px;background:#f9fafb;">
+                <div style="font-size:12px;color:#475467;margin-bottom:6px;">NC ${escapeHtml(String(i + 1))}</div>
+                <div style="font-size:15px;font-weight:bold;color:#101828;margin-bottom:10px;">
+                  ${escapeHtml(d.texto || "Desvio não informado")}
+                </div>
 
-        <table style="width:100%;border-collapse:collapse;font-size:13px">
-          <tr>
-            <td style="padding:4px 0;color:#667085;width:140px">Item</td>
-            <td style="padding:4px 0;color:#101828"><strong>${escapeHtml(d.itemId || "—")}</strong></td>
-          </tr>
-          <tr>
-            <td style="padding:4px 0;color:#667085">Grupo</td>
-            <td style="padding:4px 0;color:#101828"><strong>${escapeHtml(d.grupo || "—")}</strong></td>
-          </tr>
-          <tr>
-            <td style="padding:4px 0;color:#667085">Responsável</td>
-            <td style="padding:4px 0;color:#101828"><strong>${escapeHtml(d.responsavel || "—")}</strong></td>
-          </tr>
-          ${
-            d.descricao
-              ? `
-              <tr>
-                <td style="padding:4px 0;color:#667085;vertical-align:top">Observação</td>
-                <td style="padding:4px 0;color:#101828">${escapeHtml(d.descricao)}</td>
-              </tr>
-            `
-              : ""
-          }
-        </table>
-      </div>
-    `).join("")
+                <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;font-size:13px;">
+                  <tr>
+                    <td style="padding:5px 0;color:#475467;width:140px;">Item</td>
+                    <td style="padding:5px 0;color:#101828;font-weight:bold;">${escapeHtml(d.itemId || "—")}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:5px 0;color:#475467;">Grupo</td>
+                    <td style="padding:5px 0;color:#101828;font-weight:bold;">${escapeHtml(d.grupo || "—")}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:5px 0;color:#475467;">Responsável</td>
+                    <td style="padding:5px 0;color:#101828;font-weight:bold;">${escapeHtml(d.responsavel || "—")}</td>
+                  </tr>
+                  ${
+                    d.descricao
+                      ? `
+                      <tr>
+                        <td style="padding:5px 0;color:#475467;vertical-align:top;">Observação</td>
+                        <td style="padding:5px 0;color:#101828;">${escapeHtml(d.descricao)}</td>
+                      </tr>
+                    `
+                      : ""
+                  }
+                </table>
+              </td>
+            </tr>
+          </table>
+        `
+        )
+        .join("")
     : `
-      <div style="border:1px solid #d1fae5;background:#ecfdf5;color:#065f46;border-radius:14px;padding:14px 16px">
-        Nenhuma não conformidade foi registrada nesta auditoria.
-      </div>
+      <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border:1px solid #86efac;">
+        <tr>
+          <td style="padding:14px;background:#f0fdf4;color:#166534;font-size:14px;font-weight:bold;">
+            Nenhuma não conformidade foi registrada nesta auditoria.
+          </td>
+        </tr>
+      </table>
     `;
 
   return `
-  <div style="margin:0;padding:24px 12px;background:#f3f4f6;font-family:Arial,Helvetica,sans-serif;color:#101828">
-    <div style="max-width:920px;margin:0 auto">
+  <!DOCTYPE html>
+  <html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8">
+    <title>Auditoria 5S</title>
+  </head>
+  <body style="margin:0;padding:0;background:#f3f4f6;font-family:Arial,Helvetica,sans-serif;color:#101828;">
 
-      <div style="background:linear-gradient(135deg,#0f172a,#1d4ed8);border-radius:20px 20px 0 0;padding:28px 24px;color:#ffffff">
-        <div style="font-size:12px;letter-spacing:1px;text-transform:uppercase;opacity:.85;margin-bottom:8px">
-          Painel SESMT
-        </div>
-        <div style="font-size:28px;font-weight:800;line-height:1.2">
-          Nova Auditoria 5S Registrada
-        </div>
-        <div style="font-size:14px;opacity:.92;margin-top:10px">
-          Uma nova auditoria foi cadastrada automaticamente no sistema de gestão 5S.
-        </div>
-      </div>
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:20px 0;border-collapse:collapse;">
+      <tr>
+        <td align="center">
 
-      <div style="background:#ffffff;border:1px solid #e4e7ec;border-top:none;border-radius:0 0 20px 20px;padding:24px;box-shadow:0 10px 30px rgba(15,23,42,.08)">
+          <table width="920" cellpadding="0" cellspacing="0" style="max-width:920px;width:96%;border-collapse:collapse;background:#ffffff;border:1px solid #d0d5dd;">
 
-        <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:22px">
-          <div style="flex:1 1 180px;min-width:180px;background:#f8fafc;border:1px solid #e4e7ec;border-radius:14px;padding:14px">
-            <div style="font-size:12px;color:#667085;margin-bottom:6px">Semana</div>
-            <div style="font-size:16px;font-weight:800;color:#101828">${escapeHtml(semanaId)}</div>
-          </div>
+            <tr>
+              <td style="background:#0f172a;padding:26px 24px;color:#ffffff;">
+                <div style="font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#dbeafe;margin-bottom:8px;">
+                  Painel SESMT
+                </div>
+                <div style="font-size:28px;font-weight:bold;line-height:1.2;color:#ffffff;">
+                  Nova Inspeção 5S Registrada
+                </div>
+                <div style="font-size:14px;color:#e0e7ff;margin-top:10px;">
+                  Uma nova inspeção foi cadastrada automaticamente no sistema de gestão 5S.
+                </div>
+              </td>
+            </tr>
 
-          <div style="flex:1 1 180px;min-width:180px;background:#f8fafc;border:1px solid #e4e7ec;border-radius:14px;padding:14px">
-            <div style="font-size:12px;color:#667085;margin-bottom:6px">Local</div>
-            <div style="font-size:16px;font-weight:800;color:#101828">${escapeHtml(local)}</div>
-          </div>
+            <tr>
+              <td style="padding:24px;background:#ffffff;">
 
-          <div style="flex:1 1 180px;min-width:180px;background:#f8fafc;border:1px solid #e4e7ec;border-radius:14px;padding:14px">
-            <div style="font-size:12px;color:#667085;margin-bottom:6px">Tipo de auditoria</div>
-            <div style="font-size:16px;font-weight:800;color:#101828">${escapeHtml(tipoAuditoria)}</div>
-          </div>
+                <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:22px;">
+                  <tr>
+                    <td width="25%" style="padding:10px;border:1px solid #d0d5dd;background:#f8fafc;">
+                      <div style="font-size:12px;color:#475467;">Semana</div>
+                      <div style="font-size:16px;font-weight:bold;color:#101828;">${escapeHtml(semanaId)}</div>
+                    </td>
+                    <td width="25%" style="padding:10px;border:1px solid #d0d5dd;background:#f8fafc;">
+                      <div style="font-size:12px;color:#475467;">Local</div>
+                      <div style="font-size:16px;font-weight:bold;color:#101828;">${escapeHtml(local)}</div>
+                    </td>
+                    <td width="25%" style="padding:10px;border:1px solid #d0d5dd;background:#f8fafc;">
+                      <div style="font-size:12px;color:#475467;">Tipo de inspeção</div>
+                      <div style="font-size:16px;font-weight:bold;color:#101828;">${escapeHtml(tipoAuditoria)}</div>
+                    </td>
+                    <td width="25%" style="padding:10px;border:1px solid #d0d5dd;background:#f8fafc;">
+                      <div style="font-size:12px;color:#475467;">Maturidade</div>
+                      <div style="font-size:18px;font-weight:bold;color:${maturidadeColor};">Nível ${escapeHtml(String(maturidade))}</div>
+                    </td>
+                  </tr>
+                </table>
 
-          <div style="flex:1 1 180px;min-width:180px;background:${maturidadeColor}12;border:1px solid ${maturidadeColor}33;border-radius:14px;padding:14px">
-            <div style="font-size:12px;color:#667085;margin-bottom:6px">Maturidade</div>
-            <div style="font-size:18px;font-weight:800;color:${maturidadeColor}">
-              Nível ${escapeHtml(String(maturidade))}
-            </div>
-          </div>
-        </div>
+                <div style="font-size:20px;font-weight:bold;color:#101828;margin-bottom:12px;">
+                  Informações da Inspeção
+                </div>
 
-        <div style="margin-bottom:24px">
-          <div style="font-size:18px;font-weight:800;color:#101828;margin-bottom:12px">
-            Informações da Auditoria
-          </div>
+                <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:24px;border:1px solid #d0d5dd;font-size:13px;">
+                  <tr>
+                    <td style="padding:12px 14px;border-bottom:1px solid #d0d5dd;color:#475467;background:#f8fafc;width:220px;">Data/Hora</td>
+                    <td style="padding:12px 14px;border-bottom:1px solid #d0d5dd;color:#101828;font-weight:bold;">${escapeHtml(formatDateTime(dataHora))}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px 14px;border-bottom:1px solid #d0d5dd;color:#475467;background:#f8fafc;">Setor</td>
+                    <td style="padding:12px 14px;border-bottom:1px solid #d0d5dd;color:#101828;font-weight:bold;">${escapeHtml(setor)}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px 14px;border-bottom:1px solid #d0d5dd;color:#475467;background:#f8fafc;">Auditor programado</td>
+                    <td style="padding:12px 14px;border-bottom:1px solid #d0d5dd;color:#101828;font-weight:bold;">${escapeHtml(auditorProgramado)}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px 14px;color:#475467;background:#f8fafc;">Auditor realizador</td>
+                    <td style="padding:12px 14px;color:#101828;font-weight:bold;">${escapeHtml(auditorRealizador)}</td>
+                  </tr>
+                </table>
 
-          <div style="border:1px solid #e4e7ec;border-radius:16px;overflow:hidden">
-            <table style="width:100%;border-collapse:collapse;font-size:13px">
-              <tr>
-                <td style="padding:12px 14px;border-bottom:1px solid #e4e7ec;color:#667085;width:220px;background:#fbfcfe">Data/Hora</td>
-                <td style="padding:12px 14px;border-bottom:1px solid #e4e7ec"><strong>${escapeHtml(formatDateTime(dataHora))}</strong></td>
-              </tr>
-              <tr>
-                <td style="padding:12px 14px;border-bottom:1px solid #e4e7ec;color:#667085;background:#fbfcfe">Setor</td>
-                <td style="padding:12px 14px;border-bottom:1px solid #e4e7ec"><strong>${escapeHtml(setor)}</strong></td>
-              </tr>
-              <tr>
-                <td style="padding:12px 14px;border-bottom:1px solid #e4e7ec;color:#667085;background:#fbfcfe">Auditor programado</td>
-                <td style="padding:12px 14px;border-bottom:1px solid #e4e7ec"><strong>${escapeHtml(auditorProgramado)}</strong></td>
-              </tr>
-              <tr>
-                <td style="padding:12px 14px;color:#667085;background:#fbfcfe">Auditor realizador</td>
-                <td style="padding:12px 14px"><strong>${escapeHtml(auditorRealizador)}</strong></td>
-              </tr>
-            </table>
-          </div>
-        </div>
+                <div style="font-size:20px;font-weight:bold;color:#101828;margin-bottom:12px;">
+                  Resumo da Inspeção
+                </div>
 
-        <div style="margin-bottom:24px">
-          <div style="font-size:18px;font-weight:800;color:#101828;margin-bottom:12px">
-            Resumo da Auditoria
-          </div>
+                <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:24px;">
+                  <tr>
+                    <td width="25%" style="padding:12px;border:1px solid #d0d5dd;background:#ffffff;">
+                      <div style="font-size:12px;color:#475467;">Itens avaliados</div>
+                      <div style="font-size:26px;font-weight:bold;color:#101828;">${escapeHtml(String(totalItens))}</div>
+                    </td>
+                    <td width="25%" style="padding:12px;border:1px solid #bbf7d0;background:#f0fdf4;">
+                      <div style="font-size:12px;color:#166534;">Conformes</div>
+                      <div style="font-size:26px;font-weight:bold;color:#166534;">${escapeHtml(String(totalC))}</div>
+                    </td>
+                    <td width="25%" style="padding:12px;border:1px solid #fecaca;background:#fef2f2;">
+                      <div style="font-size:12px;color:#991b1b;">Não conformes</div>
+                      <div style="font-size:26px;font-weight:bold;color:#991b1b;">${escapeHtml(String(totalNC))}</div>
+                    </td>
+                    <td width="25%" style="padding:12px;border:1px solid #fde68a;background:#fffbeb;">
+                      <div style="font-size:12px;color:#92400e;">Não aplicáveis</div>
+                      <div style="font-size:26px;font-weight:bold;color:#92400e;">${escapeHtml(String(totalNA))}</div>
+                    </td>
+                  </tr>
+                </table>
 
-          <div style="display:flex;flex-wrap:wrap;gap:12px">
-            <div style="flex:1 1 150px;min-width:150px;border:1px solid #e4e7ec;border-radius:14px;padding:14px;background:#ffffff">
-              <div style="font-size:12px;color:#667085">Itens avaliados</div>
-              <div style="font-size:24px;font-weight:800;color:#101828">${escapeHtml(String(totalItens))}</div>
-            </div>
+                <div style="font-size:20px;font-weight:bold;color:#101828;margin-bottom:12px;">
+                  Não Conformidades Identificadas
+                </div>
 
-            <div style="flex:1 1 150px;min-width:150px;border:1px solid #dcfce7;border-radius:14px;padding:14px;background:#f0fdf4">
-              <div style="font-size:12px;color:#166534">Conformes</div>
-              <div style="font-size:24px;font-weight:800;color:#166534">${escapeHtml(String(totalC))}</div>
-            </div>
+                ${cardsDesvios}
 
-            <div style="flex:1 1 150px;min-width:150px;border:1px solid #fee2e2;border-radius:14px;padding:14px;background:#fef2f2">
-              <div style="font-size:12px;color:#991b1b">Não conformes</div>
-              <div style="font-size:24px;font-weight:800;color:#991b1b">${escapeHtml(String(totalNC))}</div>
-            </div>
+                <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-top:24px;border-top:1px solid #d0d5dd;">
+                  <tr>
+                    <td style="padding-top:16px;font-size:13px;color:#475467;line-height:1.6;">
+                      Esta mensagem foi enviada automaticamente pelo <strong>Painel SESMT</strong> após o registro de uma nova inspeção 5S.
+                      <br>
+                      <span style="font-size:12px;color:#667085;">
+                        Gestão de Segurança do Trabalho • Sistema interno de inspeções e indicadores 5S
+                      </span>
+                    </td>
+                  </tr>
+                </table>
 
-            <div style="flex:1 1 150px;min-width:150px;border:1px solid #fef3c7;border-radius:14px;padding:14px;background:#fffbeb">
-              <div style="font-size:12px;color:#92400e">Não aplicáveis</div>
-              <div style="font-size:24px;font-weight:800;color:#92400e">${escapeHtml(String(totalNA))}</div>
-            </div>
-          </div>
-        </div>
+              </td>
+            </tr>
 
-        <div style="margin-bottom:20px">
-          <div style="font-size:18px;font-weight:800;color:#101828;margin-bottom:12px">
-            Não Conformidades Identificadas
-          </div>
-          ${cardsDesvios}
-        </div>
+          </table>
 
-        <div style="border-top:1px solid #e4e7ec;padding-top:16px;margin-top:24px">
-          <div style="font-size:13px;color:#475467;line-height:1.6">
-            Esta mensagem foi enviada automaticamente pelo <strong>Painel SESMT</strong> após o registro de uma nova auditoria 5S.
-          </div>
-          <div style="font-size:12px;color:#667085;margin-top:6px">
-            Gestão de Segurança do Trabalho • Sistema interno de auditorias e inspeções
-          </div>
-        </div>
+        </td>
+      </tr>
+    </table>
 
-      </div>
-    </div>
-  </div>
+  </body>
+  </html>
   `;
 }
 
 async function sendAuditoriaCreatedEmail(auditoria) {
   const toList = (process.env.AUDITORIA_EMAIL_TO || "")
     .split(",")
-    .map(s => s.trim())
+    .map((s) => s.trim())
     .filter(Boolean);
 
-  if (!toList.length) return; // não quebra o fluxo se não tiver destinatário
+  if (!toList.length) return;
 
   const transporter = makeTransporter();
 
   const semanaId = auditoria?.semanaId || "—";
   const local = auditoria?.area || auditoria?.local || "—";
   const maturidade = getMaturidade(auditoria);
-  const subject = `Auditoria 5S — Semana ${semanaId} — ${local} — Maturidade ${maturidade}`;
+
+  const subject = `Inspeção 5S — Semana ${semanaId} — ${local} — Maturidade ${maturidade}`;
 
   const html = buildAuditoriaEmailHtml(auditoria);
 
